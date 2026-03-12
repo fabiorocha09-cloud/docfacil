@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const navItems = [
   { label: "Empresas", path: "/Empresas", icon: Building2 },
   { label: "Certidões", path: "/Certidoes", icon: FileCheck2 },
   { label: "Configurações", path: "/Configuracoes", icon: Settings },
+  { label: "Logs do Robô", path: "/LogsRobo", icon: ClipboardList },
 ];
 
 export default function Layout() {
