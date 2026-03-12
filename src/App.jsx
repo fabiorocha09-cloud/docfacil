@@ -10,6 +10,7 @@ import Dashboard from '@/pages/Dashboard';
 import Empresas from '@/pages/Empresas';
 import Certidoes from '@/pages/Certidoes';
 import Configuracoes from '@/pages/Configuracoes';
+import LogsRobo from '@/pages/LogsRobo';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();

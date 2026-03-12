@@ -11,6 +11,7 @@ export default function Empresas() {
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [buscaEmpresa, setBuscaEmpresa] = useState(null);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
