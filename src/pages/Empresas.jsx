@@ -127,6 +127,14 @@ export default function Empresas() {
           onSave={() => { setModalOpen(false); carregar(); }}
         />
       )}
+
+      {buscaEmpresa && (
+        <SolicitarBuscaModal
+          empresa={buscaEmpresa}
+          onClose={() => setBuscaEmpresa(null)}
+          onSolicitado={() => { setBuscaEmpresa(null); }}
+        />
+      )}
     </div>
   );
 }
