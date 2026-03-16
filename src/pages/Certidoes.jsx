@@ -108,8 +108,20 @@ export default function Certidoes() {
           <p className="text-gray-500">Nenhuma certidão encontrada.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="divide-y divide-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-2 border-b border-gray-100 dark:border-gray-700">
+            <span className="text-xs text-gray-500 dark:text-gray-400">{filtradas.length} resultado(s)</span>
+            <button
+              className="text-xs text-blue-600 hover:underline"
+              onClick={() => {
+                if (selecionados.length === filtradas.length) setSelecionados([]);
+                else setSelecionados(filtradas.map(c => c.id));
+              }}
+            >
+              {selecionados.length === filtradas.length ? "Desmarcar todos" : "Selecionar todos"}
+            </button>
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {filtradas.map(cert => {
               const cfg = statusConfig[cert.status] || statusConfig.pendente;
               const StatusIcon = cfg.icon;
