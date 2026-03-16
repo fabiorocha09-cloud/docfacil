@@ -47,6 +47,22 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
             <input type="email" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Regime Tributário</label>
+              <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.regime_tributario} onChange={e => setForm({ ...form, regime_tributario: e.target.value })}>
+                <option value="">Selecionar...</option>
+                <option value="simples_nacional">Simples Nacional</option>
+                <option value="lucro_presumido">Lucro Presumido</option>
+                <option value="lucro_real">Lucro Real</option>
+                <option value="mei">MEI</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Inscrição Estadual</label>
+              <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.inscricao_estadual} onChange={e => setForm({ ...form, inscricao_estadual: e.target.value })} />
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
