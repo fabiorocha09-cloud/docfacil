@@ -21,6 +21,7 @@ export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
