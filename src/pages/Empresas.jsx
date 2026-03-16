@@ -49,12 +49,20 @@ export default function Empresas() {
           <p className="text-gray-500 text-sm mt-1">{empresas.length} empresa(s) cadastrada(s)</p>
         </div>
         {isAdmin && (
-          <button
-            onClick={() => { setEditando(null); setModalOpen(true); }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Nova Empresa
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setImportarOpen(true)}
+              className="flex items-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
+            </button>
+            <button
+              onClick={() => { setEditando(null); setModalOpen(true); }}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" /> Nova Empresa
+            </button>
+          </div>
         )}
       </div>
 
