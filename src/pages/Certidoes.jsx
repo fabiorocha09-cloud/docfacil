@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, FileCheck2, Download, Pencil, Trash2, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { Plus, Search, FileCheck2, Download, Pencil, Trash2, CheckCircle2, XCircle, Clock, AlertTriangle, FolderDown } from "lucide-react";
 import CertidaoModal from "@/components/CertidaoModal";
+import DownloadLoteModal from "@/components/DownloadLoteModal";
 
 const statusConfig = {
   regular: { label: "Regular", color: "text-green-700 bg-green-50 border-green-200", icon: CheckCircle2 },
