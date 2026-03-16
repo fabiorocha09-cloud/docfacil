@@ -113,8 +113,18 @@ export default function Certidoes() {
             {filtradas.map(cert => {
               const cfg = statusConfig[cert.status] || statusConfig.pendente;
               const StatusIcon = cfg.icon;
+              const isSel = selecionados.includes(cert.id);
               return (
-                <div key={cert.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50">
+                <div
+                  key={cert.id}
+                  className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${isSel ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
+                  onClick={() => setSelecionados(prev => isSel ? prev.filter(id => id !== cert.id) : [...prev, cert.id])}
+                >
+                  <div className="flex items-center gap-3 mr-3 flex-shrink-0">
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? "bg-blue-600 border-blue-600" : "border-gray-300 dark:border-gray-600"}`}>
+                      {isSel && <CheckCircle2 className="w-3 h-3 text-white" />}
+                    </div>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <p className="font-medium text-gray-900 truncate">{cert.empresa_nome}</p>
