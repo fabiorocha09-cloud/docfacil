@@ -5,12 +5,15 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { ThemeProvider } from '@/context/ThemeContext';
 import Layout from '@/components/Layout';
 import Dashboard from '@/pages/Dashboard';
 import Empresas from '@/pages/Empresas';
 import Certidoes from '@/pages/Certidoes';
 import Configuracoes from '@/pages/Configuracoes';
 import LogsRobo from '@/pages/LogsRobo';
+import UploadCertidoes from '@/pages/UploadCertidoes';
+import Membros from '@/pages/Membros';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();

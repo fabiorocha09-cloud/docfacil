@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 
 export default function EmpresaModal({ empresa, onClose, onSave }) {
-  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", status: "ativo" });
+  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo" });
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e) => {
