@@ -145,6 +145,13 @@ export default function Empresas() {
           onSolicitado={() => { setBuscaEmpresa(null); }}
         />
       )}
+
+      {importarOpen && (
+        <ImportarEmpresasModal
+          onClose={() => setImportarOpen(false)}
+          onImportado={() => { setImportarOpen(false); carregar(); }}
+        />
+      )}
     </div>
   );
 }
