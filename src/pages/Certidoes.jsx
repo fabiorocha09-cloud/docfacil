@@ -137,7 +137,7 @@ export default function Certidoes() {
                       {cert.data_vencimento && <span>Vence: {new Date(cert.data_vencimento).toLocaleDateString("pt-BR")}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-4">
+                  <div className="flex items-center gap-2 ml-4" onClick={e => e.stopPropagation()}>
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
                       <StatusIcon className="w-3.5 h-3.5" />
                       {cfg.label}
