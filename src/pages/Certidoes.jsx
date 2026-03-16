@@ -165,6 +165,13 @@ export default function Certidoes() {
         </div>
       )}
 
+      {downloadLoteOpen && (
+        <DownloadLoteModal
+          certidoes={filtradas.filter(c => selecionados.includes(c.id))}
+          onClose={() => setDownloadLoteOpen(false)}
+        />
+      )}
+
       {modalOpen && (
         <CertidaoModal
           certidao={editando}
