@@ -24,6 +24,8 @@ export default function Certidoes() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editando, setEditando] = useState(null);
   const [user, setUser] = useState(null);
+  const [selecionados, setSelecionados] = useState([]);
+  const [downloadLoteOpen, setDownloadLoteOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
