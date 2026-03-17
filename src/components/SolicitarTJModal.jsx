@@ -40,21 +40,44 @@ Finalidade: Solicitação de certidão de falência e concordata atualizada.
 
 Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
 
+  const gerarHtmlEmail = () => {
+    const linksHtml = docsPresentes.map(tipo => {
+      const doc = getDoc(tipo);
+      return `<li style="margin-bottom:6px;"><strong>${DOCS_LABELS[tipo]}:</strong> <a href="${doc.arquivo_url}" style="color:#2563eb;">${DOCS_LABELS[tipo]} — clique para acessar</a></li>`;
+    }).join("");
+
+    return `
+<div style="font-family:Arial,sans-serif;font-size:14px;color:#1f2937;line-height:1.7;max-width:600px;">
+  <p>Prezado(a),</p>
+
+  <p>Venho, por meio deste, solicitar a emissão de nova <strong>certidão de falência e concordata</strong> da empresa abaixo:</p>
+
+  <table style="border-collapse:collapse;margin:16px 0;width:100%;">
+    <tr><td style="padding:6px 12px;background:#f3f4f6;font-weight:bold;width:40%;">Empresa</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${empresa.nome}</td></tr>
+    <tr><td style="padding:6px 12px;background:#f3f4f6;font-weight:bold;">CNPJ</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">${empresa.cnpj}</td></tr>
+    <tr><td style="padding:6px 12px;background:#f3f4f6;font-weight:bold;">Procurador</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">Fábio Luciano da Cruz Rocha</td></tr>
+    <tr><td style="padding:6px 12px;background:#f3f4f6;font-weight:bold;">Finalidade</td><td style="padding:6px 12px;border:1px solid #e5e7eb;">Solicitação de certidão de falência e concordata atualizada</td></tr>
+  </table>
+
+  <p>Seguem os documentos necessários para instrução do pedido:</p>
+  <ul style="padding-left:20px;">
+    ${linksHtml}
+  </ul>
+
+  <p style="margin-top:24px;">Atenciosamente,<br/>
+  <strong>Fábio Luciano da Cruz Rocha</strong><br/>
+  <span style="color:#6b7280;">Scala Gestão — ${REMETENTE}</span></p>
+</div>`;
+  };
+
   const enviarEmail = async () => {
     setEnviando(true);
-
-    // Monta links dos documentos no corpo do email
-    const linksAnexos = docsPresentes.map(tipo => {
-      const doc = getDoc(tipo);
-      return `• ${DOCS_LABELS[tipo]}: ${doc.arquivo_url}`;
-    }).join("\n");
-
-    const corpoCompleto = `${corpoEmail}\n\n--- Documentos em anexo ---\n${linksAnexos}`;
 
     await base44.integrations.Core.SendEmail({
       to: DESTINATARIO,
       subject: `Solicitação de Certidão TJ-PA — ${empresa.nome}`,
-      body: corpoCompleto,
+      body: gerarHtmlEmail(),
+      from_name: "Scala Gestão",
     });
 
     // Registra log
