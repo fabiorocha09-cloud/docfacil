@@ -159,6 +159,13 @@ export default function Empresas() {
         />
       )}
 
+      {tjEmpresa && (
+        <SolicitarTJModal
+          empresa={tjEmpresa}
+          onClose={() => setTjEmpresa(null)}
+        />
+      )}
+
       {importarOpen && (
         <ImportarEmpresasModal
           onClose={() => setImportarOpen(false)}
