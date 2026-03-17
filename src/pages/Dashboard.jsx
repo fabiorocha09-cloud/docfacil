@@ -112,7 +112,10 @@ export default function Dashboard() {
       </div>
 
       {vencendoEm7.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+        <div
+          className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 cursor-pointer hover:shadow-md hover:border-yellow-400 transition-all"
+          onClick={() => navigate("/Certidoes?vencimento=7dias")}
+        >
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle className="w-5 h-5 text-yellow-600" />
             <h3 className="font-semibold text-yellow-800">Certidões vencendo em 7 dias</h3>
