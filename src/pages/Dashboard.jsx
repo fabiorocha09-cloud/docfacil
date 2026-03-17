@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { FileCheck2, Building2, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const statusConfig = {
   regular: { label: "Regular", color: "text-green-700 bg-green-50 border-green-200", icon: CheckCircle2 },
