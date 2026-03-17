@@ -36,10 +36,10 @@ export default function Dashboard() {
   });
 
   const stats = [
-    { label: "Empresas Ativas", value: empresas.filter(e => e.status === "ativo").length, icon: Building2, color: "text-blue-600 bg-blue-50" },
-    { label: "Certidões Regulares", value: certidoes.filter(c => c.status === "regular").length, icon: CheckCircle2, color: "text-green-600 bg-green-50" },
-    { label: "Certidões Irregulares", value: certidoes.filter(c => c.status === "irregular").length, icon: XCircle, color: "text-red-600 bg-red-50" },
-    { label: "Vencendo em 7 dias", value: vencendoEm7.length, icon: AlertTriangle, color: "text-yellow-600 bg-yellow-50" },
+    { label: "Empresas Ativas", value: empresas.filter(e => e.status === "ativo").length, icon: Building2, color: "text-blue-600 bg-blue-50", onClick: null },
+    { label: "Certidões Regulares", value: certidoes.filter(c => c.status === "regular").length, icon: CheckCircle2, color: "text-green-600 bg-green-50", onClick: null },
+    { label: "Certidões Irregulares", value: certidoes.filter(c => c.status === "irregular").length, icon: XCircle, color: "text-red-600 bg-red-50", onClick: () => navigate("/Certidoes?status=irregular") },
+    { label: "Vencendo em 7 dias", value: vencendoEm7.length, icon: AlertTriangle, color: "text-yellow-600 bg-yellow-50", onClick: () => navigate("/Certidoes?vencimento=7dias") },
   ];
 
   const recentes = certidoes.slice(0, 8);
