@@ -90,41 +90,44 @@ export default function Empresas() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="divide-y divide-gray-100">
             {filtradas.map(empresa => (
-              <div key={empresa.id} className="flex items-center justify-between px-5 py-4 hover:bg-gray-50">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-blue-600" />
+              <div key={empresa.id} className="border-b border-gray-100 last:border-b-0">
+                <div className="flex items-center justify-between px-5 py-4 hover:bg-gray-50">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{empresa.nome}</p>
+                      <p className="text-sm text-gray-500">{empresa.cnpj} · {empresa.responsavel || "—"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{empresa.nome}</p>
-                    <p className="text-sm text-gray-500">{empresa.cnpj} · {empresa.responsavel || "—"}</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${empresa.status === "ativo" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                      {empresa.status === "ativo" ? "Ativo" : "Inativo"}
+                    </span>
+                    <button
+                      onClick={() => setBuscaEmpresa(empresa)}
+                      className="p-1.5 text-gray-400 hover:text-green-600 rounded"
+                      title="Solicitar busca de certidões"
+                    >
+                      <SearchCheck className="w-4 h-4" />
+                    </button>
+                    <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Ver certidões">
+                      <FileCheck2 className="w-4 h-4" />
+                    </Link>
+                    {isAdmin && (
+                      <>
+                        <button onClick={() => { setEditando(empresa); setModalOpen(true); }} className="p-1.5 text-gray-400 hover:text-blue-600 rounded">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => deletar(empresa.id)} className="p-1.5 text-gray-400 hover:text-red-600 rounded">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${empresa.status === "ativo" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                    {empresa.status === "ativo" ? "Ativo" : "Inativo"}
-                  </span>
-                  <button
-                    onClick={() => setBuscaEmpresa(empresa)}
-                    className="p-1.5 text-gray-400 hover:text-green-600 rounded"
-                    title="Solicitar busca de certidões"
-                  >
-                    <SearchCheck className="w-4 h-4" />
-                  </button>
-                  <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Ver certidões">
-                    <FileCheck2 className="w-4 h-4" />
-                  </Link>
-                  {isAdmin && (
-                    <>
-                      <button onClick={() => { setEditando(empresa); setModalOpen(true); }} className="p-1.5 text-gray-400 hover:text-blue-600 rounded">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => deletar(empresa.id)} className="p-1.5 text-gray-400 hover:text-red-600 rounded">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                </div>
+                <DocumentosEmpresa empresa={empresa} isAdmin={isAdmin} />
               </div>
             ))}
           </div>
