@@ -114,6 +114,13 @@ export default function Empresas() {
                     >
                       <SearchCheck className="w-4 h-4" />
                     </button>
+                    <button
+                      onClick={() => setTjEmpresa(empresa)}
+                      className="p-1.5 text-gray-400 hover:text-purple-600 rounded"
+                      title="Solicitar Certidão TJ-PA via email"
+                    >
+                      <Mail className="w-4 h-4" />
+                    </button>
                     <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Ver certidões">
                       <FileCheck2 className="w-4 h-4" />
                     </Link>
