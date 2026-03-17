@@ -88,7 +88,7 @@ export default function Empresas() {
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="divide-y divide-gray-100">
+          <div>
             {filtradas.map(empresa => (
               <div key={empresa.id} className="border-b border-gray-100 last:border-b-0">
                 <div className="flex items-center justify-between px-5 py-4 hover:bg-gray-50">
