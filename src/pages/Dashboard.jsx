@@ -59,8 +59,12 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-gray-200 p-5">
+          {stats.map(({ label, value, icon: Icon, color, onClick }) => (
+            <div
+              key={label}
+              onClick={onClick || undefined}
+              className={`bg-white rounded-xl border border-gray-200 p-5 ${onClick ? "cursor-pointer hover:shadow-md hover:border-blue-300 transition-all" : ""}`}
+            >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${color}`}>
                 <Icon className="w-5 h-5" />
               </div>
