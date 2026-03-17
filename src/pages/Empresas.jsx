@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import EmpresaModal from "@/components/EmpresaModal";
 import SolicitarBuscaModal from "@/components/SolicitarBuscaModal";
 import ImportarEmpresasModal from "@/components/ImportarEmpresasModal";
+import DocumentosEmpresa from "@/components/DocumentosEmpresa";
 
 export default function Empresas() {
   const [empresas, setEmpresas] = useState([]);
