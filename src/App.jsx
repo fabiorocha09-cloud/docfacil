@@ -48,6 +48,7 @@ const AuthenticatedApp = () => {
         <Route path="/UploadCertidoes" element={<UploadCertidoes />} />
         <Route path="/Membros" element={<Membros />} />
       </Route>
+      <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
