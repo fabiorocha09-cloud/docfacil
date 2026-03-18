@@ -175,6 +175,13 @@ export default function Empresas() {
         />
       )}
 
+      {linkEmpresa && (
+        <GerarLinkModal
+          empresa={linkEmpresa}
+          onClose={() => setLinkEmpresa(null)}
+        />
+      )}
+
       {importarOpen && (
         <ImportarEmpresasModal
           onClose={() => setImportarOpen(false)}
