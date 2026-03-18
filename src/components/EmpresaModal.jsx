@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 
 export default function EmpresaModal({ empresa, onClose, onSave }) {
-  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo" });
+  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "" });
+  const [grupos, setGrupos] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    base44.entities.GrupoEmpresarial.list().then(setGrupos).catch(() => {});
+  }, []);
+
+  const handleGrupo = (id) => {
+    const g = grupos.find(g => g.id === id);
+    setForm({ ...form, grupo_id: id, grupo_nome: g?.nome || "" });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +29,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">{empresa ? "Editar Empresa" : "Nova Empresa"}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -69,6 +79,22 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
               <option value="ativo">Ativo</option>
               <option value="inativo">Inativo</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Grupo Empresarial <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <select
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={form.grupo_id || ""}
+              onChange={e => handleGrupo(e.target.value)}
+            >
+              <option value="">— Sem grupo —</option>
+              {grupos.map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
+            </select>
+            {grupos.length === 0 && (
+              <p className="text-xs text-gray-400 mt-1">Nenhum grupo cadastrado ainda. Crie um na aba "Grupos Empresariais".</p>
+            )}
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50">Cancelar</button>

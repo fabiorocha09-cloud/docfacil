@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { X, Link2, Copy, Check, Mail, Loader2, Clock } from "lucide-react";
+import { X, Link2, Copy, Check, Mail, Loader2, Clock, Layers } from "lucide-react";
 
 const EXPIRACAO_OPCOES = [
   { label: "7 dias", dias: 7 },
@@ -9,7 +9,9 @@ const EXPIRACAO_OPCOES = [
   { label: "Sem expiração", dias: null },
 ];
 
-export default function GerarLinkModal({ empresa, onClose }) {
+// Pode ser usado para empresa individual OU grupo
+// Props: empresa (scope=empresa) OU grupo + empresasDoGrupo (scope=grupo)
+export default function GerarLinkModal({ empresa, grupo, empresasDoGrupo = [], onClose }) {
   const [emailCliente, setEmailCliente] = useState("");
   const [expiracao, setExpiracao] = useState(7);
   const [allowDownload, setAllowDownload] = useState(true);
@@ -18,6 +20,10 @@ export default function GerarLinkModal({ empresa, onClose }) {
   const [copiado, setCopiado] = useState(false);
   const [enviandoEmail, setEnviandoEmail] = useState(false);
   const [emailEnviado, setEmailEnviado] = useState(false);
+
+  const isGrupo = !!grupo;
+  const titulo = isGrupo ? grupo.nome : empresa.nome;
+  const subtitulo = isGrupo ? `${empresasDoGrupo.length} empresa(s) vinculada(s)` : empresa.cnpj;
 
   const gerarToken = () => {
     const array = new Uint8Array(24);
@@ -31,25 +37,38 @@ export default function GerarLinkModal({ empresa, onClose }) {
 
     const token = gerarToken();
     const user = await base44.auth.me();
+    const expiresAt = expiracao ? new Date(Date.now() + expiracao * 24 * 60 * 60 * 1000).toISOString() : null;
 
-    const expiresAt = expiracao
-      ? new Date(Date.now() + expiracao * 24 * 60 * 60 * 1000).toISOString()
-      : null;
-
-    await base44.entities.SharedLink.create({
-      token,
-      email_cliente: emailCliente,
-      scope: "empresa",
-      empresa_id: empresa.id,
-      empresa_nome: empresa.nome,
-      empresa_cnpj: empresa.cnpj,
-      expires_at: expiresAt,
-      allow_download: allowDownload,
-      ativo: true,
-      acesso_count: 0,
-      criado_por_email: user?.email || "",
-      criado_por_nome: user?.full_name || "",
-    });
+    if (isGrupo) {
+      await base44.entities.SharedLink.create({
+        token,
+        email_cliente: emailCliente,
+        scope: "grupo",
+        grupo_id: grupo.id,
+        grupo_nome: grupo.nome,
+        expires_at: expiresAt,
+        allow_download: allowDownload,
+        ativo: true,
+        acesso_count: 0,
+        criado_por_email: user?.email || "",
+        criado_por_nome: user?.full_name || "",
+      });
+    } else {
+      await base44.entities.SharedLink.create({
+        token,
+        email_cliente: emailCliente,
+        scope: "empresa",
+        empresa_id: empresa.id,
+        empresa_nome: empresa.nome,
+        empresa_cnpj: empresa.cnpj,
+        expires_at: expiresAt,
+        allow_download: allowDownload,
+        ativo: true,
+        acesso_count: 0,
+        criado_por_email: user?.email || "",
+        criado_por_nome: user?.full_name || "",
+      });
+    }
 
     const url = `${window.location.origin}/acesso/${token}`;
     setLinkGerado(url);
@@ -65,14 +84,18 @@ export default function GerarLinkModal({ empresa, onClose }) {
   const enviarPorEmail = async () => {
     setEnviandoEmail(true);
     const expMsg = expiracao ? `Este link expira em ${expiracao} dias.` : "Este link não possui expiração.";
+    const descricao = isGrupo
+      ? `documentos e certidões de todas as empresas do <strong>Grupo ${grupo.nome}</strong>`
+      : `documentos e certidões da empresa <strong>${empresa.nome}</strong> (CNPJ: ${empresa.cnpj})`;
+
     await base44.integrations.Core.SendEmail({
       to: emailCliente,
-      subject: `Acesso aos documentos — ${empresa.nome}`,
+      subject: `Acesso aos documentos — ${titulo}`,
       from_name: "Scala Gestão",
       body: `
 <div style="font-family:Arial,sans-serif;font-size:14px;color:#1f2937;line-height:1.7;max-width:600px;">
   <p>Olá,</p>
-  <p>Segue o link de acesso aos documentos e certidões da empresa <strong>${empresa.nome}</strong> (CNPJ: ${empresa.cnpj}):</p>
+  <p>Segue o link de acesso aos ${descricao}:</p>
   <p style="margin:24px 0;">
     <a href="${linkGerado}" style="background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">
       Acessar Documentos
@@ -92,19 +115,27 @@ export default function GerarLinkModal({ empresa, onClose }) {
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
           <div>
             <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Link2 className="w-4 h-4 text-blue-600" /> Gerar Link Compartilhável
+              {isGrupo ? <Layers className="w-4 h-4 text-indigo-600" /> : <Link2 className="w-4 h-4 text-blue-600" />}
+              Gerar Link Compartilhável
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">{empresa.nome} — {empresa.cnpj}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{titulo} · {subtitulo}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
         </div>
 
         {!linkGerado ? (
           <form onSubmit={handleGerar} className="p-5 space-y-4">
+            {isGrupo && empresasDoGrupo.length > 0 && (
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3">
+                <p className="text-xs text-indigo-700 dark:text-indigo-300 font-medium mb-1">Empresas incluídas neste link:</p>
+                <ul className="text-xs text-indigo-600 dark:text-indigo-400 space-y-0.5">
+                  {empresasDoGrupo.map(e => <li key={e.id}>• {e.nome} ({e.cnpj})</li>)}
+                </ul>
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                E-mail do cliente *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">E-mail do cliente *</label>
               <input
                 required
                 type="email"
