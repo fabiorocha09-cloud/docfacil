@@ -7,6 +7,7 @@ import SolicitarBuscaModal from "@/components/SolicitarBuscaModal";
 import ImportarEmpresasModal from "@/components/ImportarEmpresasModal";
 import DocumentosEmpresa from "@/components/DocumentosEmpresa";
 import SolicitarTJModal from "@/components/SolicitarTJModal";
+import GerarLinkModal from "@/components/GerarLinkModal";
 
 export default function Empresas() {
   const [empresas, setEmpresas] = useState([]);
