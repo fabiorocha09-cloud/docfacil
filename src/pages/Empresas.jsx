@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import EmpresaModal from "@/components/EmpresaModal";
 import SolicitarBuscaModal from "@/components/SolicitarBuscaModal";
 import ImportarEmpresasModal from "@/components/ImportarEmpresasModal";
@@ -20,6 +20,7 @@ export default function Empresas() {
   const [linkEmpresa, setLinkEmpresa] = useState(null);
   const [importarOpen, setImportarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
