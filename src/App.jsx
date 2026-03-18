@@ -49,6 +49,8 @@ const AuthenticatedApp = () => {
         <Route path="/LogsRobo" element={<LogsRobo />} />
         <Route path="/UploadCertidoes" element={<UploadCertidoes />} />
         <Route path="/Membros" element={<Membros />} />
+        <Route path="/GruposEmpresariais" element={<GruposEmpresariais />} />
+        <Route path="/CentralRespostas" element={<CentralRespostas />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="*" element={<PageNotFound />} />

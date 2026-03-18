@@ -15,6 +15,8 @@ const navItems = [
   { label: "Configurações", path: "/Configuracoes", icon: Settings },
   { label: "Logs do Robô", path: "/LogsRobo", icon: ClipboardList },
   { label: "Membros", path: "/Membros", icon: Users },
+  { label: "Grupos Empresariais", path: "/GruposEmpresariais", icon: Layers },
+  { label: "Central de Respostas", path: "/CentralRespostas", icon: MessageSquare },
 ];
 
 export default function Layout() {
