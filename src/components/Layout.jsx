@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
