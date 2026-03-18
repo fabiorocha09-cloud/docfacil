@@ -63,6 +63,12 @@ export default function Empresas() {
               <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
             </button>
             <button
+              onClick={() => navigate("/GruposEmpresariais")}
+              className="flex items-center gap-2 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <Layers className="w-4 h-4" /> Grupos Empresariais
+            </button>
+            <button
               onClick={() => { setEditando(null); setModalOpen(true); }}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
