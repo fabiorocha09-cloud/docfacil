@@ -95,22 +95,20 @@ function DownloadEmpresaButton({ empresa, certidoes, documentos, allowDownload }
     setModo(null);
   };
 
-  if (modo) {
+  if (baixando) {
+    return <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3 animate-spin" /> Processando...</span>;
+  }
+
+  if (modo === "choose") {
     return (
       <div className="flex items-center gap-2">
-        {baixando ? (
-          <span className="text-xs text-gray-500 flex items-center gap-1"><Clock className="w-3 h-3 animate-spin" /> Processando...</span>
-        ) : (
-          <>
-            <button onClick={baixarZip} className="flex items-center gap-1 text-xs border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-50">
-              <FileArchive className="w-3 h-3" /> ZIP
-            </button>
-            <button onClick={baixarPdf} className="flex items-center gap-1 text-xs border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-50">
-              <FileText className="w-3 h-3" /> PDF
-            </button>
-            <button onClick={() => setModo(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
-          </>
-        )}
+        <button onClick={baixarZip} className="flex items-center gap-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">
+          <FileArchive className="w-3 h-3" /> ZIP
+        </button>
+        <button onClick={baixarPdf} className="flex items-center gap-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">
+          <FileText className="w-3 h-3" /> PDF Unificado
+        </button>
+        <button onClick={() => setModo(null)} className="text-xs text-gray-400 hover:text-gray-600 px-1">✕</button>
       </div>
     );
   }
