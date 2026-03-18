@@ -14,6 +14,7 @@ import Configuracoes from '@/pages/Configuracoes';
 import LogsRobo from '@/pages/LogsRobo';
 import UploadCertidoes from '@/pages/UploadCertidoes';
 import Membros from '@/pages/Membros';
+import AcessoCompartilhado from '@/pages/AcessoCompartilhado';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
