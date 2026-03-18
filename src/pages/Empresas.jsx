@@ -123,6 +123,13 @@ export default function Empresas() {
                     >
                       <Mail className="w-4 h-4" />
                     </button>
+                    <button
+                      onClick={() => setLinkEmpresa(empresa)}
+                      className="p-1.5 text-gray-400 hover:text-indigo-600 rounded"
+                      title="Gerar link compartilhável"
+                    >
+                      <Link2 className="w-4 h-4" />
+                    </button>
                     <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Ver certidões">
                       <FileCheck2 className="w-4 h-4" />
                     </Link>
