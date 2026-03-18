@@ -206,7 +206,7 @@ function RegistrarRespostaModal({ empresas, onClose, onSave }) {
           <h2 className="font-semibold text-gray-900 dark:text-white">Registrar Resposta Recebida</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-3 overflow-y-auto flex-1">
+        <form id="form-resposta" onSubmit={handleSubmit} className="p-5 space-y-3 overflow-y-auto flex-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Empresa *</label>
@@ -253,7 +253,8 @@ function RegistrarRespostaModal({ empresas, onClose, onSave }) {
         <div className="flex gap-3 p-5 border-t border-gray-100 dark:border-gray-700">
           <button type="button" onClick={onClose} className="flex-1 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancelar</button>
           <button
-            onClick={async (e) => { const form2 = document.querySelector("form"); form2?.requestSubmit(); }}
+            type="submit"
+            form="form-resposta"
             disabled={saving}
             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50"
           >
