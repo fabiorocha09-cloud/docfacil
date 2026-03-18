@@ -17,6 +17,7 @@ export default function Empresas() {
   const [editando, setEditando] = useState(null);
   const [buscaEmpresa, setBuscaEmpresa] = useState(null);
   const [tjEmpresa, setTjEmpresa] = useState(null);
+  const [linkEmpresa, setLinkEmpresa] = useState(null);
   const [importarOpen, setImportarOpen] = useState(false);
   const [user, setUser] = useState(null);
 
