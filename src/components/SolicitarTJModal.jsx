@@ -9,7 +9,7 @@ const DOCS_LABELS = {
   crc_contador: "CRC Contador",
 };
 
-const REMETENTE = "fiscal@scalagestao.com.br";
+const REMETENTE = "docfacil@docfacil.comvcscala.com";
 const DESTINATARIO_PADRAO = "fabio@scalagestao.com.br";
 
 export default function SolicitarTJModal({ empresa, onClose }) {
