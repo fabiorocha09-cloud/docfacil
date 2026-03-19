@@ -91,7 +91,7 @@ export default function GerarLinkModal({ empresa, grupo, empresasDoGrupo = [], o
     await base44.integrations.Core.SendEmail({
       to: emailCliente,
       subject: `Acesso aos documentos — ${titulo}`,
-      from_name: "Scala Gestão",
+      from_name: "DocFácil",
       body: `
 <div style="font-family:Arial,sans-serif;font-size:14px;color:#1f2937;line-height:1.7;max-width:600px;">
   <p>Olá,</p>
