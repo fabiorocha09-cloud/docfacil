@@ -67,6 +67,25 @@ export default function Empresas() {
     carregar();
   };
 
+  const exportarSelecionadas = () => {
+    const empresasParaExportar = filtradas.filter(e => selecionados.includes(e.id));
+    const dados = empresasParaExportar.map(e => ({
+      "CNPJ": e.cnpj || "",
+      "RAZÃO SOCIAL": e.nome || "",
+      "RESPONSÁVEL": e.responsavel || "",
+      "E-MAIL": e.email || "",
+      "TELEFONE": e.telefone || "",
+      "REGIME TRIBUTÁRIO": e.regime_tributario || "",
+      "INSCRIÇÃO ESTADUAL": e.inscricao_estadual || "",
+      "GRUPO EMPRESARIAL": e.grupo_nome || "",
+      "STATUS": e.status === "ativo" ? "Ativo" : "Inativo",
+    }));
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Empresas");
+    XLSX.writeFile(wb, `empresas_exportadas.xlsx`);
+  };
+
   const excluirPermanenteEmLote = async () => {
     if (!confirm(`Excluir permanentemente ${selecionados.length} empresa(s)? Esta ação não pode ser desfeita.`)) return;
     await Promise.all(selecionados.map(id => base44.entities.Empresa.delete(id)));
