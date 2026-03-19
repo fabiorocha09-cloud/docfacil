@@ -73,7 +73,7 @@ Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
       to: destinatario,
       subject: `Solicitação de Certidão TJ-PA — ${empresa.nome}`,
       body: gerarHtmlEmail(),
-      from_name: "Scala Gestão",
+      from_name: "DocFácil",
     });
 
     await base44.entities.LogRobo.create({
