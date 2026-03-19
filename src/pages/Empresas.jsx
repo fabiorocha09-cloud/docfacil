@@ -20,6 +20,8 @@ export default function Empresas() {
   const [linkEmpresa, setLinkEmpresa] = useState(null);
   const [importarOpen, setImportarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [lixeira, setLixeira] = useState(false);
+  const [selecionados, setSelecionados] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,15 +36,50 @@ export default function Empresas() {
     });
   };
 
-  const deletar = async (id) => {
-    if (!confirm("Deseja remover esta empresa?")) return;
+  const moverLixeira = async (id) => {
+    if (!confirm("Mover esta empresa para a lixeira?")) return;
+    await base44.entities.Empresa.update(id, { excluida: true });
+    carregar();
+  };
+
+  const restaurar = async (id) => {
+    await base44.entities.Empresa.update(id, { excluida: false });
+    carregar();
+  };
+
+  const excluirPermanente = async (id) => {
+    if (!confirm("Excluir permanentemente esta empresa? Esta ação não pode ser desfeita.")) return;
     await base44.entities.Empresa.delete(id);
+    carregar();
+  };
+
+  const moverLixeiraEmLote = async () => {
+    if (!confirm(`Mover ${selecionados.length} empresa(s) para a lixeira?`)) return;
+    await Promise.all(selecionados.map(id => base44.entities.Empresa.update(id, { excluida: true })));
+    setSelecionados([]);
+    carregar();
+  };
+
+  const restaurarEmLote = async () => {
+    await Promise.all(selecionados.map(id => base44.entities.Empresa.update(id, { excluida: false })));
+    setSelecionados([]);
+    carregar();
+  };
+
+  const excluirPermanenteEmLote = async () => {
+    if (!confirm(`Excluir permanentemente ${selecionados.length} empresa(s)? Esta ação não pode ser desfeita.`)) return;
+    await Promise.all(selecionados.map(id => base44.entities.Empresa.delete(id)));
+    setSelecionados([]);
     carregar();
   };
 
   const isAdmin = user?.role === "admin";
 
-  const filtradas = empresas.filter(e =>
+  const ativas = empresas.filter(e => !e.excluida);
+  const naLixeira = empresas.filter(e => e.excluida);
+  const listaAtual = lixeira ? naLixeira : ativas;
+
+  const filtradas = listaAtual.filter(e =>
     e.nome?.toLowerCase().includes(search.toLowerCase()) ||
     e.cnpj?.includes(search)
   );
