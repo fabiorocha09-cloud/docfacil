@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Mail, Plus, Trash2, CheckCircle2, Circle, Search, Building2, X, Loader2 } from "lucide-react";
+import { Mail, Plus, Trash2, CheckCircle2, Circle, Search, Building2, X, Loader2, Paperclip, Download } from "lucide-react";
 
 export default function CentralRespostas() {
   const [respostas, setRespostas] = useState([]);
