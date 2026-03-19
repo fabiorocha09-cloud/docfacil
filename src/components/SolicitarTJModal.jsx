@@ -62,7 +62,7 @@ Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
   <ul style="padding-left:20px;">${linksHtml}</ul>
   <p style="margin-top:24px;">Atenciosamente,<br/>
   <strong>Fábio Luciano da Cruz Rocha</strong><br/>
-  <span style="color:#6b7280;">Scala Gestão — ${REMETENTE}</span></p>
+  <span style="color:#6b7280;">DocFácil — ${REMETENTE}</span></p>
 </div>`;
   };
 
