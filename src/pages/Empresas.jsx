@@ -86,33 +86,70 @@ export default function Empresas() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Empresas</h1>
-          <p className="text-gray-500 text-sm mt-1">{empresas.length} empresa(s) cadastrada(s)</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {ativas.length} ativa(s){naLixeira.length > 0 && ` · ${naLixeira.length} na lixeira`}
+          </p>
         </div>
-        {isAdmin && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Ações em lote */}
+          {!lixeira && selecionados.length > 0 && (
             <button
-              onClick={() => setImportarOpen(true)}
-              className="flex items-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              onClick={moverLixeiraEmLote}
+              className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
             >
-              <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
+              <Trash2 className="w-4 h-4" /> Lixeira ({selecionados.length})
             </button>
-            <button
-              onClick={() => navigate("/GruposEmpresariais")}
-              className="flex items-center gap-2 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              <Layers className="w-4 h-4" /> Grupos Empresariais
-            </button>
-            <button
-              onClick={() => { setEditando(null); setModalOpen(true); }}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Nova Empresa
-            </button>
-          </div>
-        )}
+          )}
+          {lixeira && selecionados.length > 0 && (
+            <>
+              <button
+                onClick={restaurarEmLote}
+                className="flex items-center gap-2 border border-blue-200 text-blue-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <RotateCcw className="w-4 h-4" /> Restaurar ({selecionados.length})
+              </button>
+              <button
+                onClick={excluirPermanenteEmLote}
+                className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" /> Excluir ({selecionados.length})
+              </button>
+            </>
+          )}
+          {/* Toggle lixeira */}
+          <button
+            onClick={() => { setLixeira(v => !v); setSelecionados([]); }}
+            className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${lixeira ? "bg-red-50 border-red-200 text-red-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+          >
+            <Trash2 className="w-4 h-4" /> {lixeira ? "Sair da Lixeira" : "Lixeira"}
+            {!lixeira && naLixeira.length > 0 && <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">{naLixeira.length}</span>}
+          </button>
+          {isAdmin && !lixeira && (
+            <>
+              <button
+                onClick={() => setImportarOpen(true)}
+                className="flex items-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
+              </button>
+              <button
+                onClick={() => navigate("/GruposEmpresariais")}
+                className="flex items-center gap-2 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <Layers className="w-4 h-4" /> Grupos Empresariais
+              </button>
+              <button
+                onClick={() => { setEditando(null); setModalOpen(true); }}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Nova Empresa
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="relative">
