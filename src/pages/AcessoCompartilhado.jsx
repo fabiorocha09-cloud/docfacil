@@ -156,7 +156,7 @@ export default function AcessoCompartilhado() {
 
     if (link.scope === "grupo") {
       // Carrega todas as empresas do grupo
-      const todasEmpresas = await base44.entities.Empresa.filter({ grupo_id: link.grupo_id });
+      const todasEmpresas = (await base44.entities.Empresa.filter({ grupo_id: link.grupo_id })).filter(e => !e.excluida);
       const dados = await Promise.all(
         todasEmpresas.map(async emp => {
           const [certs, docs] = await Promise.all([
