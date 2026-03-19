@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw } from "lucide-react";
+import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Link, useNavigate } from "react-router-dom";
 import EmpresaModal from "@/components/EmpresaModal";
 import SolicitarBuscaModal from "@/components/SolicitarBuscaModal";
