@@ -102,7 +102,7 @@ export default function GerarLinkModal({ empresa, grupo, empresasDoGrupo = [], o
     </a>
   </p>
   <p style="color:#6b7280;font-size:13px;">${expMsg}</p>
-  <p>Atenciosamente,<br/><strong>Scala Gestão</strong></p>
+  <p>Atenciosamente,<br/><strong>DocFácil</strong></p>
 </div>`,
     });
     setEmailEnviado(true);
