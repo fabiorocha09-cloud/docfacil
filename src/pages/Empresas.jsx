@@ -116,12 +116,20 @@ export default function Empresas() {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Ações em lote */}
           {!lixeira && selecionados.length > 0 && (
-            <button
-              onClick={moverLixeiraEmLote}
-              className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4" /> Lixeira ({selecionados.length})
-            </button>
+            <>
+              <button
+                onClick={exportarSelecionadas}
+                className="flex items-center gap-2 border border-green-200 text-green-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-50"
+              >
+                <Download className="w-4 h-4" /> Exportar ({selecionados.length})
+              </button>
+              <button
+                onClick={moverLixeiraEmLote}
+                className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4" /> Lixeira ({selecionados.length})
+              </button>
+            </>
           )}
           {lixeira && selecionados.length > 0 && (
             <>
