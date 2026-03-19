@@ -160,6 +160,30 @@ function VisualizarRespostaModal({ resposta, onClose }) {
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
             <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">{resposta.corpo}</p>
           </div>
+          {resposta.anexos_urls && resposta.anexos_urls.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1.5">
+                <Paperclip className="w-4 h-4" /> Anexos ({resposta.anexos_urls.length})
+              </p>
+              <div className="space-y-2">
+                {resposta.anexos_urls.map((url, index) => {
+                  const nome = decodeURIComponent(url.split('/').pop().split('?')[0]) || `Anexo ${index + 1}`;
+                  return (
+                    <a
+                      key={index}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                    >
+                      <Download className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{nome}</span>
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {resposta.observacoes && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
               <p className="text-xs text-yellow-800 dark:text-yellow-300"><strong>Observações:</strong> {resposta.observacoes}</p>
