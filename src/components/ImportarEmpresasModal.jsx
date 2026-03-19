@@ -12,37 +12,39 @@ export default function ImportarEmpresasModal({ onClose, onImportado }) {
     if (!file) return;
     setStatus("processando");
 
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    // Lê o XLSX diretamente no frontend
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-    const res = await base44.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: {
-        type: "object",
-        properties: {
-          empresas: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                cnpj: { type: "string" },
-                nome: { type: "string", description: "Razão Social" },
-                regime_tributario: { type: "string", description: "simples_nacional, lucro_presumido, lucro_real ou mei" },
-                inscricao_estadual: { type: "string" },
-                grupo_empresarial: { type: "string", description: "Nome do grupo empresarial (opcional)" }
-              }
-            }
-          }
-        }
-      }
-    });
-
-    if (res.status !== "success" || !res.output?.empresas?.length) {
+    if (!rows.length) {
       setStatus("erro");
-      setResultado({ erro: "Não foi possível extrair os dados da planilha. Verifique se o arquivo segue o formato esperado." });
+      setResultado({ erro: "Planilha vazia ou formato inválido." });
       return;
     }
 
-    const empresas = res.output.empresas;
+    // Normaliza cabeçalhos (remove acentos, espaços extras, case insensitive)
+    const normalize = (str) => String(str).trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const mapRow = (row) => {
+      const get = (...keys) => {
+        for (const k of Object.keys(row)) {
+          if (keys.some(key => normalize(k) === normalize(key))) return String(row[k]).trim();
+        }
+        return "";
+      };
+      return {
+        cnpj: get("cnpj"),
+        nome: get("razao social", "nome", "razão social"),
+        regime_tributario: get("regime tributario", "regime tributário"),
+        inscricao_estadual: get("inscricao estadual", "inscrição estadual"),
+        grupo_empresarial: get("grupo empresarial"),
+      };
+    };
+
+    const empresas = rows.map(mapRow);
     const validas = empresas.filter(e => e.cnpj && e.nome);
 
     // Buscar grupos existentes para vincular pelo nome
