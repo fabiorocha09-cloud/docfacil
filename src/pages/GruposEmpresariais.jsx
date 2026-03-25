@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Layers, Pencil, Trash2, Building2, Link2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Layers, Pencil, Trash2, Building2, Link2, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 import GrupoEmpresarialModal from "@/components/GrupoEmpresarialModal";
 import GerarLinkModal from "@/components/GerarLinkModal";
 
@@ -13,6 +15,7 @@ export default function GruposEmpresariais() {
   const [linkGrupo, setLinkGrupo] = useState(null);
   const [expandidos, setExpandidos] = useState({});
   const [user, setUser] = useState(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -33,6 +36,7 @@ export default function GruposEmpresariais() {
   const deletar = async (id) => {
     if (!confirm("Remover este grupo? As empresas vinculadas não serão excluídas.")) return;
     await base44.entities.GrupoEmpresarial.delete(id);
+    toast({ title: "🗑️ Grupo removido.", description: "O grupo foi excluído com sucesso." });
     carregar();
   };
 
@@ -128,16 +132,21 @@ export default function GruposEmpresariais() {
                     ) : (
                       <div className="divide-y divide-gray-100 dark:divide-gray-700">
                         {membros.map(emp => (
-                          <div key={emp.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <Link
+                            key={emp.id}
+                            to={`/Empresas?empresa=${emp.id}`}
+                            className="flex items-center gap-3 px-5 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                          >
                             <Building2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{emp.nome}</p>
+                              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-700 dark:group-hover:text-blue-400">{emp.nome}</p>
                               <p className="text-xs text-gray-500">{emp.cnpj}</p>
                             </div>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${emp.status === "ativo" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                               {emp.status === "ativo" ? "Ativo" : "Inativo"}
                             </span>
-                          </div>
+                            <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-blue-500 flex-shrink-0" />
+                          </Link>
                         ))}
                       </div>
                     )}

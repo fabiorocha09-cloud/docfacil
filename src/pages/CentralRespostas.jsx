@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Mail, Plus, Trash2, CheckCircle2, Circle, Search, Building2, X, Loader2, Paperclip, Download } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function CentralRespostas() {
   const [respostas, setRespostas] = useState([]);
@@ -9,6 +10,7 @@ export default function CentralRespostas() {
   const [modalOpen, setModalOpen] = useState(false);
   const [visualizando, setVisualizando] = useState(null);
   const [empresas, setEmpresas] = useState([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     Promise.all([
@@ -29,6 +31,7 @@ export default function CentralRespostas() {
   const deletar = async (id) => {
     if (!confirm("Remover esta resposta?")) return;
     await base44.entities.RespostaEmail.delete(id);
+    toast({ title: "🗑️ Resposta removida." });
     setRespostas(prev => prev.filter(r => r.id !== id));
   };
 

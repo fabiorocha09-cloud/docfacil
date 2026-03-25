@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function EmpresaModal({ empresa, onClose, onSave }) {
+  const { toast } = useToast();
   const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "" });
   const [grupos, setGrupos] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -24,6 +26,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
     } else {
       await base44.entities.Empresa.create(form);
     }
+    toast({ title: "✅ Gravação realizada com sucesso!", description: empresa?.id ? "Empresa atualizada." : "Nova empresa criada." });
     onSave();
   };
 

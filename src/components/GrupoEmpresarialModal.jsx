@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function GrupoEmpresarialModal({ grupo, onClose, onSave }) {
   const [form, setForm] = useState(grupo || { nome: "", descricao: "", responsavel: "", email: "", status: "ativo" });
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,6 +16,7 @@ export default function GrupoEmpresarialModal({ grupo, onClose, onSave }) {
     } else {
       await base44.entities.GrupoEmpresarial.create(form);
     }
+    toast({ title: "✅ Gravação realizada com sucesso!", description: grupo?.id ? "Grupo atualizado." : "Novo grupo criado." });
     onSave();
   };
 

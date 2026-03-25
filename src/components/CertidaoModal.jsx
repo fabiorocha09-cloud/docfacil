@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, Upload } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const tipos = ["federal", "estadual", "municipal", "fgts", "trabalhista"];
 const subtipos = {
@@ -12,6 +13,7 @@ const subtipos = {
 };
 
 export default function CertidaoModal({ certidao, empresas, onClose, onSave }) {
+  const { toast } = useToast();
   const [form, setForm] = useState(certidao || {
     empresa_id: "", empresa_nome: "", empresa_cnpj: "", tipo: "federal", subtipo: "",
     status: "pendente", data_emissao: "", data_vencimento: "", arquivo_url: "", observacoes: ""
@@ -41,6 +43,7 @@ export default function CertidaoModal({ certidao, empresas, onClose, onSave }) {
     } else {
       await base44.entities.Certidao.create(form);
     }
+    toast({ title: "✅ Gravação realizada com sucesso!", description: certidao?.id ? "Certidão atualizada." : "Nova certidão criada." });
     onSave();
   };
 

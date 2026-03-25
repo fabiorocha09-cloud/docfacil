@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, FileCheck2, Download, Pencil, Trash2, CheckCircle2, XCircle, Clock, AlertTriangle, FolderDown, RotateCcw, Trash } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import CertidaoModal from "@/components/CertidaoModal";
 import DownloadLoteModal from "@/components/DownloadLoteModal";
 
@@ -27,6 +28,7 @@ export default function Certidoes() {
   const [selecionados, setSelecionados] = useState([]);
   const [downloadLoteOpen, setDownloadLoteOpen] = useState(false);
   const [lixeira, setLixeira] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -52,17 +54,20 @@ export default function Certidoes() {
   const moverLixeira = async (id) => {
     if (!confirm("Mover esta certidão para a lixeira?")) return;
     await base44.entities.Certidao.update(id, { excluida: true });
+    toast({ title: "🗑️ Certidão movida para a lixeira." });
     carregar();
   };
 
   const restaurar = async (id) => {
     await base44.entities.Certidao.update(id, { excluida: false });
+    toast({ title: "✅ Certidão restaurada com sucesso!" });
     carregar();
   };
 
   const excluirPermanente = async (id) => {
     if (!confirm("Excluir permanentemente esta certidão? Não há reversão.")) return;
     await base44.entities.Certidao.delete(id);
+    toast({ title: "🗑️ Certidão excluída permanentemente." });
     carregar();
   };
 

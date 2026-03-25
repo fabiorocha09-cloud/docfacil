@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import * as XLSX from "xlsx";
 import { Link, useNavigate } from "react-router-dom";
 import EmpresaModal from "@/components/EmpresaModal";
@@ -24,6 +25,7 @@ export default function Empresas() {
   const [lixeira, setLixeira] = useState(false);
   const [selecionados, setSelecionados] = useState([]);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -40,17 +42,20 @@ export default function Empresas() {
   const moverLixeira = async (id) => {
     if (!confirm("Mover esta empresa para a lixeira?")) return;
     await base44.entities.Empresa.update(id, { excluida: true });
+    toast({ title: "🗑️ Empresa movida para a lixeira." });
     carregar();
   };
 
   const restaurar = async (id) => {
     await base44.entities.Empresa.update(id, { excluida: false });
+    toast({ title: "✅ Empresa restaurada com sucesso!" });
     carregar();
   };
 
   const excluirPermanente = async (id) => {
     if (!confirm("Excluir permanentemente esta empresa? Esta ação não pode ser desfeita.")) return;
     await base44.entities.Empresa.delete(id);
+    toast({ title: "🗑️ Empresa excluída permanentemente." });
     carregar();
   };
 

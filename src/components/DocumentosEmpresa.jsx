@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Upload, FileText, Trash2, Loader2, ChevronDown, ChevronUp, FolderOpen } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const tipoConfig = {
   cartao_cnpj:      { label: "Cartão CNPJ" },
@@ -16,6 +17,7 @@ export default function DocumentosEmpresa({ empresa, isAdmin }) {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [uploading, setUploading] = useState(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (expanded) carregar();
@@ -45,12 +47,14 @@ export default function DocumentosEmpresa({ empresa, isAdmin }) {
       });
     }
     setUploading(null);
+    toast({ title: "✅ Documento enviado com sucesso!" });
     carregar();
   };
 
   const deletar = async (id) => {
     if (!confirm("Remover este documento?")) return;
     await base44.entities.DocumentoEmpresa.delete(id);
+    toast({ title: "🗑️ Documento removido." });
     carregar();
   };
 
