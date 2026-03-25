@@ -90,7 +90,7 @@ export default function Layout() {
             {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
           </button>
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={() => base44.auth.logout('/')}
             className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-600 transition-colors"
           >
             <LogOut className="w-4 h-4" />
