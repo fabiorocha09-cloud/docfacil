@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 export default function EmpresaModal({ empresa, onClose, onSave }) {
   const { toast } = useToast();
   const [form, setForm] = useState(empresa || { nome: "", cnpj: "", cnpj_matriz: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "" });
+  const [eFilial, setEFilial] = useState(!!(empresa?.cnpj_matriz));
   const [grupos, setGrupos] = useState([]);
   const [saving, setSaving] = useState(false);
   const [consultando, setConsultando] = useState(false);
@@ -14,6 +15,20 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
   useEffect(() => {
     base44.entities.GrupoEmpresarial.list().then(setGrupos).catch(() => {});
   }, []);
+
+  const handleToggleFilial = (checked) => {
+    setEFilial(checked);
+    if (checked && form.cnpj) {
+      const digits = form.cnpj.replace(/\D/g, "");
+      if (digits.length === 14) {
+        const raiz = digits.slice(0, 8);
+        const matrizFormatada = `${raiz.slice(0,2)}.${raiz.slice(2,5)}.${raiz.slice(5,8)}/0001`;
+        setForm(f => ({ ...f, cnpj_matriz: matrizFormatada }));
+      }
+    } else {
+      setForm(f => ({ ...f, cnpj_matriz: "" }));
+    }
+  };
 
   const handleConsultarCnpj = async () => {
     if (!form.cnpj) return;
@@ -51,7 +66,6 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
       await base44.entities.Empresa.update(empresa.id, form);
     } else {
       const novaEmpresa = await base44.entities.Empresa.create(form);
-      // Replicar CRC do contador para a nova empresa se já existir um
       const docsExistentes = await base44.entities.DocumentoEmpresa.list();
       const crcExistente = docsExistentes.find(d => d.tipo === "crc_contador");
       if (crcExistente) {
@@ -80,18 +94,37 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
             <input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              CNPJ da Matriz <span className="text-gray-400 font-normal">(preencher apenas se for filial)</span>
-            </label>
-            <input
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="00.000.000/0001-00"
-              value={form.cnpj_matriz || ""}
-              onChange={e => setForm({ ...form, cnpj_matriz: e.target.value })}
-            />
-            <p className="text-xs text-gray-400 mt-1">Certidões Federais, FGTS e Trabalhistas serão buscadas na matriz.</p>
+
+          {/* Toggle É Filial */}
+          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <button
+              type="button"
+              onClick={() => handleToggleFilial(!eFilial)}
+              className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${eFilial ? "bg-blue-600" : "bg-gray-300"}`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${eFilial ? "translate-x-5" : "translate-x-0.5"}`} />
+            </button>
+            <div>
+              <p className="text-sm font-medium text-gray-700">Esta empresa é uma filial?</p>
+              <p className="text-xs text-gray-400">Certidões Federais, FGTS e Trabalhistas serão buscadas na matriz</p>
+            </div>
           </div>
+
+          {eFilial && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                CNPJ da Matriz <span className="text-gray-400 font-normal">(preenchido automaticamente)</span>
+              </label>
+              <input
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="XX.XXX.XXX/0001-XX"
+                value={form.cnpj_matriz || ""}
+                onChange={e => setForm({ ...form, cnpj_matriz: e.target.value })}
+              />
+              <p className="text-xs text-gray-400 mt-1">Confirme ou ajuste o CNPJ da matriz se necessário.</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
             <div className="flex gap-2">
@@ -113,6 +146,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
             </div>
             {erroCnpj && <p className="text-xs text-red-500 mt-1">{erroCnpj}</p>}
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
@@ -123,10 +157,12 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.telefone} onChange={e => setForm({ ...form, telefone: e.target.value })} />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
             <input type="email" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Regime Tributário</label>
@@ -143,6 +179,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
               <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.inscricao_estadual} onChange={e => setForm({ ...form, inscricao_estadual: e.target.value })} />
             </div>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
@@ -150,6 +187,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
               <option value="inativo">Inativo</option>
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Grupo Empresarial <span className="text-gray-400 font-normal">(opcional)</span>
@@ -166,6 +204,7 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
               <p className="text-xs text-gray-400 mt-1">Nenhum grupo cadastrado ainda. Crie um na aba "Grupos Empresariais".</p>
             )}
           </div>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2 rounded-lg hover:bg-gray-50">Cancelar</button>
             <button type="submit" disabled={saving} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50">
