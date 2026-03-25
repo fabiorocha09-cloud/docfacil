@@ -17,6 +17,7 @@ import Membros from '@/pages/Membros';
 import AcessoCompartilhado from '@/pages/AcessoCompartilhado';
 import GruposEmpresariais from '@/pages/GruposEmpresariais';
 import CentralRespostas from '@/pages/CentralRespostas';
+import UploadOutrosDocumentos from '@/pages/UploadOutrosDocumentos';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
         <Route path="/Membros" element={<Membros />} />
         <Route path="/GruposEmpresariais" element={<GruposEmpresariais />} />
         <Route path="/CentralRespostas" element={<CentralRespostas />} />
+        <Route path="/UploadOutrosDocumentos" element={<UploadOutrosDocumentos />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="*" element={<PageNotFound />} />
