@@ -302,6 +302,12 @@ export default function UploadOutrosDocumentos() {
           </div>
         </div>
       )}
+      {loteOpen && (
+        <ImportarDocsLoteModal
+          onClose={() => setLoteOpen(false)}
+          onImportado={() => { setLoteOpen(false); carregar(); }}
+        />
+      )}
     </div>
   );
 }
