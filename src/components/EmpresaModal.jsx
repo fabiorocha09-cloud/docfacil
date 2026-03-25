@@ -19,18 +19,22 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
     if (!form.cnpj) return;
     setConsultando(true);
     setErroCnpj("");
-    const response = await base44.functions.invoke('consultarCnpj', { cnpj: form.cnpj });
-    if (response.data?.error) {
-      setErroCnpj(response.data.error);
-    } else {
-      const d = response.data;
-      setForm(f => ({
-        ...f,
-        nome: d.nome || f.nome,
-        email: d.email || f.email,
-        telefone: d.telefone || f.telefone,
-        inscricao_estadual: d.inscricao_estadual || f.inscricao_estadual,
-      }));
+    try {
+      const response = await base44.functions.invoke('consultarCnpj', { cnpj: form.cnpj });
+      if (response.data?.error) {
+        setErroCnpj(response.data.error);
+      } else {
+        const d = response.data;
+        setForm(f => ({
+          ...f,
+          nome: d.nome || f.nome,
+          email: d.email || f.email,
+          telefone: d.telefone || f.telefone,
+          inscricao_estadual: d.inscricao_estadual || f.inscricao_estadual,
+        }));
+      }
+    } catch (err) {
+      setErroCnpj("Não foi possível consultar o CNPJ. Tente novamente.");
     }
     setConsultando(false);
   };
