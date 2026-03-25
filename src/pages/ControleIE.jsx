@@ -66,7 +66,7 @@ export default function ControleIE() {
     }
     setSelecionados([]);
     setConsultandoLote(false);
-    toast({ title: `✅ Atualização concluída!`, description: `${lista.length} empresa(s) consultada(s).` });
+    toast({ title: `✅ Atualização concluída!`, description: `${lista.length} empresa(s) consultada(s).`, duration: 3000 });
   };
 
   const filtradas = empresas.filter(e => {
