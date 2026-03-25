@@ -17,6 +17,7 @@ export default function SolicitarTJModal({ empresa, onClose }) {
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState("");
   const [destinatario, setDestinatario] = useState(DESTINATARIO_PADRAO);
   const [editandoDest, setEditandoDest] = useState(false);
 
@@ -68,15 +69,18 @@ Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
 
   const enviarEmail = async () => {
     setEnviando(true);
-
-    await base44.functions.invoke('enviarEmailTJ', {
-      to: destinatario,
-      subject: `Solicitação de Certidão TJ-PA — ${empresa.nome}`,
-      body: gerarHtmlEmail(),
-      from_name: "DocFácil",
-    });
-
-    setResultado("sucesso");
+    setErro("");
+    try {
+      await base44.functions.invoke('enviarEmailTJ', {
+        to: destinatario,
+        subject: `Solicitação de Certidão TJ-PA — ${empresa.nome}`,
+        body: gerarHtmlEmail(),
+        from_name: "DocFácil",
+      });
+      setResultado("sucesso");
+    } catch (e) {
+      setErro("Falha ao enviar o e-mail. Tente novamente.");
+    }
     setEnviando(false);
   };
 
@@ -166,6 +170,12 @@ Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
                 </div>
               )}
 
+              {erro && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-red-600" />
+                  <p className="text-sm text-red-800 dark:text-red-300">{erro}</p>
+                </div>
+              )}
               {resultado === "sucesso" && (
                 <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
