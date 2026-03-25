@@ -13,6 +13,8 @@ const statusConfig = {
   pendente: { label: "Pendente", color: "text-yellow-700 bg-yellow-50 border-yellow-200", icon: Clock },
   processando: { label: "Processando", color: "text-blue-700 bg-blue-50 border-blue-200", icon: Clock },
   erro: { label: "Erro", color: "text-gray-700 bg-gray-50 border-gray-200", icon: AlertTriangle },
+  ausente: { label: "Ausente", color: "text-red-700 bg-red-50 border-red-200", icon: XCircle },
+  nao_aplicavel: { label: "Não Aplicável", color: "text-gray-500 bg-gray-50 border-gray-200", icon: AlertTriangle },
 };
 
 const tipoDocLabels = {
@@ -20,7 +22,16 @@ const tipoDocLabels = {
   alvara_municipal: "Alvará Municipal", alvara_visa: "Alvará VISA", avcb_bombeiros: "AVCB Bombeiros",
 };
 
-const tipoLabels = { federal: "Federal", estadual: "Estadual", municipal: "Municipal", fgts: "FGTS", trabalhista: "Trabalhista" };
+const tipoLabels = {
+  federal: "Federal", estadual: "Estadual", municipal: "Municipal",
+  fgts: "FGTS", trabalhista: "Trabalhista",
+  alvara_bombeiros: "Alvará - Bombeiros",
+  alvara_vigilancia_sanitaria: "Alvará - Vigilância Sanitária",
+  alvara_funcionamento: "Alvará - Funcionamento",
+  alvara_meio_ambiente: "Alvará - Meio Ambiente",
+};
+
+const TODOS_TIPOS = ["federal","estadual","municipal","fgts","trabalhista","alvara_bombeiros","alvara_vigilancia_sanitaria","alvara_funcionamento","alvara_meio_ambiente"];
 
 async function renderPdfAsImages(pdfUrl) {
   const resp = await fetch(pdfUrl);
@@ -129,6 +140,7 @@ export default function AcessoCompartilhado() {
   const [email, setEmail] = useState("");
   const [sharedLink, setSharedLink] = useState(null);
   // Para empresa individual
+  const [empresaIndividual, setEmpresaIndividual] = useState(null);
   const [certidoes, setCertidoes] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   // Para grupo
@@ -168,12 +180,14 @@ export default function AcessoCompartilhado() {
       );
       setEmpresasGrupo(dados);
     } else {
-      const [certs, docs] = await Promise.all([
+      const [certs, docs, emps] = await Promise.all([
         base44.entities.Certidao.filter({ empresa_id: link.empresa_id }),
         base44.entities.DocumentoEmpresa.filter({ empresa_id: link.empresa_id }),
+        base44.entities.Empresa.filter({ id: link.empresa_id }),
       ]);
       setCertidoes(certs.filter(c => !c.excluida));
       setDocumentos(docs);
+      setEmpresaIndividual(emps[0] || null);
     }
 
     setStep("valido");
@@ -300,7 +314,7 @@ export default function AcessoCompartilhado() {
 
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <EmpresaCard
-          empresa={{ nome: sharedLink.empresa_nome, cnpj: sharedLink.empresa_cnpj }}
+          empresa={empresaIndividual || { nome: sharedLink.empresa_nome, cnpj: sharedLink.empresa_cnpj }}
           certidoes={certidoes}
           documentos={documentos}
           allowDownload={sharedLink.allow_download}
@@ -318,6 +332,19 @@ export default function AcessoCompartilhado() {
 }
 
 function EmpresaCard({ empresa, certidoes, documentos, allowDownload, showHeader, stats }) {
+  const naoAplicaveis = empresa?.certidoes_nao_aplicaveis || [];
+  // Gera entradas virtuais para tipos sem certidão cadastrada
+  const tiposPresentes = new Set(certidoes.map(c => c.tipo));
+  const virtuais = TODOS_TIPOS
+    .filter(tipo => !tiposPresentes.has(tipo))
+    .map(tipo => ({
+      id: `virtual_${tipo}`,
+      tipo,
+      _virtual: true,
+      status: naoAplicaveis.includes(tipo) ? "nao_aplicavel" : "ausente",
+    }));
+  const todasCertidoes = [...certidoes, ...virtuais];
+
   const certRegulares = stats?.certRegulares ?? certidoes.filter(c => c.status === "regular").length;
   const certIrregulares = stats?.certIrregulares ?? certidoes.filter(c => c.status === "irregular").length;
 
@@ -343,7 +370,7 @@ function EmpresaCard({ empresa, certidoes, documentos, allowDownload, showHeader
           />
         </div>
         <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100">
-          <div className="text-center"><p className="text-lg font-bold text-gray-900">{certidoes.length}</p><p className="text-xs text-gray-500">Certidões</p></div>
+          <div className="text-center"><p className="text-lg font-bold text-gray-900">{todasCertidoes.length}</p><p className="text-xs text-gray-500">Certidões</p></div>
           <div className="text-center"><p className="text-lg font-bold text-green-600">{certRegulares}</p><p className="text-xs text-gray-500">Regulares</p></div>
           {certIrregulares > 0 && <div className="text-center"><p className="text-lg font-bold text-red-600">{certIrregulares}</p><p className="text-xs text-gray-500">Irregulares</p></div>}
           <div className="text-center"><p className="text-lg font-bold text-gray-900">{documentos.length}</p><p className="text-xs text-gray-500">Documentos</p></div>
@@ -351,11 +378,11 @@ function EmpresaCard({ empresa, certidoes, documentos, allowDownload, showHeader
       </div>
 
       {/* Certidões */}
-      {certidoes.length > 0 && (
+      {todasCertidoes.length > 0 && (
         <div>
           <p className="px-5 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 border-b border-gray-100">Certidões</p>
           <div className="divide-y divide-gray-100">
-            {certidoes.map(cert => {
+            {todasCertidoes.map(cert => {
               const cfg = statusConfig[cert.status] || statusConfig.pendente;
               const StatusIcon = cfg.icon;
               return (
@@ -406,7 +433,7 @@ function EmpresaCard({ empresa, certidoes, documentos, allowDownload, showHeader
         </div>
       )}
 
-      {certidoes.length === 0 && documentos.length === 0 && (
+      {todasCertidoes.length === 0 && documentos.length === 0 && (
         <div className="p-8 text-center text-gray-400 text-sm">Nenhum documento disponível.</div>
       )}
     </div>
