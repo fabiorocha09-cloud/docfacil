@@ -26,9 +26,11 @@ Deno.serve(async (req) => {
       : "";
 
     // Inscrição estadual (primeira ativa se houver)
-    const registrations = data.registrations || [];
-    const ie = registrations.find(r => r.enabled);
-    const inscricao_estadual = ie ? ie.number : "";
+    const registrations = data.registrations || data.company?.registrations || data.establishment?.registrations || [];
+    console.log('registrations raw:', JSON.stringify(registrations.slice(0, 2)));
+    console.log('data keys:', Object.keys(data));
+    const ie = registrations.find(r => r.enabled || r.state || r.number);
+    const inscricao_estadual = ie ? (ie.number || ie.state_registration || ie.ie || "") : "";
 
     return Response.json({
       nome: data.company?.name || "",
