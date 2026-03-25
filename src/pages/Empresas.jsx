@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download } from "lucide-react";
+import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import EmpresaCardDetalhes from "@/components/EmpresaCardDetalhes";
 import * as XLSX from "xlsx";
 import { Link, useNavigate } from "react-router-dom";
 import EmpresaModal from "@/components/EmpresaModal";
@@ -27,10 +28,58 @@ export default function Empresas() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Detalhe de empresa específica via URL
+  const [empresaDetalhe, setEmpresaDetalhe] = useState(null);
+  const [certidoesDetalhe, setCertidoesDetalhe] = useState([]);
+  const [documentosDetalhe, setDocumentosDetalhe] = useState([]);
+  const [loadingDetalhe, setLoadingDetalhe] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const empresaId = params.get("empresa");
+    if (empresaId) {
+      setLoadingDetalhe(true);
+      Promise.all([
+        base44.entities.Empresa.filter({ id: empresaId }),
+        base44.entities.Certidao.filter({ empresa_id: empresaId }),
+        base44.entities.DocumentoEmpresa.filter({ empresa_id: empresaId }),
+      ]).then(([emps, certs, docs]) => {
+        if (emps.length > 0) setEmpresaDetalhe(emps[0]);
+        setCertidoesDetalhe(certs.filter(c => !c.excluida));
+        setDocumentosDetalhe(docs);
+        setLoadingDetalhe(false);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
     carregar();
   }, []);
+
+  if (loadingDetalhe) return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+    </div>
+  );
+
+  if (empresaDetalhe) return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => { setEmpresaDetalhe(null); navigate("/Empresas"); }}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50"
+        >
+          <ArrowLeft className="w-4 h-4" /> Voltar para Empresas
+        </button>
+      </div>
+      <EmpresaCardDetalhes
+        empresa={empresaDetalhe}
+        certidoes={certidoesDetalhe}
+        documentos={documentosDetalhe}
+      />
+    </div>
+  );
 
   const carregar = () => {
     base44.entities.Empresa.list().then(data => {
