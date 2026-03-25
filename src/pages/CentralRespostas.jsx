@@ -158,7 +158,7 @@ function VisualizarRespostaModal({ resposta, onClose }) {
             <p><strong>De:</strong> {resposta.de}</p>
             <p><strong>Para:</strong> {resposta.para}</p>
             {resposta.assunto_original && <p><strong>Assunto:</strong> {resposta.assunto_original}</p>}
-            {resposta.data_recebimento && <p><strong>Recebido em:</strong> {new Date(resposta.data_recebimento).toLocaleString("pt-BR")}</p>}
+            {resposta.data_recebimento && <p><strong>Recebido em:</strong> {new Date(resposta.data_recebimento).toLocaleDateString("pt-BR")}</p>}
           </div>
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
             <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">{resposta.corpo}</p>
