@@ -19,8 +19,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: data.message || 'CNPJ não encontrado' }, { status: response.status });
     }
 
-    // Retorna dados brutos para debug
-    return Response.json({ _debug: data });
+    // Monta telefone
+    const phones = data.phones || [];
+    const telefone = phones.length > 0
+      ? `(${phones[0].area}) ${phones[0].number}`
+      : "";
+
+    // Inscrição estadual — registrations está na raiz do objeto
+    const registrations = data.registrations || [];
+    const ie = registrations.find(r => r.enabled && r.number);
+    const inscricao_estadual = ie ? ie.number : "";
+
+    return Response.json({
+      nome: data.company?.name || "",
+      email: data.emails?.[0]?.address || "",
+      telefone,
+      inscricao_estadual,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
