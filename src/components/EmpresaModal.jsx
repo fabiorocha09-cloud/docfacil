@@ -24,7 +24,19 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
     if (empresa?.id) {
       await base44.entities.Empresa.update(empresa.id, form);
     } else {
-      await base44.entities.Empresa.create(form);
+      const novaEmpresa = await base44.entities.Empresa.create(form);
+      // Replicar CRC do contador para a nova empresa se já existir um
+      const docsExistentes = await base44.entities.DocumentoEmpresa.list();
+      const crcExistente = docsExistentes.find(d => d.tipo === "crc_contador");
+      if (crcExistente) {
+        await base44.entities.DocumentoEmpresa.create({
+          empresa_id: novaEmpresa.id,
+          empresa_nome: novaEmpresa.nome,
+          empresa_cnpj: novaEmpresa.cnpj,
+          tipo: "crc_contador",
+          arquivo_url: crcExistente.arquivo_url,
+        });
+      }
     }
     toast({ title: "✅ Gravação realizada com sucesso!", description: empresa?.id ? "Empresa atualizada." : "Nova empresa criada." });
     onSave();
