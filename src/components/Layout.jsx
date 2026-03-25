@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Membros", path: "/Membros", icon: Users },
   { label: "Grupos Empresariais", path: "/GruposEmpresariais", icon: Layers },
   { label: "Central de Respostas", path: "/CentralRespostas", icon: MessageSquare },
+  { label: "Controle de IE", path: "/ControleIE", icon: BadgeCheck },
 ];
 
 export default function Layout() {
