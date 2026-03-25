@@ -35,7 +35,7 @@ export default function ControleIE() {
     try {
       const response = await base44.functions.invoke("consultarCnpj", { cnpj: empresa.cnpj });
       if (response.data?.error) {
-        toast({ title: `❌ Erro em ${empresa.nome}`, description: response.data.error });
+        toast({ title: `❌ Erro em ${empresa.nome}`, description: response.data.error, duration: 3000 });
         setConsultando(prev => ({ ...prev, [empresa.id]: false }));
         return;
       }
@@ -52,7 +52,7 @@ export default function ControleIE() {
         data_atualizacao_ie: new Date().toISOString().slice(0, 10),
       } : e));
     } catch (err) {
-      toast({ title: `❌ Erro ao consultar ${empresa.nome}` });
+      toast({ title: `❌ Erro ao consultar ${empresa.nome}`, duration: 3000 });
     }
     setConsultando(prev => ({ ...prev, [empresa.id]: false }));
   };
