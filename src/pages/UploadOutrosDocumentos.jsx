@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Upload, FileText, Trash2, Loader2, CheckCircle2, Building2, Users } from "lucide-react";
+import { Upload, FileText, Trash2, Loader2, CheckCircle2, Building2, Users, Layers } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import ImportarDocsLoteModal from "@/components/ImportarDocsLoteModal";
 
 const TIPOS_POR_EMPRESA = [
   { tipo: "cartao_cnpj", label: "Cartão CNPJ" },
@@ -16,6 +17,7 @@ export default function UploadOutrosDocumentos() {
   const [uploadingCrc, setUploadingCrc] = useState(false);
   const [crcAtual, setCrcAtual] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loteOpen, setLoteOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -112,11 +114,19 @@ export default function UploadOutrosDocumentos() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Upload de Outros Documentos</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-          Gerencie Cartão CNPJ, Procuração TJ e CRC do Contador
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Upload de Outros Documentos</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+            Gerencie Cartão CNPJ, Procuração TJ e CRC do Contador
+          </p>
+        </div>
+        <button
+          onClick={() => setLoteOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          <Layers className="w-4 h-4" /> Importar em Lote (IA)
+        </button>
       </div>
 
       {/* CRC do Contador — Global */}
