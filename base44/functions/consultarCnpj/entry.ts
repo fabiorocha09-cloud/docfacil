@@ -27,8 +27,11 @@ Deno.serve(async (req) => {
 
     // Inscrição estadual — registrations está na raiz do objeto
     const registrations = data.registrations || [];
-    const ie = registrations.find(r => r.enabled && r.number);
+    // Tenta primeiro enabled, se não, pega qualquer uma com número
+    const ie = registrations.find(r => r.enabled && r.number) || registrations.find(r => r.number);
     const inscricao_estadual = ie ? ie.number : "";
+    // Debug temporário
+    const _regDebug = registrations.slice(0, 2);
 
     return Response.json({
       nome: data.company?.name || "",
