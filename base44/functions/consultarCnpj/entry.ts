@@ -33,8 +33,8 @@ Deno.serve(async (req) => {
     // Situação da IE
     let situacao_inscricao_estadual = "nao_possui";
     if (ie) {
-      const texto = (ie.type?.text || "").toLowerCase();
-      if (texto.includes("sem restrição") || texto.includes("sem restricao") || texto === "habilitado") {
+      const texto = (ie.status?.text || "").toLowerCase();
+      if (texto.includes("sem restrição") || texto.includes("sem restricao")) {
         situacao_inscricao_estadual = "regular";
       } else {
         situacao_inscricao_estadual = "bloqueada";
