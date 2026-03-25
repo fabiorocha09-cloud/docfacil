@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Empresas", path: "/Empresas", icon: Building2 },
   { label: "Certidões", path: "/Certidoes", icon: FileCheck2 },
   { label: "Upload de Certidões", path: "/UploadCertidoes", icon: Upload },
+  { label: "Upload Outros Docs", path: "/UploadOutrosDocumentos", icon: FolderOpen },
   { label: "Configurações", path: "/Configuracoes", icon: Settings },
   { label: "Logs do Robô", path: "/LogsRobo", icon: ClipboardList },
   { label: "Membros", path: "/Membros", icon: Users },
