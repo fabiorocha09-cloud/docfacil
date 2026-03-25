@@ -101,7 +101,7 @@ export default function Certidoes() {
       return matchSearch && matchTipo && diff >= 0 && diff <= 7;
     }
 
-    const matchStatus = filtroStatus === "todos" || c.status === filtroStatus;
+    const matchStatus = filtroStatus === "todos" || getStatusEfetivo(c) === filtroStatus;
     return matchSearch && matchTipo && matchStatus;
   });
 

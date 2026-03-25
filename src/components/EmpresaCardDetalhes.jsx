@@ -15,9 +15,14 @@ const tipoDocLabels = {
 
 const tipoLabels = { federal: "Federal", estadual: "Estadual", municipal: "Municipal", fgts: "FGTS", trabalhista: "Trabalhista" };
 
+const getStatusEfetivo = (cert) => {
+  if (cert.data_vencimento && new Date(cert.data_vencimento) < new Date()) return "irregular";
+  return cert.status;
+};
+
 export default function EmpresaCardDetalhes({ empresa, certidoes, documentos }) {
-  const certRegulares = certidoes.filter(c => c.status === "regular").length;
-  const certIrregulares = certidoes.filter(c => c.status === "irregular").length;
+  const certRegulares = certidoes.filter(c => getStatusEfetivo(c) === "regular").length;
+  const certIrregulares = certidoes.filter(c => getStatusEfetivo(c) === "irregular").length;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -49,7 +54,7 @@ export default function EmpresaCardDetalhes({ empresa, certidoes, documentos }) 
           </p>
           <div className="divide-y divide-gray-100">
             {certidoes.map(cert => {
-              const cfg = statusConfig[cert.status] || statusConfig.pendente;
+              const cfg = statusConfig[getStatusEfetivo(cert)] || statusConfig.pendente;
               const StatusIcon = cfg.icon;
               return (
                 <div key={cert.id} className="flex items-center justify-between px-5 py-3">
