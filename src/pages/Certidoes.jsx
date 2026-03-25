@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, FileCheck2, Download, Pencil, Trash2, CheckCircle2, XCircle, Clock, AlertTriangle, FolderDown, RotateCcw, Trash } from "lucide-react";
+import { Plus, Search, FileCheck2, Download, Pencil, Trash2, CheckCircle2, XCircle, Clock, AlertTriangle, FolderDown, RotateCcw, Trash, MinusCircle, Ban } from "lucide-react";
+import { TIPOS_CERTIDAO, TIPOS_CONSOLIDADOS_MATRIZ } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 import CertidaoModal from "@/components/CertidaoModal";
 import DownloadLoteModal from "@/components/DownloadLoteModal";
@@ -11,9 +12,11 @@ const statusConfig = {
   pendente: { label: "Pendente", color: "text-yellow-700 bg-yellow-50 border-yellow-200", icon: Clock },
   processando: { label: "Processando", color: "text-blue-700 bg-blue-50 border-blue-200", icon: Clock },
   erro: { label: "Erro", color: "text-gray-700 bg-gray-50 border-gray-200", icon: AlertTriangle },
+  ausente: { label: "Ausente", color: "text-orange-700 bg-orange-50 border-orange-200", icon: MinusCircle },
+  nao_aplicavel: { label: "Não Aplicável", color: "text-gray-500 bg-gray-100 border-gray-200", icon: Ban },
 };
 
-const tipoLabels = { federal: "Federal", estadual: "Estadual", municipal: "Municipal", fgts: "FGTS", trabalhista: "Trabalhista" };
+const tipoLabels = Object.fromEntries(TIPOS_CERTIDAO.map(t => [t.tipo, t.label]));
 
 // Retorna status efetivo: se vencida, trata como irregular
 const getStatusEfetivo = (cert) => {
@@ -47,13 +50,41 @@ export default function Certidoes() {
     if (vencimentoParam === "7dias") setFiltroStatus("__vencendo7__");
 
     carregar(empresaParam);
-    base44.entities.Empresa.list().then(setEmpresas);
   }, []);
 
   const carregar = async (empresaFiltro = null) => {
-    let data = await base44.entities.Certidao.list("-created_date", 200);
-    if (empresaFiltro) data = data.filter(c => c.empresa_id === empresaFiltro);
-    setCertidoes(data);
+    const [data, emps] = await Promise.all([
+      base44.entities.Certidao.list("-created_date", 500),
+      base44.entities.Empresa.list(),
+    ]);
+    setEmpresas(emps);
+
+    const reais = empresaFiltro ? data.filter(c => c.empresa_id === empresaFiltro) : data;
+    const empresasFiltradas = empresaFiltro ? emps.filter(e => e.id === empresaFiltro) : emps.filter(e => !e.excluida);
+
+    // Gera entradas virtuais para certidões ausentes
+    const virtuais = [];
+    for (const emp of empresasFiltradas) {
+      const naoAplicaveis = emp.certidoes_nao_aplicaveis || [];
+      for (const { tipo } of TIPOS_CERTIDAO) {
+        // Filial: tipos consolidados da matriz não geram ausência
+        if (emp.cnpj_matriz && TIPOS_CONSOLIDADOS_MATRIZ.includes(tipo)) continue;
+        const existe = reais.some(c => !c.excluida && c.empresa_id === emp.id && c.tipo === tipo);
+        if (!existe) {
+          virtuais.push({
+            id: `virtual_${emp.id}_${tipo}`,
+            empresa_id: emp.id,
+            empresa_nome: emp.nome,
+            empresa_cnpj: emp.cnpj,
+            tipo,
+            status: naoAplicaveis.includes(tipo) ? "nao_aplicavel" : "ausente",
+            _virtual: true,
+          });
+        }
+      }
+    }
+
+    setCertidoes([...reais, ...virtuais]);
     setLoading(false);
   };
 
@@ -88,8 +119,8 @@ export default function Certidoes() {
 
   const hoje = new Date();
 
-  const certidoesAtivas = certidoes.filter(c => !c.excluida);
-  const certidoesLixeira = certidoes.filter(c => c.excluida);
+  const certidoesAtivas = certidoes.filter(c => c._virtual || !c.excluida);
+  const certidoesLixeira = certidoes.filter(c => !c._virtual && c.excluida);
 
   const filtradas = certidoesAtivas.filter(c => {
     const matchSearch = c.empresa_nome?.toLowerCase().includes(search.toLowerCase()) || c.empresa_cnpj?.includes(search) || c.subtipo?.toLowerCase().includes(search.toLowerCase());
@@ -101,7 +132,8 @@ export default function Certidoes() {
       return matchSearch && matchTipo && diff >= 0 && diff <= 7;
     }
 
-    const matchStatus = filtroStatus === "todos" || getStatusEfetivo(c) === filtroStatus;
+    const statusEfetivo = c._virtual ? c.status : getStatusEfetivo(c);
+    const matchStatus = filtroStatus === "todos" || statusEfetivo === filtroStatus;
     return matchSearch && matchTipo && matchStatus;
   });
 
@@ -162,7 +194,9 @@ export default function Certidoes() {
           <select className="border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}>
             <option value="todos">Todos os status</option>
             <option value="__vencendo7__">Vencendo em 7 dias</option>
-            {Object.entries(statusConfig).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            {Object.entries(statusConfig).filter(([k]) => !["ausente","nao_aplicavel"].includes(k)).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+            <option value="ausente">Ausente</option>
+            <option value="nao_aplicavel">Não Aplicável</option>
           </select>
         </div>
       )}
@@ -198,15 +232,13 @@ export default function Certidoes() {
           )}
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {listaExibida.map(cert => {
-              const statusEfetivo = getStatusEfetivo(cert);
-              const cfg = statusConfig[statusEfetivo] || statusConfig.pendente;
-              const StatusIcon = cfg.icon;
-              const isSel = selecionados.includes(cert.id);
+            const statusEfetivo = cert._virtual ? cert.status : getStatusEfetivo(cert);
+            const isSel = !cert._virtual && selecionados.includes(cert.id);
               return (
                 <div
                   key={cert.id}
                   className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${!lixeira ? "cursor-pointer" : ""} ${isSel ? "bg-blue-50 dark:bg-blue-900/20" : ""}`}
-                  onClick={() => !lixeira && setSelecionados(prev => isSel ? prev.filter(id => id !== cert.id) : [...prev, cert.id])}
+                  onClick={() => !lixeira && !cert._virtual && setSelecionados(prev => isSel ? prev.filter(id => id !== cert.id) : [...prev, cert.id])}
                 >
                   {!lixeira && (
                     <div className="flex items-center gap-3 mr-3 flex-shrink-0">
@@ -228,7 +260,13 @@ export default function Certidoes() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4" onClick={e => e.stopPropagation()}>
-                    {!lixeira && (
+                    {cert._virtual && (
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        {cfg.label}
+                      </div>
+                    )}
+                    {!lixeira && !cert._virtual && (
                       <>
                         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
                           <StatusIcon className="w-3.5 h-3.5" />
@@ -262,9 +300,9 @@ export default function Certidoes() {
                       </>
                     )}
                   </div>
-                </div>
-              );
-            })}
+                  </div>
+                  );
+                  })}
           </div>
         </div>
       )}
