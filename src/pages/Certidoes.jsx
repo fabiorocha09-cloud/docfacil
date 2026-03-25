@@ -233,6 +233,8 @@ export default function Certidoes() {
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {listaExibida.map(cert => {
             const statusEfetivo = cert._virtual ? cert.status : getStatusEfetivo(cert);
+            const cfg = statusConfig[statusEfetivo] || statusConfig.pendente;
+            const StatusIcon = cfg.icon;
             const isSel = !cert._virtual && selecionados.includes(cert.id);
               return (
                 <div
