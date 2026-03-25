@@ -15,6 +15,12 @@ const statusConfig = {
 
 const tipoLabels = { federal: "Federal", estadual: "Estadual", municipal: "Municipal", fgts: "FGTS", trabalhista: "Trabalhista" };
 
+// Retorna status efetivo: se vencida, trata como irregular
+const getStatusEfetivo = (cert) => {
+  if (cert.data_vencimento && new Date(cert.data_vencimento) < new Date()) return "irregular";
+  return cert.status;
+};
+
 export default function Certidoes() {
   const [certidoes, setCertidoes] = useState([]);
   const [empresas, setEmpresas] = useState([]);
@@ -192,7 +198,8 @@ export default function Certidoes() {
           )}
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {listaExibida.map(cert => {
-              const cfg = statusConfig[cert.status] || statusConfig.pendente;
+              const statusEfetivo = getStatusEfetivo(cert);
+              const cfg = statusConfig[statusEfetivo] || statusConfig.pendente;
               const StatusIcon = cfg.icon;
               const isSel = selecionados.includes(cert.id);
               return (
