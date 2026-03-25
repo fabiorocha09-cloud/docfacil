@@ -10,14 +10,29 @@ Deno.serve(async (req) => {
 
     const { to, subject, body, from_name } = await req.json();
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to,
-      subject,
-      body,
-      from_name: from_name || 'CertidãoHub',
+    const resendKey = Deno.env.get('RESEND_API_KEY');
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: `${from_name || 'CertidãoHub'} <onboarding@resend.dev>`,
+        to: [to],
+        subject,
+        html: body,
+      }),
     });
 
-    return Response.json({ success: true });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return Response.json({ error: data.message || 'Resend error' }, { status: 500 });
+    }
+
+    return Response.json({ success: true, id: data.id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
