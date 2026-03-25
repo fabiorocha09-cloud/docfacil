@@ -3,7 +3,18 @@ import { base44 } from "@/api/base44Client";
 import { X, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const tipos = ["federal", "estadual", "municipal", "fgts", "trabalhista"];
+const TIPOS_LABEL = {
+  federal: "Federal",
+  estadual: "Estadual",
+  municipal: "Municipal",
+  fgts: "FGTS",
+  trabalhista: "Trabalhista",
+  alvara_bombeiros: "Alvará - Bombeiros",
+  alvara_vigilancia_sanitaria: "Alvará - Vigilância Sanitária",
+  alvara_funcionamento: "Alvará - Funcionamento",
+  alvara_meio_ambiente: "Alvará - Meio Ambiente",
+};
+const TIPOS_CONSOLIDADOS_MATRIZ = ["federal", "fgts", "trabalhista"];
 const subtipos = {
   federal: ["Receita Federal", "PGFN", "Conjunta RFB/PGFN"],
   estadual: ["SEFAZ-PA", "SEFAZ-SP", "SEFAZ-RJ", "SEFAZ-MG", "SEFAZ-RS", "Outro"],
@@ -16,7 +27,8 @@ export default function CertidaoModal({ certidao, empresas, onClose, onSave }) {
   const { toast } = useToast();
   const [form, setForm] = useState(certidao || {
     empresa_id: "", empresa_nome: "", empresa_cnpj: "", tipo: "federal", subtipo: "",
-    status: "pendente", data_emissao: "", data_vencimento: "", arquivo_url: "", observacoes: ""
+    status: "pendente", data_emissao: "", data_vencimento: "", arquivo_url: "", observacoes: "",
+    prazo_esperado: ""
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -66,7 +78,7 @@ export default function CertidaoModal({ certidao, empresas, onClose, onSave }) {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
               <select required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value, subtipo: "" })}>
-                {tipos.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                {Object.entries(TIPOS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div>
@@ -110,6 +122,17 @@ export default function CertidaoModal({ certidao, empresas, onClose, onSave }) {
               )}
             </div>
           </div>
+          {form.status === "pendente" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prazo Esperado <span className="text-gray-400 font-normal">(quando deve retornar)</span></label>
+              <input type="date" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.prazo_esperado || ""} onChange={e => setForm({ ...form, prazo_esperado: e.target.value })} />
+            </div>
+          )}
+          {TIPOS_CONSOLIDADOS_MATRIZ.includes(form.tipo) && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+              ℹ️ Este tipo de certidão pode ser consolidado da <strong>matriz</strong> para empresas filiais.
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
             <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.observacoes} onChange={e => setForm({ ...form, observacoes: e.target.value })} />
