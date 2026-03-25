@@ -38,6 +38,7 @@ Deno.serve(async (req) => {
       email: data.emails?.[0]?.address || "",
       telefone,
       inscricao_estadual,
+      _regDebug,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
