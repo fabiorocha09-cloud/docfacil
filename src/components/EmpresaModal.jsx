@@ -8,10 +8,32 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
   const [form, setForm] = useState(empresa || { nome: "", cnpj: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "" });
   const [grupos, setGrupos] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [consultando, setConsultando] = useState(false);
+  const [erroCnpj, setErroCnpj] = useState("");
 
   useEffect(() => {
     base44.entities.GrupoEmpresarial.list().then(setGrupos).catch(() => {});
   }, []);
+
+  const handleConsultarCnpj = async () => {
+    if (!form.cnpj) return;
+    setConsultando(true);
+    setErroCnpj("");
+    const response = await base44.functions.invoke('consultarCnpj', { cnpj: form.cnpj });
+    if (response.data?.error) {
+      setErroCnpj(response.data.error);
+    } else {
+      const d = response.data;
+      setForm(f => ({
+        ...f,
+        nome: d.nome || f.nome,
+        email: d.email || f.email,
+        telefone: d.telefone || f.telefone,
+        inscricao_estadual: d.inscricao_estadual || f.inscricao_estadual,
+      }));
+    }
+    setConsultando(false);
+  };
 
   const handleGrupo = (id) => {
     const g = grupos.find(g => g.id === id);
@@ -56,7 +78,24 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">CNPJ *</label>
-            <input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.cnpj} onChange={e => setForm({ ...form, cnpj: e.target.value })} placeholder="00.000.000/0000-00" />
+            <div className="flex gap-2">
+              <input
+                required
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={form.cnpj}
+                onChange={e => setForm({ ...form, cnpj: e.target.value })}
+                placeholder="00.000.000/0000-00"
+              />
+              <button
+                type="button"
+                onClick={handleConsultarCnpj}
+                disabled={consultando || !form.cnpj}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg disabled:opacity-50 whitespace-nowrap"
+              >
+                {consultando ? "Buscando..." : "Consultar"}
+              </button>
+            </div>
+            {erroCnpj && <p className="text-xs text-red-500 mt-1">{erroCnpj}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
