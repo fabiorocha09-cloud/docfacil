@@ -30,11 +30,24 @@ Deno.serve(async (req) => {
     const ie = registrations.find(r => r.enabled && r.number) || registrations.find(r => r.number);
     const inscricao_estadual = ie ? ie.number : "";
 
+    // Situação da IE
+    let situacao_inscricao_estadual = "nao_possui";
+    if (ie) {
+      const texto = (ie.type?.text || "").toLowerCase();
+      if (texto.includes("sem restrição") || texto.includes("sem restricao") || texto === "habilitado") {
+        situacao_inscricao_estadual = "regular";
+      } else {
+        situacao_inscricao_estadual = "bloqueada";
+      }
+    }
+
     return Response.json({
       nome: data.company?.name || "",
       email: data.emails?.[0]?.address || "",
       telefone,
       inscricao_estadual,
+      situacao_inscricao_estadual,
+      situacao_ie_texto: ie?.type?.text || "",
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
