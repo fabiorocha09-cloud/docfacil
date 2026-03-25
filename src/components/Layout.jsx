@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ const navItems = [
   { label: "Central de Respostas", path: "/CentralRespostas", icon: MessageSquare },
   { label: "Controle de IE", path: "/ControleIE", icon: BadgeCheck },
   { label: "Calendário de Vencimentos", path: "/CalendarioCertidoes", icon: CalendarDays },
+  { label: "Modelos de Documento", path: "/ModelosDocumento", icon: BookOpen },
 ];
 
 export default function Layout() {

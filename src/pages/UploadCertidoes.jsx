@@ -35,7 +35,10 @@ export default function UploadCertidoes() {
 
   const processarTodos = async () => {
     setProcessando(true);
-    const empresas = await base44.entities.Empresa.list();
+    const [empresas, modelos] = await Promise.all([
+      base44.entities.Empresa.list(),
+      base44.entities.ModeloDocumento.list(),
+    ]);
 
     for (let i = 0; i < arquivos.length; i++) {
       if (arquivos[i].status === "sucesso") continue;
@@ -44,17 +47,23 @@ export default function UploadCertidoes() {
 
       const { file_url } = await base44.integrations.Core.UploadFile({ file: arquivos[i].file });
 
+      const modelosCtx = modelos.length > 0
+        ? `\n\nModelos de referência cadastrados:\n` + modelos.map(m =>
+            `- Tipo: ${m.tipo}${m.subtipo ? ` (${m.subtipo})` : ""}${m.estado_municipio ? ` | Estado/Município: ${m.estado_municipio}` : ""}${m.descricao ? ` | Desc: ${m.descricao}` : ""}`
+          ).join("\n")
+        : "";
+
       const resultado = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: {
           type: "object",
           properties: {
-            cnpj: { type: "string", description: "CNPJ da empresa no documento, apenas números ou formatado" },
+            cnpj: { type: "string", description: `CNPJ da empresa no documento, apenas números ou formatado${modelosCtx}` },
             tipo_certidao: {
               type: "string",
-              description: "Tipo da certidão: federal, estadual, municipal, fgts ou trabalhista"
+              description: "Tipo da certidão: federal, estadual, municipal, fgts, trabalhista, alvara_bombeiros, alvara_vigilancia_sanitaria, alvara_funcionamento ou alvara_meio_ambiente. Use os modelos de referência acima para ajudar a identificar o tipo correto."
             },
-            subtipo: { type: "string", description: "Ex: Receita Federal, PGFN, CRF, CNDT, SEFAZ, ISS" },
+            subtipo: { type: "string", description: "Ex: Receita Federal, PGFN, CRF, CNDT, SEFAZ, ISS, nome do órgão emissor" },
             data_emissao: { type: "string", description: "Data de emissão no formato YYYY-MM-DD" },
             data_vencimento: { type: "string", description: "Data de validade/vencimento no formato YYYY-MM-DD" },
             situacao: { type: "string", description: "Situação: regular ou irregular" }
