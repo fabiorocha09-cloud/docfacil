@@ -8,7 +8,20 @@ const statusLabel = {
   sucesso: { label: "Identificado", color: "text-green-600", icon: CheckCircle2 },
   erro: { label: "Erro", color: "text-red-600", icon: XCircle },
   sem_empresa: { label: "Empresa não encontrada", color: "text-yellow-600", icon: AlertTriangle },
+  revisar: { label: "Revisar CNPJ", color: "text-orange-600", icon: AlertTriangle },
 };
+
+// Extrai e tenta limpar CNPJ de strings com prefixos como "Nº64.682.031/0001-52"
+function limparCnpj(raw) {
+  if (!raw) return "";
+  // Remove tudo que não é dígito
+  const apenasDigitos = raw.replace(/\D/g, "");
+  // Se tiver exatamente 14 dígitos, usa direto
+  if (apenasDigitos.length === 14) return apenasDigitos;
+  // Se tiver mais que 14, tenta pegar os últimos 14 (casos com prefixos numéricos)
+  if (apenasDigitos.length > 14) return apenasDigitos.slice(-14);
+  return apenasDigitos;
+}
 
 export default function UploadCertidoes() {
   const [arquivos, setArquivos] = useState([]);
@@ -55,8 +68,14 @@ export default function UploadCertidoes() {
       }
 
       const dados = resultado.output;
-      const cnpjLimpo = dados.cnpj?.replace(/\D/g, "");
+      const cnpjLimpo = limparCnpj(dados.cnpj);
       const empresa = empresas.find(e => e.cnpj?.replace(/\D/g, "") === cnpjLimpo);
+
+      // CNPJ incompleto ou duvidoso (menos de 14 dígitos após limpeza)
+      if (!empresa && cnpjLimpo.length !== 14) {
+        setArquivos(prev => prev.map((a, idx) => idx === i ? { ...a, status: "revisar", dados, arquivo_url: file_url, cnpjExtraido: dados.cnpj } : a));
+        continue;
+      }
 
       if (!empresa) {
         setArquivos(prev => prev.map((a, idx) => idx === i ? { ...a, status: "sem_empresa", dados, arquivo_url: file_url } : a));
@@ -142,6 +161,9 @@ export default function UploadCertidoes() {
                         )}
                         {arq.status === "sem_empresa" && arq.dados?.cnpj && (
                           <p className="text-xs text-yellow-600 mt-1">CNPJ {arq.dados.cnpj} não cadastrado no sistema.</p>
+                        )}
+                        {arq.status === "revisar" && (
+                          <p className="text-xs text-orange-600 mt-1">CNPJ extraído com possível erro: <strong>{arq.cnpjExtraido}</strong>. Verifique e vincule manualmente.</p>
                         )}
                       </div>
                     </div>
