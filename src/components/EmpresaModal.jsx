@@ -1,11 +1,20 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { X } from "lucide-react";
+import { X, ShieldOff } from "lucide-react";
+import { TIPOS_CERTIDAO } from "@/lib/constants";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function EmpresaModal({ empresa, onClose, onSave }) {
   const { toast } = useToast();
-  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", cnpj_matriz: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "" });
+  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", cnpj_matriz: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "", certidoes_nao_aplicaveis: [] });
+
+  const toggleNaoAplicavel = (tipo) => {
+    const atual = form.certidoes_nao_aplicaveis || [];
+    const novaLista = atual.includes(tipo)
+      ? atual.filter(t => t !== tipo)
+      : [...atual, tipo];
+    setForm(f => ({ ...f, certidoes_nao_aplicaveis: novaLista }));
+  };
   const [eFilial, setEFilial] = useState(!!(empresa?.cnpj_matriz));
   const [grupos, setGrupos] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -203,6 +212,39 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
             {grupos.length === 0 && (
               <p className="text-xs text-gray-400 mt-1">Nenhum grupo cadastrado ainda. Crie um na aba "Grupos Empresariais".</p>
             )}
+          </div>
+
+          {/* Certidões Não Aplicáveis */}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <ShieldOff className="w-4 h-4 text-gray-500" />
+              <label className="text-sm font-medium text-gray-700">Certidões Não Aplicáveis</label>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">Marque as certidões que <strong>não se aplicam</strong> a esta empresa. Elas aparecerão como "Não Aplicável" em vez de "Ausente".</p>
+            <div className="grid grid-cols-2 gap-2">
+              {TIPOS_CERTIDAO.map(({ tipo, label }) => {
+                const marcado = (form.certidoes_nao_aplicaveis || []).includes(tipo);
+                return (
+                  <button
+                    key={tipo}
+                    type="button"
+                    onClick={() => toggleNaoAplicavel(tipo)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors text-left ${
+                      marcado
+                        ? "bg-orange-50 border-orange-300 text-orange-700"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center flex-shrink-0 ${
+                      marcado ? "bg-orange-500 border-orange-500" : "border-gray-300"
+                    }`}>
+                      {marcado && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">
