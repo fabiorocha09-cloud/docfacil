@@ -69,21 +69,11 @@ Em anexo à Procuração, Documento de identificação e cartão CNPJ.`;
   const enviarEmail = async () => {
     setEnviando(true);
 
-    await base44.integrations.Core.SendEmail({
+    await base44.functions.invoke('enviarEmailTJ', {
       to: destinatario,
       subject: `Solicitação de Certidão TJ-PA — ${empresa.nome}`,
       body: gerarHtmlEmail(),
       from_name: "DocFácil",
-    });
-
-    await base44.entities.LogRobo.create({
-      timestamp: new Date().toISOString(),
-      empresa_id: empresa.id,
-      empresa_nome: empresa.nome,
-      tipo_certidao: "trabalhista",
-      acao: "Solicitação TJ-PA enviada por email",
-      detalhes: `Email enviado para ${destinatario}. Documentos incluídos: ${docsPresentes.map(t => DOCS_LABELS[t]).join(", ")}`,
-      status: "info",
     });
 
     setResultado("sucesso");
