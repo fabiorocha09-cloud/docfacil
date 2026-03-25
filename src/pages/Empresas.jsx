@@ -209,28 +209,10 @@ export default function Empresas() {
             <Trash2 className="w-4 h-4" /> {lixeira ? "Sair da Lixeira" : "Lixeira"}
             {!lixeira && naLixeira.length > 0 && <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">{naLixeira.length}</span>}
           </button>
-          {isAdmin && !lixeira && (
+          {!lixeira && (
             <>
               <button
                 onClick={() => setImportarOpen(true)}
-                className="flex items-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
-              </button>
-              <button
-                onClick={() => navigate("/GruposEmpresariais")}
-                className="flex items-center gap-2 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                <Layers className="w-4 h-4" /> Grupos Empresariais
-              </button>
-              <button
-                onClick={() => { setEditando(null); setModalOpen(true); }}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Nova Empresa
-              </button>
-            </>
-          )}
         </div>
       </div>
 
