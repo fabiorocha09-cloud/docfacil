@@ -10,7 +10,7 @@ const DOCS_LABELS = {
 };
 
 const REMETENTE = "docfacil@docfacil.comvcscala.com";
-const DESTINATARIO_PADRAO = "marcelo.costa@tjpa.jus.br";
+const DESTINATARIO_PADRAO = "fabio@scalagestao.com.br";
 
 export default function SolicitarTJModal({ empresa, onClose }) {
   const [docs, setDocs] = useState([]);
