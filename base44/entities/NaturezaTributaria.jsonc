@@ -1,0 +1,36 @@
+{
+  "name": "NaturezaTributaria",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "finalidade": {
+      "type": "string",
+      "enum": [
+        "Normal",
+        "Devolu\u00e7\u00e3o",
+        "Complementar",
+        "Ajuste"
+      ],
+      "default": "Normal"
+    },
+    "cfop_estadual": {
+      "type": "string"
+    },
+    "cfop_interestadual": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "nome",
+    "cfop_estadual"
+  ]
+}

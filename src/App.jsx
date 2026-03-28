@@ -28,6 +28,9 @@ import HistoricoNotas from '@/pages/emissor/HistoricoNotas';
 import Destinatarios from '@/pages/emissor/Destinatarios';
 import Certificados from '@/pages/emissor/Certificados';
 import EmissorLayout from '@/components/emissor/EmissorLayout';
+import Tributacao from '@/pages/emissor/Tributacao';
+import FormasPagamento from '@/pages/emissor/FormasPagamento';
+import NaturezasTributarias from '@/pages/emissor/NaturezasTributarias';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -75,6 +78,9 @@ const AuthenticatedApp = () => {
         <Route path="/emissor/historico" element={<HistoricoNotas />} />
         <Route path="/emissor/destinatarios" element={<Destinatarios />} />
         <Route path="/emissor/certificados" element={<Certificados />} />
+        <Route path="/emissor/tributacao" element={<Tributacao />} />
+        <Route path="/emissor/formas-pagamento" element={<FormasPagamento />} />
+        <Route path="/emissor/naturezas" element={<NaturezasTributarias />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

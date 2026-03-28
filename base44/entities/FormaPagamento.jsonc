@@ -1,0 +1,32 @@
+{
+  "name": "FormaPagamento",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "tipo_transacao": {
+      "type": "string",
+      "enum": [
+        "Normal",
+        "POS",
+        "D\u00e9bito"
+      ],
+      "default": "Normal"
+    },
+    "tipo_pagamento": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "nome",
+    "tipo_pagamento"
+  ]
+}

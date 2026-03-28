@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import ModuloDropdown from "@/components/ModuloDropdown";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, X, Zap } from "lucide-react";
+import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, ChevronDown, BookOpen, CreditCard, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -12,11 +12,18 @@ const nav = [
   { label: "Certificados", path: "/emissor/certificados", icon: ShieldCheck },
 ];
 
+const cadastros = [
+  { label: "Tributação", path: "/emissor/tributacao", icon: BookOpen },
+  { label: "Formas de Pagamento", path: "/emissor/formas-pagamento", icon: CreditCard },
+  { label: "Naturezas", path: "/emissor/naturezas", icon: Layers },
+];
+
 export default function EmissorLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [client, setClient] = useState(null);
+  const [cadastrosOpen, setCadastrosOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -73,6 +80,31 @@ export default function EmissorLayout() {
                 {label}
               </Link>
             ))}
+            {/* Submenu Cadastros */}
+            <div>
+              <button
+                onClick={() => setCadastrosOpen(v => !v)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                <BookOpen className="w-4 h-4 flex-shrink-0" />
+                Cadastros
+                <ChevronDown className={cn("w-4 h-4 ml-auto transition-transform", cadastrosOpen && "rotate-180")} />
+              </button>
+              {cadastrosOpen && (
+                <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 pl-2">
+                  {cadastros.map(({ label, path, icon: Icon }) => (
+                    <Link key={path} to={path} onClick={() => setOpen(false)}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
+                        location.pathname === path ? "text-[#0B63D4]" : "text-gray-600 hover:bg-gray-100"
+                      )}
+                      style={location.pathname === path ? { backgroundColor: "#E6F0FF" } : {}}>
+                      <Icon className="w-4 h-4 flex-shrink-0" />
+                      {label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
         </aside>
 
