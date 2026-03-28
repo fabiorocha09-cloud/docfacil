@@ -102,7 +102,7 @@ export default function Tributacao() {
                       <div className="flex items-center gap-1.5 mt-1">
                         {item.todos_estados
                           ? <><Globe className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">Todos os estados</span></>
-                          : <><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">{(item.estados || []).join(", ")}</span></>
+                          : <><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">{(Array.isArray(item.estados) ? item.estados : []).join(", ")}</span></>
                         }
                       </div>
 
