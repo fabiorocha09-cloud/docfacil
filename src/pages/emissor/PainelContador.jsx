@@ -17,6 +17,8 @@ function EmpresaModal({ empresa, onClose, onSave }) {
     municipio: "", uf: "PA", regime_tributario: "simples_nacional", ativo: true, nfe_ativo: true,
     nfe_io_company_id: "", nfe_ambiente: "homologacao",
   });
+  const [saving, setSaving] = useState(false);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
