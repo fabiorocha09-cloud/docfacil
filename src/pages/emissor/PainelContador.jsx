@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ModuloDropdown from "@/components/ModuloDropdown";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, Building2, Zap, ShieldCheck, ShieldAlert, Shield, ChevronRight, Edit2, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -150,14 +151,17 @@ export default function PainelContador() {
       {/* Header azul */}
       <div className="px-6 pt-10 pb-8" style={{ backgroundColor: "#0B63D4" }}>
         <div className="max-w-5xl mx-auto">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-              <Zap className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-white font-bold text-2xl leading-none">DocFácil Emissor</h1>
+                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Painel do Contador</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-white font-bold text-2xl leading-none">DocFácil Emissor</h1>
-              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>Painel do Contador</p>
-            </div>
+            <ModuloDropdown moduloAtual="emissor" dark />
           </div>
           <p className="text-sm mt-4" style={{ color: "rgba(255,255,255,0.75)" }}>
             {empresas.length} empresa(s) na carteira · Módulo NF-e Modelo 55
