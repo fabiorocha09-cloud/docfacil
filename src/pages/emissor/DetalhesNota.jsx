@@ -1,0 +1,298 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import {
+  ArrowLeft, Download, Copy, FileEdit, Ban, Mail, FileText,
+  CheckCircle2, XCircle, Clock, Send, AlertTriangle, Loader2,
+  Package, User, Settings2, ChevronDown, ChevronUp
+} from "lucide-react";
+import { motion } from "framer-motion";
+
+const STATUS_CFG = {
+  rascunho:    { label: "Rascunho",    cls: "bg-gray-100 text-gray-600" },
+  validada:    { label: "Validada",    cls: "bg-blue-100 text-blue-700" },
+  transmitindo:{ label: "Transmitindo",cls: "bg-amber-100 text-amber-700" },
+  transmitida: { label: "Autorizada",  cls: "bg-emerald-100 text-emerald-700" },
+  rejeitada:   { label: "Rejeitada",   cls: "bg-red-100 text-red-700" },
+  cancelada:   { label: "Cancelada",   cls: "bg-gray-200 text-gray-500" },
+};
+
+const fmt = v => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+
+function ActionBtn({ icon: Icon, label, onClick, danger, disabled }) {
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium transition-colors disabled:opacity-40
+        ${danger ? "text-red-600 hover:bg-red-50" : "text-gray-600 hover:bg-gray-100"}`}>
+      <Icon className="w-5 h-5" />
+      {label}
+    </button>
+  );
+}
+
+function InfoRow({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 py-2.5 border-b border-gray-50 last:border-0">
+      <span className="text-xs font-semibold text-gray-400 sm:w-48 flex-shrink-0">{label}</span>
+      <span className="text-sm text-gray-800 font-medium">{value}</span>
+    </div>
+  );
+}
+
+export default function DetalhesNota() {
+  const navigate = useNavigate();
+  const [nota, setNota] = useState(null);
+  const [itens, setItens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [aba, setAba] = useState("cliente");
+  const [errosOpen, setErrosOpen] = useState(true);
+  const [cancelando, setCancelando] = useState(false);
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
+
+  const params = new URLSearchParams(window.location.search);
+  const notaId = params.get("id");
+
+  useEffect(() => {
+    if (!notaId) { navigate("/emissor/historico"); return; }
+    carregar();
+  }, [notaId]);
+
+  const carregar = async () => {
+    setLoading(true);
+    const [notas, items] = await Promise.all([
+      base44.entities.NotaFiscal55.filter({ id: notaId }),
+      base44.entities.ItemNota.filter({ nota_id: notaId }),
+    ]);
+    if (notas.length > 0) setNota(notas[0]);
+    setItens(items);
+    setLoading(false);
+  };
+
+  const handleCancelar = async () => {
+    if (!confirm("Confirmar cancelamento desta NF-e?")) return;
+    setCancelando(true);
+    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: "cancelada" });
+    await carregar();
+    setCancelando(false);
+  };
+
+  const handleClonar = async () => {
+    if (!nota) return;
+    const { id, created_date, updated_date, numero, chave_acesso, protocolo, status_sefaz, ...rest } = nota;
+    await base44.entities.NotaFiscal55.create({ ...rest, status_sefaz: "rascunho" });
+    navigate("/emissor/historico");
+  };
+
+  const handleEnviarEmail = async () => {
+    if (!nota?.destinatario_id) return;
+    setEnviandoEmail(true);
+    // Simulação — integrar com SendEmail quando tiver dados reais
+    await new Promise(r => setTimeout(r, 1200));
+    setEnviandoEmail(false);
+    alert("E-mail enviado com sucesso!");
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+    </div>
+  );
+
+  if (!nota) return (
+    <div className="text-center py-16 text-gray-400 text-sm">Nota não encontrada.</div>
+  );
+
+  const cfg = STATUS_CFG[nota.status_sefaz] || STATUS_CFG.rascunho;
+  const podeAgir = ["transmitida"].includes(nota.status_sefaz);
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <button onClick={() => navigate("/emissor/historico")}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 font-medium">
+          <ArrowLeft className="w-4 h-4" /> Histórico
+        </button>
+        <div className="flex-1" />
+        <span className="text-lg font-bold text-gray-900">
+          NF-e {nota.numero ? `nº ${nota.numero}` : "(rascunho)"}
+        </span>
+        <span className={`text-xs px-3 py-1 rounded-full font-semibold ${cfg.cls}`}>{cfg.label}</span>
+      </div>
+
+      {/* Barra de Ações */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+        <div className="flex items-center gap-1 flex-wrap">
+          {nota.danfe_pdf_url && (
+            <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
+              <ActionBtn icon={Download} label="DANFE PDF" />
+            </a>
+          )}
+          {nota.retorno_xml_url && (
+            <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer">
+              <ActionBtn icon={FileText} label="XML" />
+            </a>
+          )}
+          <ActionBtn icon={Copy} label="Clonar nota" onClick={handleClonar} />
+          <ActionBtn icon={FileEdit} label="Carta de Correção" disabled={!podeAgir} />
+          <ActionBtn icon={enviandoEmail ? Loader2 : Mail} label="Enviar e-mail"
+            onClick={handleEnviarEmail} disabled={enviandoEmail} />
+          <ActionBtn icon={Ban} label="Cancelar" danger
+            onClick={handleCancelar} disabled={cancelando || !podeAgir} />
+        </div>
+      </div>
+
+      {/* Retorno SEFAZ / Erros */}
+      {(nota.protocolo || (nota.erros && nota.erros.length > 0) || nota.status_sefaz === "rejeitada") && (
+        <div className={`rounded-2xl border shadow-sm overflow-hidden ${
+          nota.status_sefaz === "transmitida" ? "border-emerald-200" :
+          nota.status_sefaz === "rejeitada" ? "border-red-200" : "border-gray-200"
+        }`}>
+          <button onClick={() => setErrosOpen(v => !v)}
+            className={`w-full flex items-center justify-between px-5 py-3 text-sm font-semibold ${
+              nota.status_sefaz === "transmitida" ? "bg-emerald-50 text-emerald-800" :
+              nota.status_sefaz === "rejeitada" ? "bg-red-50 text-red-800" : "bg-gray-50 text-gray-700"
+            }`}>
+            <span className="flex items-center gap-2">
+              {nota.status_sefaz === "transmitida"
+                ? <CheckCircle2 className="w-4 h-4" />
+                : <AlertTriangle className="w-4 h-4" />}
+              Retorno da SEFAZ
+            </span>
+            {errosOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          {errosOpen && (
+            <div className="bg-white px-5 py-4 space-y-2 text-sm">
+              {nota.protocolo && (
+                <div className="flex gap-2">
+                  <span className="text-gray-400 font-medium w-32">Protocolo:</span>
+                  <span className="font-mono text-gray-800">{nota.protocolo}</span>
+                </div>
+              )}
+              {nota.chave_acesso && (
+                <div className="flex gap-2">
+                  <span className="text-gray-400 font-medium w-32">Chave de Acesso:</span>
+                  <span className="font-mono text-xs text-gray-700 break-all">{nota.chave_acesso}</span>
+                </div>
+              )}
+              {nota.erros && nota.erros.length > 0 && (
+                <div>
+                  <p className="font-semibold text-red-600 mb-2">Erros encontrados:</p>
+                  {nota.erros.map((e, i) => (
+                    <div key={i} className="bg-red-50 border border-red-100 rounded-xl p-3 mb-2">
+                      <p className="text-xs text-red-700 font-mono">{typeof e === "string" ? e : JSON.stringify(e)}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {nota.status_sefaz === "transmitida" && !nota.erros?.length && (
+                <p className="text-emerald-700 text-sm">✓ Autorizado o uso da NF-e</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tabs de dados */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex border-b border-gray-100">
+          {[
+            { id: "cliente", label: "Cliente", icon: User },
+            { id: "produtos", label: "Produtos", icon: Package },
+            { id: "avancado", label: "Avançado", icon: Settings2 },
+          ].map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setAba(id)}
+              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors border-b-2 ${
+                aba === id ? "border-[#0B63D4] text-[#0B63D4]" : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}>
+              <Icon className="w-4 h-4" /> {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6">
+          {/* Aba Cliente */}
+          {aba === "cliente" && (
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Destinatário</h3>
+              <InfoRow label="Razão Social / Nome" value={nota.destinatario_nome} />
+              <InfoRow label="CNPJ / CPF" value={nota.destinatario_cnpj} />
+              <InfoRow label="Data de Emissão" value={nota.created_date ? new Date(nota.created_date).toLocaleDateString("pt-BR") : null} />
+              <InfoRow label="Série" value={nota.serie} />
+              <InfoRow label="Observações" value={nota.observacoes} />
+            </div>
+          )}
+
+          {/* Aba Produtos */}
+          {aba === "produtos" && (
+            <div>
+              {itens.length === 0 ? (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                  <Package className="w-8 h-8 mx-auto mb-2 text-gray-200" />
+                  Nenhum item encontrado.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {itens.map((item, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                      className="border border-gray-100 rounded-xl p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-sm">{item.descricao}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            NCM: {item.ncm || "—"} · CFOP: {item.cfop || "—"} · {item.unidade}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {item.quantidade} × R$ {fmt(item.valor_unitario)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-gray-900">R$ {fmt(item.valor_total)}</p>
+                          <div className="text-xs text-gray-400 mt-1 space-y-0.5">
+                            {item.aliquota_icms > 0 && <p>ICMS: {item.aliquota_icms}%</p>}
+                            {item.aliquota_pis > 0 && <p>PIS: {item.aliquota_pis}%</p>}
+                            {item.aliquota_cofins > 0 && <p>COFINS: {item.aliquota_cofins}%</p>}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                  {/* Totais */}
+                  <div className="rounded-xl p-4 mt-2" style={{ backgroundColor: "#E6F0FF" }}>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Produtos</span>
+                      <span className="font-bold" style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_produtos)}</span>
+                    </div>
+                    {nota.valor_impostos > 0 && (
+                      <div className="flex justify-between text-sm mt-1">
+                        <span className="text-gray-600">Total Impostos</span>
+                        <span className="font-semibold text-gray-700">R$ {fmt(nota.valor_impostos)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-base font-bold mt-2 border-t border-blue-200 pt-2">
+                      <span style={{ color: "#0B63D4" }}>Total da Nota</span>
+                      <span style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_total)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Aba Avançado */}
+          {aba === "avancado" && (
+            <div>
+              <InfoRow label="Status SEFAZ" value={cfg.label} />
+              <InfoRow label="Protocolo" value={nota.protocolo} />
+              <InfoRow label="Chave de Acesso" value={nota.chave_acesso} />
+              <InfoRow label="Série" value={nota.serie} />
+              <InfoRow label="Número" value={nota.numero?.toString()} />
+              <InfoRow label="Certificado" value={nota.certificado_id} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

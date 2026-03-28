@@ -29,6 +29,8 @@ import Destinatarios from '@/pages/emissor/Destinatarios';
 import Certificados from '@/pages/emissor/Certificados';
 import EmissorLayout from '@/components/emissor/EmissorLayout';
 import Tributacao from '@/pages/emissor/Tributacao';
+import Produtos from '@/pages/emissor/Produtos';
+import DetalhesNota from '@/pages/emissor/DetalhesNota';
 import FormasPagamento from '@/pages/emissor/FormasPagamento';
 import NaturezasTributarias from '@/pages/emissor/NaturezasTributarias';
 
@@ -81,6 +83,8 @@ const AuthenticatedApp = () => {
         <Route path="/emissor/tributacao" element={<Tributacao />} />
         <Route path="/emissor/formas-pagamento" element={<FormasPagamento />} />
         <Route path="/emissor/naturezas" element={<NaturezasTributarias />} />
+        <Route path="/emissor/produtos" element={<Produtos />} />
+        <Route path="/emissor/nota" element={<DetalhesNota />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useNavigate as useNav } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { FileText, Search, Download, RotateCcw, CheckCircle2, XCircle, Clock, Send, Ban, Plus } from "lucide-react";
+import { FileText, Search, Download, RotateCcw, CheckCircle2, XCircle, Clock, Send, Ban, Plus, ChevronRight } from "lucide-react";
 
 const STATUS = {
   rascunho: { label: "Rascunho", cls: "bg-gray-100 text-gray-600", Icon: FileText },
@@ -14,6 +14,7 @@ const STATUS = {
 
 export default function HistoricoNotas() {
   const navigate = useNavigate();
+  const goToNota = (id) => navigate(`/emissor/nota?id=${id}`);
   const [client, setClient] = useState(null);
   const [notas, setNotas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,56 +78,58 @@ export default function HistoricoNotas() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[640px]">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Destinatário</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Data</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ações</th>
+          <table className="w-full text-sm min-w-[640px]">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Destinatário</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Data</th>
+              <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {filtradas.map(nota => {
+              const cfg = STATUS[nota.status_sefaz] || STATUS.rascunho;
+              const Icon = cfg.Icon;
+              return (
+                <tr key={nota.id}
+                  onClick={() => goToNota(nota.id)}
+                  className="hover:bg-blue-50 cursor-pointer transition-colors">
+                  <td className="px-5 py-4">
+                    <p className="font-medium text-gray-900">{nota.destinatario_nome || '—'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{nota.destinatario_cnpj || '—'}</p>
+                  </td>
+                  <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{new Date(nota.created_date).toLocaleDateString('pt-BR')}</td>
+                  <td className="px-4 py-4 text-right font-semibold text-gray-900">
+                    {nota.valor_total ? `R$ ${Number(nota.valor_total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '—'}
+                  </td>
+                  <td className="px-4 py-4">
+                    <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium w-fit ${cfg.cls}`}>
+                      <Icon className="w-3 h-3" />{cfg.label}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5">
+                      {nota.danfe_pdf_url && (
+                        <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
+                          className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="DANFE">
+                          <Download className="w-4 h-4" />
+                        </a>
+                      )}
+                      <button onClick={() => goToNota(nota.id)}
+                        className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="Ver detalhes">
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filtradas.map(nota => {
-                  const cfg = STATUS[nota.status_sefaz] || STATUS.rascunho;
-                  const Icon = cfg.Icon;
-                  return (
-                    <tr key={nota.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-gray-900">{nota.destinatario_nome || "—"}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{nota.destinatario_cnpj || "—"}</p>
-                      </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{new Date(nota.created_date).toLocaleDateString("pt-BR")}</td>
-                      <td className="px-4 py-4 text-right font-semibold text-gray-900">
-                        {nota.valor_total ? `R$ ${fmt(nota.valor_total)}` : "—"}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium w-fit ${cfg.cls}`}>
-                          <Icon className="w-3 h-3" />{cfg.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-1.5">
-                          {nota.danfe_pdf_url && (
-                            <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer" className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="DANFE">
-                              <Download className="w-4 h-4" />
-                            </a>
-                          )}
-                          {nota.status_sefaz === "rejeitada" && (
-                            <button className="p-1.5 text-gray-400 hover:text-amber-600 rounded" title="Reenviar">
-                              <RotateCcw className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              );
+            })}
+          </tbody>
+          </table>
           </div>
-        )}
+          )}
       </div>
     </div>
   );

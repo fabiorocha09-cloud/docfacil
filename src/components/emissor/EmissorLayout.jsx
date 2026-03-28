@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import ModuloDropdown from "@/components/ModuloDropdown";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, ChevronDown, BookOpen, CreditCard, Layers } from "lucide-react";
+import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, ChevronDown, BookOpen, CreditCard, Layers, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -13,6 +13,7 @@ const nav = [
 ];
 
 const cadastros = [
+  { label: "Produtos", path: "/emissor/produtos", icon: Package },
   { label: "Tributação", path: "/emissor/tributacao", icon: BookOpen },
   { label: "Formas de Pagamento", path: "/emissor/formas-pagamento", icon: CreditCard },
   { label: "Naturezas", path: "/emissor/naturezas", icon: Layers },
