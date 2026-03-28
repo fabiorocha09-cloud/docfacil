@@ -1,0 +1,49 @@
+{
+  "name": "Produto",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "codigo": {
+      "type": "string"
+    },
+    "ncm": {
+      "type": "string"
+    },
+    "cfop": {
+      "type": "string"
+    },
+    "unidade": {
+      "type": "string",
+      "default": "UN"
+    },
+    "valor_unitario": {
+      "type": "number",
+      "default": 0
+    },
+    "aliquota_icms": {
+      "type": "number",
+      "default": 0
+    },
+    "aliquota_pis": {
+      "type": "number",
+      "default": 0.65
+    },
+    "aliquota_cofins": {
+      "type": "number",
+      "default": 3
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "empresa_id",
+    "descricao"
+  ]
+}

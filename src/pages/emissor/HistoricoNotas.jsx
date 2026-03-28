@@ -1,0 +1,133 @@
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { FileText, Search, Download, RotateCcw, CheckCircle2, XCircle, Clock, Send, Ban, Plus } from "lucide-react";
+
+const STATUS = {
+  rascunho: { label: "Rascunho", cls: "bg-gray-100 text-gray-600", Icon: FileText },
+  validada: { label: "Validada", cls: "bg-blue-100 text-blue-700", Icon: CheckCircle2 },
+  transmitindo: { label: "Transmitindo", cls: "bg-amber-100 text-amber-700", Icon: Send },
+  transmitida: { label: "Transmitida", cls: "bg-emerald-100 text-emerald-700", Icon: CheckCircle2 },
+  rejeitada: { label: "Rejeitada", cls: "bg-red-100 text-red-700", Icon: XCircle },
+  cancelada: { label: "Cancelada", cls: "bg-gray-200 text-gray-500", Icon: Ban },
+};
+
+export default function HistoricoNotas() {
+  const navigate = useNavigate();
+  const [client, setClient] = useState(null);
+  const [notas, setNotas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+
+  useEffect(() => {
+    try {
+      const c = localStorage.getItem("emissor_current_client");
+      if (!c) { navigate("/emissor/painel"); return; }
+      const parsed = JSON.parse(c);
+      setClient(parsed);
+      base44.entities.NotaFiscal55.filter({ empresa_id: parsed.id }).then(data => {
+        setNotas(data.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+        setLoading(false);
+      });
+    } catch { navigate("/emissor/painel"); }
+  }, []);
+
+  const filtradas = notas.filter(n => {
+    const matchSearch = !search || n.destinatario_nome?.toLowerCase().includes(search.toLowerCase()) || n.destinatario_cnpj?.includes(search) || n.chave_acesso?.includes(search);
+    const matchStatus = filtroStatus === "todos" || n.status_sefaz === filtroStatus;
+    return matchSearch && matchStatus;
+  });
+
+  const fmt = v => Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Histórico de Notas</h1>
+          <p className="text-gray-500 text-sm">{client?.razao_social} · {notas.length} nota(s)</p>
+        </div>
+        <Link to="/emissor/emitir" className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm" style={{ backgroundColor: "#0B63D4" }}>
+          <Plus className="w-4 h-4" /> Nova NF-e
+        </Link>
+      </div>
+
+      <div className="flex gap-3 flex-col sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+            placeholder="Buscar por destinatário, CNPJ ou chave de acesso..."
+            value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <select className="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+          value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}>
+          <option value="todos">Todos os status</option>
+          {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+        </select>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-8 text-center text-gray-400 text-sm">Carregando...</div>
+        ) : filtradas.length === 0 ? (
+          <div className="p-16 text-center">
+            <FileText className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-500 text-sm">{notas.length === 0 ? "Nenhuma nota emitida." : "Nenhum resultado encontrado."}</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Destinatário</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Data</th>
+                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtradas.map(nota => {
+                  const cfg = STATUS[nota.status_sefaz] || STATUS.rascunho;
+                  const Icon = cfg.Icon;
+                  return (
+                    <tr key={nota.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-gray-900">{nota.destinatario_nome || "—"}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{nota.destinatario_cnpj || "—"}</p>
+                      </td>
+                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{new Date(nota.created_date).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-4 py-4 text-right font-semibold text-gray-900">
+                        {nota.valor_total ? `R$ ${fmt(nota.valor_total)}` : "—"}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium w-fit ${cfg.cls}`}>
+                          <Icon className="w-3 h-3" />{cfg.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-1.5">
+                          {nota.danfe_pdf_url && (
+                            <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer" className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="DANFE">
+                              <Download className="w-4 h-4" />
+                            </a>
+                          )}
+                          {nota.status_sefaz === "rejeitada" && (
+                            <button className="p-1.5 text-gray-400 hover:text-amber-600 rounded" title="Reenviar">
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

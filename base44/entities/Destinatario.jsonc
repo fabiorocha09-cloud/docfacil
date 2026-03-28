@@ -1,0 +1,50 @@
+{
+  "name": "Destinatario",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "cnpj": {
+      "type": "string"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "ie": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "logradouro": {
+      "type": "string"
+    },
+    "numero": {
+      "type": "string"
+    },
+    "complemento": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "municipio": {
+      "type": "string"
+    },
+    "uf": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "cnpj",
+    "nome"
+  ]
+}

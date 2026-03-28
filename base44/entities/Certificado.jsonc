@@ -1,0 +1,46 @@
+{
+  "name": "Certificado",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "serial_number": {
+      "type": "string"
+    },
+    "issuer": {
+      "type": "string"
+    },
+    "subject_cn": {
+      "type": "string"
+    },
+    "validade_inicio": {
+      "type": "string",
+      "format": "date"
+    },
+    "validade_fim": {
+      "type": "string",
+      "format": "date"
+    },
+    "fingerprint": {
+      "type": "string"
+    },
+    "storage_path": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "empresa_id",
+    "validade_fim"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "EmpresaCliente",
+  "type": "object",
+  "properties": {
+    "contador_email": {
+      "type": "string"
+    },
+    "cnpj": {
+      "type": "string"
+    },
+    "ie": {
+      "type": "string"
+    },
+    "razao_social": {
+      "type": "string"
+    },
+    "nome_fantasia": {
+      "type": "string"
+    },
+    "logradouro": {
+      "type": "string"
+    },
+    "numero": {
+      "type": "string"
+    },
+    "complemento": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "municipio": {
+      "type": "string"
+    },
+    "uf": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "regime_tributario": {
+      "type": "string",
+      "enum": [
+        "simples_nacional",
+        "lucro_presumido",
+        "lucro_real"
+      ]
+    },
+    "nfe_ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "cnpj",
+    "razao_social"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "ItemNota",
+  "type": "object",
+  "properties": {
+    "nota_id": {
+      "type": "string"
+    },
+    "empresa_id": {
+      "type": "string"
+    },
+    "produto_id": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "ncm": {
+      "type": "string"
+    },
+    "cfop": {
+      "type": "string"
+    },
+    "unidade": {
+      "type": "string",
+      "default": "UN"
+    },
+    "quantidade": {
+      "type": "number",
+      "default": 1
+    },
+    "valor_unitario": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_total": {
+      "type": "number",
+      "default": 0
+    },
+    "aliquota_icms": {
+      "type": "number",
+      "default": 0
+    },
+    "aliquota_pis": {
+      "type": "number",
+      "default": 0.65
+    },
+    "aliquota_cofins": {
+      "type": "number",
+      "default": 3
+    },
+    "valor_icms": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_pis": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_cofins": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "nota_id",
+    "descricao"
+  ]
+}

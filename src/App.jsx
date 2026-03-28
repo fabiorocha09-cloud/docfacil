@@ -21,6 +21,13 @@ import UploadOutrosDocumentos from '@/pages/UploadOutrosDocumentos';
 import ControleIE from '@/pages/ControleIE';
 import CalendarioCertidoes from '@/pages/CalendarioCertidoes';
 import ModelosDocumento from '@/pages/ModelosDocumento';
+import PainelContador from '@/pages/emissor/PainelContador';
+import EmissorDashboard from '@/pages/emissor/EmissorDashboard';
+import EmitirNFe from '@/pages/emissor/EmitirNFe';
+import HistoricoNotas from '@/pages/emissor/HistoricoNotas';
+import Destinatarios from '@/pages/emissor/Destinatarios';
+import Certificados from '@/pages/emissor/Certificados';
+import EmissorLayout from '@/components/emissor/EmissorLayout';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,6 +68,14 @@ const AuthenticatedApp = () => {
         <Route path="/ModelosDocumento" element={<ModelosDocumento />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
+      <Route path="/emissor/painel" element={<PainelContador />} />
+      <Route element={<EmissorLayout />}>
+        <Route path="/emissor/dashboard" element={<EmissorDashboard />} />
+        <Route path="/emissor/emitir" element={<EmitirNFe />} />
+        <Route path="/emissor/historico" element={<HistoricoNotas />} />
+        <Route path="/emissor/destinatarios" element={<Destinatarios />} />
+        <Route path="/emissor/certificados" element={<Certificados />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -1,0 +1,80 @@
+{
+  "name": "NotaFiscal55",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "numero": {
+      "type": "number"
+    },
+    "serie": {
+      "type": "string",
+      "default": "001"
+    },
+    "chave_acesso": {
+      "type": "string"
+    },
+    "status_sefaz": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "validada",
+        "transmitindo",
+        "transmitida",
+        "rejeitada",
+        "cancelada"
+      ],
+      "default": "rascunho"
+    },
+    "destinatario_id": {
+      "type": "string"
+    },
+    "destinatario_nome": {
+      "type": "string"
+    },
+    "destinatario_cnpj": {
+      "type": "string"
+    },
+    "valor_produtos": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_impostos": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_total": {
+      "type": "number",
+      "default": 0
+    },
+    "protocolo": {
+      "type": "string"
+    },
+    "retorno_xml_url": {
+      "type": "string"
+    },
+    "danfe_pdf_url": {
+      "type": "string"
+    },
+    "erros": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "certificado_id": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "status_sefaz"
+  ]
+}
