@@ -29,8 +29,7 @@ export default function EmissorLayout() {
   }, []);
 
   const voltar = () => {
-    localStorage.removeItem("emissor_current_client");
-    navigate("/emissor/painel");
+    navigate("/Dashboard");
   };
 
   return (
