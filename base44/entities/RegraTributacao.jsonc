@@ -46,6 +46,37 @@
         "icms_modalidade_bc": {
           "type": "string"
         },
+        "icms_p_red_bc": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_cred_sn": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_mod_bc_st": {
+          "type": "string"
+        },
+        "icms_p_mva_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_red_bc_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_v_bc_st_ret": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_v_st_ret": {
+          "type": "number",
+          "default": 0
+        },
         "pis_cst": {
           "type": "string"
         },
@@ -137,6 +168,37 @@
         },
         "icms_modalidade_bc": {
           "type": "string"
+        },
+        "icms_p_red_bc": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_cred_sn": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_mod_bc_st": {
+          "type": "string"
+        },
+        "icms_p_mva_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_red_bc_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_p_st": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_v_bc_st_ret": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_v_st_ret": {
+          "type": "number",
+          "default": 0
         },
         "pis_cst": {
           "type": "string"
