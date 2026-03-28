@@ -1,9 +1,10 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
+import ModuloDropdown from "@/components/ModuloDropdown";
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap, ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,6 @@ const navItems = [
   { label: "Controle de IE", path: "/ControleIE", icon: BadgeCheck },
   { label: "Calendário de Vencimentos", path: "/CalendarioCertidoes", icon: CalendarDays },
   { label: "Modelos de Documento", path: "/ModelosDocumento", icon: BookOpen },
-  { label: "DocFácil Emissor", path: "/emissor/painel", icon: Zap },
 ];
 
 export default function Layout() {
@@ -43,12 +43,7 @@ export default function Layout() {
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileCheck2 className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 dark:text-white text-lg">CertidãoHub</span>
-          </div>
+          <ModuloDropdown moduloAtual="certidaohub" />
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-400">
             <X className="w-5 h-5" />
           </button>
@@ -114,12 +109,7 @@ export default function Layout() {
           <button onClick={() => setSidebarOpen(true)} className="text-gray-600 dark:text-gray-300">
             <Menu className="w-6 h-6" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-              <FileCheck2 className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900 dark:text-white">CertidãoHub</span>
-          </div>
+          <ModuloDropdown moduloAtual="certidaohub" />
         </header>
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           <Outlet />

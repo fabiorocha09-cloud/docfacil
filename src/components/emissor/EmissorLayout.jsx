@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import ModuloDropdown from "@/components/ModuloDropdown";
 import { useState, useEffect } from "react";
 import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, X, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,10 +40,7 @@ export default function EmissorLayout() {
           <Menu className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-white text-sm">DocFácil <span className="font-light">Emissor</span></span>
+          <ModuloDropdown moduloAtual="emissor" dark />
         </div>
         {client && (
           <div className="hidden sm:flex items-center gap-2 rounded-lg px-3 py-1.5 max-w-xs" style={{ backgroundColor: "rgba(255,255,255,0.12)" }}>
