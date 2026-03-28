@@ -59,6 +59,19 @@
     "ativo": {
       "type": "boolean",
       "default": true
+    },
+    "nfe_io_company_id": {
+      "type": "string",
+      "description": "ID da empresa no NFE.io (necess\u00e1rio para emiss\u00e3o)"
+    },
+    "nfe_ambiente": {
+      "type": "string",
+      "enum": [
+        "homologacao",
+        "producao"
+      ],
+      "default": "homologacao",
+      "description": "Ambiente de emiss\u00e3o: homologacao ou producao"
     }
   },
   "required": [

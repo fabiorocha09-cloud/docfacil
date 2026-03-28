@@ -279,6 +279,15 @@ export default function EmitirNFe() {
       destinatario_id: selectedDest?.id,
       destinatario_nome: selectedDest?.nome,
       destinatario_cnpj: selectedDest?.cnpj,
+      dest_logradouro: selectedDest?.logradouro,
+      dest_numero: selectedDest?.numero,
+      dest_bairro: selectedDest?.bairro,
+      dest_municipio: selectedDest?.municipio,
+      dest_uf: selectedDest?.uf,
+      dest_cep: selectedDest?.cep,
+      destinatario_email: selectedDest?.email,
+      natureza_operacao: selectedNatureza?.nome,
+      forma_pagamento_codigo: avancado.forma_pagamento_codigo || "01",
       valor_produtos: totais.produtos,
       valor_impostos: totais.impostos,
       valor_total: totais.total,
@@ -291,14 +300,18 @@ export default function EmitirNFe() {
       base44.entities.ItemNota.create({ ...item, nota_id: nota.id, empresa_id: client?.id })
     ));
 
-    // Simula retorno SEFAZ
-    await new Promise(r => setTimeout(r, 2500));
-
-    await base44.entities.NotaFiscal55.update(nota.id, {
-      status_sefaz: "transmitida",
-      chave_acesso: `35${new Date().getFullYear()}${Math.random().toString().slice(2, 16)}00`,
-      protocolo: `141${Math.floor(Math.random() * 1e9)}`,
+    // Chama backend NFE.io
+    const res = await base44.functions.invoke('emitirNfe', {
+      notaId: nota.id,
+      empresaId: client?.id,
+      ambiente: client?.ambiente,
     });
+
+    if (res.data?.error) {
+      setTransmitindo(false);
+      alert('Erro ao emitir: ' + res.data.error);
+      return;
+    }
 
     setTransmitindo(false);
     setTransmitida(true);

@@ -15,9 +15,8 @@ function EmpresaModal({ empresa, onClose, onSave }) {
   const [form, setForm] = useState(empresa || {
     cnpj: "", razao_social: "", nome_fantasia: "", email: "", telefone: "",
     municipio: "", uf: "PA", regime_tributario: "simples_nacional", ativo: true, nfe_ativo: true,
+    nfe_io_company_id: "", nfe_ambiente: "homologacao",
   });
-  const [saving, setSaving] = useState(false);
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,6 +81,36 @@ function EmpresaModal({ empresa, onClose, onSave }) {
               <option value="lucro_real">Lucro Real</option>
             </select>
           </div>
+          {/* NFE.io Config */}
+          <div className="border-t border-gray-100 pt-3 space-y-3">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Configuração NFE.io</p>
+            <div>
+              <label className="text-sm font-medium text-gray-700">NFE.io Company ID *</label>
+              <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                placeholder="ID da empresa no painel NFE.io"
+                value={form.nfe_io_company_id || ""} onChange={e => set("nfe_io_company_id", e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Ambiente de Emissão</label>
+              <div className="mt-1 flex gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="ambiente" value="homologacao"
+                    checked={form.nfe_ambiente === "homologacao"}
+                    onChange={() => set("nfe_ambiente", "homologacao")}
+                    className="text-amber-500" />
+                  <span className="text-sm text-amber-700 font-medium">🧪 Homologação</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="ambiente" value="producao"
+                    checked={form.nfe_ambiente === "producao"}
+                    onChange={() => set("nfe_ambiente", "producao")}
+                    className="text-emerald-500" />
+                  <span className="text-sm text-emerald-700 font-medium">✅ Produção</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2.5 rounded-xl hover:bg-gray-50">Cancelar</button>
             <button type="submit" disabled={saving}
@@ -131,6 +160,7 @@ export default function PainelContador() {
   const acessarEmissor = (empresa) => {
     localStorage.setItem("emissor_current_client", JSON.stringify({
       id: empresa.id, razao_social: empresa.razao_social, cnpj: empresa.cnpj, regime: empresa.regime_tributario,
+      nfe_io_company_id: empresa.nfe_io_company_id, ambiente: empresa.nfe_ambiente || "homologacao",
     }));
     navigate("/emissor/dashboard");
   };
@@ -225,9 +255,14 @@ export default function PainelContador() {
                         <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{REGIME_LABELS[empresa.regime_tributario]}</span>
                       )}
                       <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${cls}`}>
-                        <BadgeIcon className={`w-3 h-3 ${status === "expirando" ? "animate-pulse" : ""}`} />
-                        {label}
-                      </span>
+                      <BadgeIcon className={`w-3 h-3 ${status === "expirando" ? "animate-pulse" : ""}`} />
+                      {label}
+                    </span>
+                    {empresa.nfe_ambiente === "producao" ? (
+                      <span className="text-xs bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium">✅ Produção</span>
+                    ) : (
+                      <span className="text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full font-medium">🧪 Homologação</span>
+                    )}
                     </div>
 
                     <button onClick={() => acessarEmissor(empresa)}
