@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useNavigate as useNav } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { FileText, Search, Download, RotateCcw, CheckCircle2, XCircle, Clock, Send, Ban, Plus, ChevronRight } from "lucide-react";
+import { FileText, Search, Download, RotateCcw, CheckCircle2, XCircle, Clock, Send, Ban, Plus, ChevronRight, MoreVertical, Eye, ExternalLink, RefreshCw, Mail, Copy, Edit } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const STATUS = {
   rascunho: { label: "Rascunho", cls: "bg-gray-100 text-gray-600", Icon: FileText },
@@ -20,6 +21,29 @@ export default function HistoricoNotas() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
+
+  const handleCancelar = async (nota, e) => {
+    e.stopPropagation();
+    if (!confirm("Confirmar cancelamento desta NF-e?")) return;
+    await base44.entities.NotaFiscal55.update(nota.id, { status_sefaz: "cancelada" });
+    setNotas(prev => prev.map(n => n.id === nota.id ? { ...n, status_sefaz: "cancelada" } : n));
+  };
+
+  const handleClonar = async (nota, e) => {
+    e.stopPropagation();
+    const { id, created_date, updated_date, numero, chave_acesso, protocolo, status_sefaz, ...rest } = nota;
+    await base44.entities.NotaFiscal55.create({ ...rest, status_sefaz: "rascunho" });
+    const data = await base44.entities.NotaFiscal55.filter({ empresa_id: nota.empresa_id });
+    setNotas(data.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+  };
+
+  const handleCopiarChave = (nota, e) => {
+    e.stopPropagation();
+    if (nota.chave_acesso) {
+      navigator.clipboard.writeText(nota.chave_acesso);
+      alert("Chave de acesso copiada!");
+    }
+  };
 
   useEffect(() => {
     try {
@@ -110,18 +134,62 @@ export default function HistoricoNotas() {
                     </span>
                   </td>
                   <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center gap-1.5">
-                      {nota.danfe_pdf_url && (
-                        <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
-                          className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="DANFE">
-                          <Download className="w-4 h-4" />
-                        </a>
-                      )}
-                      <button onClick={() => goToNota(nota.id)}
-                        className="p-1.5 text-gray-400 hover:text-[#0B63D4] rounded" title="Ver detalhes">
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={() => goToNota(nota.id)}>
+                          <Eye className="w-4 h-4 mr-2" /> Visualizar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`/emissor/nota?id=${nota.id}`, "_blank")}>
+                          <ExternalLink className="w-4 h-4 mr-2" /> Abrir outra aba
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>
+                          <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          <Mail className="w-4 h-4 mr-2" /> Enviar por e-mail
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {nota.danfe_pdf_url && (
+                          <DropdownMenuItem asChild>
+                            <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
+                              <Download className="w-4 h-4 mr-2" /> Baixar DANFE
+                            </a>
+                          </DropdownMenuItem>
+                        )}
+                        {nota.retorno_xml_url && (
+                          <DropdownMenuItem asChild>
+                            <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer">
+                              <FileText className="w-4 h-4 mr-2" /> Baixar XML
+                            </a>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem disabled>
+                          <Edit className="w-4 h-4 mr-2" /> Carta de Correção
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={(e) => handleClonar(nota, e)}>
+                          <Copy className="w-4 h-4 mr-2" /> Clonar nota
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => handleCopiarChave(nota, e)}
+                          disabled={!nota.chave_acesso}>
+                          <Copy className="w-4 h-4 mr-2" /> Copiar chave
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={(e) => handleCancelar(nota, e)}
+                          disabled={nota.status_sefaz === "cancelada"}
+                          className="text-red-600 focus:text-red-600">
+                          <Ban className="w-4 h-4 mr-2" /> Cancelar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               );
