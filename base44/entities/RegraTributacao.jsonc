@@ -9,21 +9,216 @@
       "type": "string",
       "description": "Nome do grupo de tributa\u00e7\u00e3o"
     },
-    "cfop_estadual": {
-      "type": "string"
-    },
-    "cfop_interestadual": {
-      "type": "string"
+    "todos_estados": {
+      "type": "boolean",
+      "default": true
     },
     "estados": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de UFs"
+    },
+    "regime_tributario": {
       "type": "string",
-      "default": "Todos os estados"
+      "enum": [
+        "simples_nacional",
+        "lucro_presumido",
+        "lucro_real"
+      ],
+      "default": "simples_nacional"
     },
-    "cliente_revenda": {
+    "revenda": {
+      "type": "object",
+      "description": "Configura\u00e7\u00e3o para Cliente Revenda",
+      "properties": {
+        "icms_csosn": {
+          "type": "string"
+        },
+        "icms_cst": {
+          "type": "string"
+        },
+        "icms_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_modalidade_bc": {
+          "type": "string"
+        },
+        "pis_cst": {
+          "type": "string"
+        },
+        "pis_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "pis_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_ipi": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_outras": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_excluir_icms": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_cst": {
+          "type": "string"
+        },
+        "cofins_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "cofins_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_ipi": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_outras": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_excluir_icms": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_cst": {
+          "type": "string"
+        },
+        "ipi_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "ipi_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_base_outras": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "consumidor_final": {
+      "type": "object",
+      "description": "Configura\u00e7\u00e3o para Cliente Consumidor Final",
+      "properties": {
+        "icms_csosn": {
+          "type": "string"
+        },
+        "icms_cst": {
+          "type": "string"
+        },
+        "icms_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "icms_modalidade_bc": {
+          "type": "string"
+        },
+        "pis_cst": {
+          "type": "string"
+        },
+        "pis_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "pis_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_ipi": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_base_outras": {
+          "type": "boolean",
+          "default": false
+        },
+        "pis_excluir_icms": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_cst": {
+          "type": "string"
+        },
+        "cofins_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "cofins_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_ipi": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_base_outras": {
+          "type": "boolean",
+          "default": false
+        },
+        "cofins_excluir_icms": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_cst": {
+          "type": "string"
+        },
+        "ipi_aliquota": {
+          "type": "number",
+          "default": 0
+        },
+        "ipi_base_frete": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_base_seguro": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipi_base_outras": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "observacoes": {
       "type": "string"
     },
-    "cliente_consumidor_final": {
-      "type": "string"
+    "ibpt_na_nota": {
+      "type": "boolean",
+      "default": false
     },
     "ativo": {
       "type": "boolean",
@@ -31,6 +226,7 @@
     }
   },
   "required": [
-    "nome"
+    "nome",
+    "empresa_id"
   ]
 }

@@ -1,70 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Plus, Pencil, Trash2, X, Loader2, BookOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, BookOpen, Globe, MapPin, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import TributacaoModal from "@/components/emissor/TributacaoModal";
 
-const CFOP_OPTIONS = [
-  "5101", "5102", "5103", "5104", "5201", "5202", "5301", "5302",
-  "6101", "6102", "6103", "6104", "6201", "6202",
-];
-
-function TributacaoModal({ item, empresaId, onClose, onSave }) {
-  const [nome, setNome] = useState(item?.nome || "");
-  const [cfopEstadual, setCfopEstadual] = useState(item?.cfop_estadual || "5102");
-  const [cfopInterestadual, setCfopInterestadual] = useState(item?.cfop_interestadual || "6102");
-  const [saving, setSaving] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    const data = { nome, cfop_estadual: cfopEstadual, cfop_interestadual: cfopInterestadual, empresa_id: empresaId, ativo: true };
-    if (item?.id) await base44.entities.RegraTributacao.update(item.id, data);
-    else await base44.entities.RegraTributacao.create(data);
-    onSave();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">{item ? "Editar Tributação" : "Nova Tributação"}</h2>
-          <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700">Nome do Grupo de Tributação *</label>
-            <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-              placeholder="Ex: Tributação Simples" value={nome} onChange={e => setNome(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-gray-700">CFOP Estadual</label>
-              <select className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={cfopEstadual} onChange={e => setCfopEstadual(e.target.value)}>
-                {CFOP_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">CFOP Interestadual</label>
-              <select className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={cfopInterestadual} onChange={e => setCfopInterestadual(e.target.value)}>
-                {CFOP_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-700 text-sm font-medium py-2.5 rounded-xl hover:bg-gray-50">Cancelar</button>
-            <button type="submit" disabled={saving} className="flex-1 text-white text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: "#0B63D4" }}>
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" />Salvando...</> : "Salvar"}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
+const CSOSN_SHORT = {
+  "101":"Tributada c/ crédito","102":"Tributada s/ crédito","103":"Isenta (faixa receita)",
+  "201":"Trib. c/ crédito + ST","202":"Trib. s/ crédito + ST","203":"Isento/Imune + ST",
+  "300":"Imune","400":"Não tributada","500":"ICMS por ST (Revenda)","900":"Outros",
+};
 
 export default function Tributacao() {
   const navigate = useNavigate();
@@ -97,65 +42,119 @@ export default function Tributacao() {
     carregar(client?.id);
   };
 
+  const regimeTributario = client?.regime || "simples_nacional";
+  const isSimples = regimeTributario === "simples_nacional";
+
+  const getResumoICMS = (item) => {
+    const csosn = item?.revenda?.icms_csosn || item?.revenda?.icms_cst;
+    if (!csosn) return "—";
+    return isSimples ? `CSOSN ${csosn}: ${CSOSN_SHORT[csosn] || ""}` : `CST ${csosn}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tributação</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social} · {itens.length} regra(s)</p>
+          <p className="text-gray-500 text-sm">
+            {client?.razao_social} · {itens.length} regra(s) cadastrada(s)
+            {isSimples && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Simples Nacional</span>}
+          </p>
         </div>
         <button onClick={() => { setEditando(null); setModalOpen(true); }}
           className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm"
           style={{ backgroundColor: "#0B63D4" }}>
-          <Plus className="w-4 h-4" /> Nova Tributação
+          <Plus className="w-4 h-4" /> Nova Regra
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-gray-400 text-sm">Carregando...</div>
-        ) : itens.length === 0 ? (
-          <div className="p-16 text-center">
-            <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">Nenhuma regra de tributação cadastrada.</p>
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nome da Regra</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">CFOP Estadual</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">CFOP Interestadual</th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              <AnimatePresence>
-                {itens.map(item => (
-                  <motion.tr key={item.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hover:bg-gray-50">
-                    <td className="px-5 py-4 font-medium text-gray-900">{item.nome}</td>
-                    <td className="px-4 py-4 text-gray-600">{item.cfop_estadual}</td>
-                    <td className="px-4 py-4 text-gray-600">{item.cfop_interestadual}</td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <button onClick={() => { setEditando(item); setModalOpen(true); }} className="p-2 text-gray-400 hover:text-[#0B63D4] rounded-lg hover:bg-blue-50">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => deletar(item.id)} className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+      {loading ? (
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl border border-gray-100 animate-pulse" />)}</div>
+      ) : itens.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+          <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+          <p className="text-gray-500 text-sm font-medium">Nenhuma regra de tributação cadastrada.</p>
+          <p className="text-gray-400 text-xs mt-1">Crie regras para aplicar automaticamente nos produtos da NF-e.</p>
+          <button onClick={() => { setEditando(null); setModalOpen(true); }}
+            className="mt-4 text-sm font-semibold hover:underline" style={{ color: "#0B63D4" }}>
+            + Criar primeira regra
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <AnimatePresence>
+            {itens.map(item => (
+              <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between p-5">
+                  <div className="flex items-start gap-4 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#E6F0FF" }}>
+                      <BookOpen className="w-5 h-5" style={{ color: "#0B63D4" }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-gray-900">{item.nome}</p>
+                        {item.ativo
+                          ? <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Ativo</span>
+                          : <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Inativo</span>}
                       </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
-        )}
-      </div>
+
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {item.todos_estados
+                          ? <><Globe className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">Todos os estados</span></>
+                          : <><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">{(item.estados || []).join(", ")}</span></>
+                        }
+                      </div>
+
+                      {/* Resumo por tipo de cliente */}
+                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {["revenda", "consumidor_final"].map(tipo => {
+                          const conf = item[tipo] || {};
+                          const csosn = conf.icms_csosn || conf.icms_cst;
+                          const pisCst = conf.pis_cst;
+                          const cofinsCst = conf.cofins_cst;
+                          return (
+                            <div key={tipo} className="bg-gray-50 rounded-xl px-3 py-2">
+                              <p className="text-xs font-semibold text-gray-500 mb-1">
+                                {tipo === "revenda" ? "🏢 Cliente Revenda" : "👤 Consumidor Final"}
+                              </p>
+                              <div className="space-y-0.5">
+                                {csosn && <p className="text-xs text-gray-700">ICMS: <span className="font-medium">{isSimples ? "CSOSN" : "CST"} {csosn}</span></p>}
+                                {pisCst && <p className="text-xs text-gray-700">PIS: <span className="font-medium">CST {pisCst}</span> {conf.pis_aliquota > 0 && `· ${conf.pis_aliquota}%`}</p>}
+                                {cofinsCst && <p className="text-xs text-gray-700">COFINS: <span className="font-medium">CST {cofinsCst}</span> {conf.cofins_aliquota > 0 && `· ${conf.cofins_aliquota}%`}</p>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 ml-4 flex-shrink-0">
+                    <button onClick={() => { setEditando(item); setModalOpen(true); }}
+                      className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-[#0B63D4] px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /> Editar
+                    </button>
+                    <button onClick={() => deletar(item.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
 
       {modalOpen && (
-        <TributacaoModal item={editando} empresaId={client?.id} onClose={() => setModalOpen(false)} onSave={() => { setModalOpen(false); carregar(client?.id); }} />
+        <TributacaoModal
+          item={editando}
+          empresaId={client?.id}
+          regimeTributario={regimeTributario}
+          onClose={() => setModalOpen(false)}
+          onSave={() => { setModalOpen(false); carregar(client?.id); }}
+        />
       )}
     </div>
   );
