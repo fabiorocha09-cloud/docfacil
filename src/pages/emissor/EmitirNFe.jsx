@@ -46,14 +46,20 @@ const variants = {
 const fmt = v => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 // Modal de item com busca de produtos cadastrados
-function ItemModal({ empresaId, onAdd, onClose }) {
+function ItemModal({ empresaId, regraConfig, onAdd, onClose }) {
   const [produtos, setProdutos] = useState([]);
   const [searchProd, setSearchProd] = useState("");
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({
     descricao: "", ncm: "", cfop: "5102", unidade: "UN",
     quantidade: 1, valor_unitario: 0,
-    aliquota_icms: 0, aliquota_pis: 0.65, aliquota_cofins: 3,
+    aliquota_icms: regraConfig?.icms_aliquota || 0,
+    aliquota_pis: regraConfig?.pis_aliquota || 0.65,
+    aliquota_cofins: regraConfig?.cofins_aliquota || 3,
+    icms_csosn: regraConfig?.icms_csosn || "",
+    icms_cst: regraConfig?.icms_cst || "",
+    pis_cst: regraConfig?.pis_cst || "",
+    cofins_cst: regraConfig?.cofins_cst || "",
   });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -215,8 +221,11 @@ export default function EmitirNFe() {
   // Dados
   const [destinatarios, setDestinatarios] = useState([]);
   const [naturezas, setNaturezas] = useState([]);
+  const [regras, setRegras] = useState([]);
   const [selectedDest, setSelectedDest] = useState(null);
   const [selectedNatureza, setSelectedNatureza] = useState(null);
+  const [selectedRegra, setSelectedRegra] = useState(null);
+  const [tipoCliente, setTipoCliente] = useState("consumidor_final");
   const [searchDest, setSearchDest] = useState("");
   const [itens, setItens] = useState([]);
   const [itemModal, setItemModal] = useState(false);
@@ -251,9 +260,11 @@ export default function EmitirNFe() {
       Promise.all([
         base44.entities.Destinatario.filter({ empresa_id: parsed.id }),
         base44.entities.NaturezaTributaria.filter({ empresa_id: parsed.id }),
-      ]).then(([dests, nats]) => {
+        base44.entities.RegraTributacao.filter({ empresa_id: parsed.id }),
+      ]).then(([dests, nats, regs]) => {
         setDestinatarios(dests);
         setNaturezas(nats);
+        setRegras(regs.filter(r => r.ativo !== false));
       });
     } catch { navigate("/emissor/painel"); }
   }, []);
@@ -291,6 +302,9 @@ export default function EmitirNFe() {
         destinatario_email: selectedDest?.email,
         natureza_operacao: selectedNatureza?.nome,
         forma_pagamento_codigo: avancado.forma_pagamento_codigo || "01",
+        regra_tributacao_id: selectedRegra?.id || null,
+        regra_tributacao_nome: selectedRegra?.nome || null,
+        tipo_cliente: tipoCliente,
         valor_produtos: totais.produtos,
         valor_impostos: totais.impostos,
         valor_total: totais.total,
@@ -330,6 +344,12 @@ export default function EmitirNFe() {
   const destFiltrados = destinatarios.filter(d =>
     d.nome?.toLowerCase().includes(searchDest.toLowerCase()) || d.cnpj?.includes(searchDest)
   );
+
+  // Retorna as alíquotas da regra selecionada para o tipo de cliente
+  const getRegaConfig = () => {
+    if (!selectedRegra) return null;
+    return selectedRegra[tipoCliente] || null;
+  };
 
   const canNext = () => {
     if (step === 0) return !!selectedDest && !!selectedNatureza;
@@ -417,6 +437,62 @@ export default function EmitirNFe() {
                     )}
                   </div>
 
+                  {/* Regra de Tributação + Tipo de Cliente */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">
+                      <Calculator className="w-4 h-4 inline mr-1" /> Tributação
+                    </label>
+                    {regras.length === 0 ? (
+                      <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        Nenhuma regra cadastrada.{" "}
+                        <a href="/emissor/tributacao" className="underline font-medium">Cadastrar tributação →</a>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {regras.map(r => (
+                            <button key={r.id} onClick={() => setSelectedRegra(r)}
+                              className={`text-left px-4 py-3 rounded-xl border text-sm transition-colors ${
+                                selectedRegra?.id === r.id
+                                  ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]"
+                                  : "border-gray-100 hover:bg-gray-50"
+                              }`}>
+                              <p className="font-medium">{r.nome}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {r.todos_estados ? "Todos os estados" : (r.estados || []).join(", ")}
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                        {selectedRegra && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 mb-1">Tipo de cliente *</p>
+                            <div className="flex gap-3">
+                              <label className={`flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-sm transition-colors ${
+                                tipoCliente === "consumidor_final" ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]" : "border-gray-100 hover:bg-gray-50"
+                              }`}>
+                                <input type="radio" name="tipoCliente" value="consumidor_final"
+                                  checked={tipoCliente === "consumidor_final"}
+                                  onChange={() => setTipoCliente("consumidor_final")}
+                                  className="hidden" />
+                                👤 Consumidor Final
+                              </label>
+                              <label className={`flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border cursor-pointer text-sm transition-colors ${
+                                tipoCliente === "revenda" ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]" : "border-gray-100 hover:bg-gray-50"
+                              }`}>
+                                <input type="radio" name="tipoCliente" value="revenda"
+                                  checked={tipoCliente === "revenda"}
+                                  onChange={() => setTipoCliente("revenda")}
+                                  className="hidden" />
+                                🏢 Revenda
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Destinatário */}
                   <div>
                     <label className="text-sm font-semibold text-gray-700 block mb-2">
@@ -463,6 +539,11 @@ export default function EmitirNFe() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-800">Produtos / Itens</h2>
+                    {selectedRegra && (
+                      <div className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full">
+                        {selectedRegra.nome} · {tipoCliente === "revenda" ? "🏢 Revenda" : "👤 Cons. Final"}
+                      </div>
+                    )}
                     <button onClick={() => setItemModal(true)}
                       className="flex items-center gap-1.5 text-white text-sm font-medium px-3 py-2 rounded-xl"
                       style={{ backgroundColor: "#0B63D4" }}>
@@ -688,6 +769,7 @@ export default function EmitirNFe() {
       {itemModal && (
         <ItemModal
           empresaId={client?.id}
+          regraConfig={getRegaConfig()}
           onAdd={item => setItens(p => [...p, item])}
           onClose={() => setItemModal(false)}
         />
