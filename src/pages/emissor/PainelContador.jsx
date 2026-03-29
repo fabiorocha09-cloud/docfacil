@@ -14,7 +14,7 @@ const REGIME_LABELS = {
 function EmpresaModal({ empresa, onClose, onSave }) {
   const [form, setForm] = useState(empresa || {
     cnpj: "", razao_social: "", nome_fantasia: "", email: "", telefone: "",
-    municipio: "", uf: "PA", ie: "", regime_tributario: "simples_nacional", ativo: true, nfe_ativo: true,
+    municipio: "", uf: "PA", ie: "", inscricao_municipal: "", regime_tributario: "simples_nacional", ativo: true, nfe_ativo: true,
     nfe_io_company_id: "", nfe_ambiente: "homologacao",
   });
   const [saving, setSaving] = useState(false);
@@ -77,6 +77,11 @@ function EmpresaModal({ empresa, onClose, onSave }) {
               <label className="text-sm font-medium text-gray-700">Inscrição Estadual</label>
               <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
                 placeholder="Deixe em branco se isento" value={form.ie || ""} onChange={e => set("ie", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <label className="text-sm font-medium text-gray-700">Inscrição Municipal (ISS)</label>
+              <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                placeholder="Deixe em branco se não aplicável" value={form.inscricao_municipal || ""} onChange={e => set("inscricao_municipal", e.target.value)} />
             </div>
           </div>
           <div>
