@@ -272,19 +272,31 @@ export default function EditarEmpresa() {
 
                 {testeResult && (
                   <div className={`mt-3 rounded-xl p-4 border text-sm ${
-                    testeResult.ok ? "bg-emerald-50 border-emerald-200" : testeResult.municipal_error ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"
+                    testeResult.ok ? "bg-emerald-50 border-emerald-200" :
+                    testeResult.municipal_error ? "bg-amber-50 border-amber-200" :
+                    "bg-red-50 border-red-200"
                   }`}>
                     <div className="flex items-center gap-2 font-semibold mb-2">
                       {testeResult.ok
-                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">Empresa encontrada na NFE.io!</span></>
+                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">Empresa encontrada na NFE.io! Conexão OK.</span></>
                         : testeResult.municipal_error
-                        ? <><AlertTriangle className="w-4 h-4 text-amber-500" /> <span className="text-amber-700">Inscrição Municipal não configurada</span></>
-                        : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">Status: {testeResult.status}</span></>}
+                        ? <><CheckCircle2 className="w-4 h-4 text-amber-500" /> <span className="text-amber-700">Empresa encontrada — Inscrição Municipal pendente</span></>
+                        : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">Erro ao conectar (status {testeResult.status})</span></>}
                     </div>
-                    {testeResult.message && (
-                      <p className="text-sm text-amber-700 mb-2">{testeResult.message}</p>
+                    {testeResult.municipal_error && (
+                      <div className="text-sm text-amber-800 space-y-2">
+                        <p>✅ <strong>Company ID válido</strong> — a empresa foi localizada no NFE.io.</p>
+                        <p>⚠️ A <strong>Inscrição Municipal (ISS)</strong> não está configurada no sistema do NFE.io.</p>
+                        <p>Para corrigir, acesse o painel do NFE.io:</p>
+                        <ol className="list-decimal ml-5 space-y-1 text-xs">
+                          <li>Acesse <a href="https://app.nfe.io" target="_blank" rel="noreferrer" className="underline font-medium">app.nfe.io</a></li>
+                          <li>Vá em <strong>Empresa → Dados da Empresa</strong></li>
+                          <li>Preencha o campo <strong>Inscrição Municipal</strong> com: <code className="bg-amber-100 px-1 rounded font-mono">{form.inscricao_municipal || "(preencha acima)"}</code></li>
+                          <li>Salve e teste novamente</li>
+                        </ol>
+                      </div>
                     )}
-                    {!testeResult.message && (
+                    {!testeResult.municipal_error && !testeResult.ok && (
                       <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
                         {JSON.stringify(testeResult.data, null, 2)}
                       </pre>
