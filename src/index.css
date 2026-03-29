@@ -6,6 +6,8 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
+    --glass-bg: 255 255 255 / 0.7;
+    --glass-border: 255 255 255 / 0.18;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -42,6 +44,8 @@
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
+    --glass-bg: 30 30 46 / 0.5;
+    --glass-border: 255 255 255 / 0.1;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
