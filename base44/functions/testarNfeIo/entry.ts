@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const NFE_IO_BASE = "https://api.nfe.io/v1";
 const NFSE_IO_BASE = "https://api.nfse.io/v2";
 
 Deno.serve(async (req) => {
@@ -136,13 +135,13 @@ Deno.serve(async (req) => {
       return Response.json({ ok: mtResp.ok, status: mtResp.status, data: mtResult });
     }
 
-    // Ação padrão: testar conexão com ID existente na NFe.io v1 (NF-e modelo 55)
-    const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, {
+    // Ação padrão: testar conexão com ID existente na NFSe.io v2 (NF-e produto)
+    const getResp = await fetch(`${NFSE_IO_BASE}/companies/${companyId}`, {
       method: 'GET',
       headers: { 'Authorization': apiKey, 'Accept': 'application/json' },
     });
     const getRaw = await getResp.text();
-    console.log('GET /v1/companies status:', getResp.status, getRaw.substring(0, 300));
+    console.log('GET /v2/companies status:', getResp.status, getRaw.substring(0, 300));
 
     let result;
     try { result = JSON.parse(getRaw); } catch { result = getRaw; }
