@@ -53,6 +53,26 @@ export default function HistoricoNotas() {
     setNotas(data.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
   };
 
+  const handleSincronizar = async (nota, e) => {
+    e.stopPropagation();
+    try {
+      const res = await base44.functions.invoke('sincronizarNfe', {
+        notaId: nota.id,
+        empresaId: nota.empresa_id,
+      });
+      if (res.data?.error) {
+        alert('Erro ao sincronizar: ' + res.data.error);
+        return;
+      }
+      // Recarrega lista
+      const data = await base44.entities.NotaFiscal55.filter({ empresa_id: nota.empresa_id });
+      setNotas(data.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+      alert('Nota sincronizada com sucesso!');
+    } catch (err) {
+      alert('Erro ao sincronizar: ' + (err?.response?.data?.error || err?.message));
+    }
+  };
+
   const handleCopiarChave = (nota, e) => {
     e.stopPropagation();
     if (nota.chave_acesso) {
@@ -164,7 +184,7 @@ export default function HistoricoNotas() {
                           <ExternalLink className="w-4 h-4 mr-2" /> Abrir outra aba
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled>
+                        <DropdownMenuItem onClick={(e) => handleSincronizar(nota, e)} disabled={!nota.chave_acesso}>
                           <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar
                         </DropdownMenuItem>
                         <DropdownMenuItem disabled>

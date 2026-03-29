@@ -196,20 +196,23 @@ Deno.serve(async (req) => {
     // Atualiza nota com retorno do NFE.io — salva raw para diagnóstico
     const nfeData = result.nfe || result;
 
-    // Tenta todas as variações de campo que a API NFE.io pode retornar
+    // Extrai links conforme documentação NFE.io v2
     const danfePdf =
+      nfeData.links?.pdf ||
+      nfeData.links?.danfe ||
       nfeData.linkDanfe ||
       nfeData.danfeUrl ||
       nfeData.pdfUrl ||
       nfeData.linkDanfePdf ||
-      nfeData.links?.danfe ||
+      result.links?.pdf ||
       result.linkDanfe ||
       null;
 
     const xmlUrl =
+      nfeData.links?.xml ||
       nfeData.linkXml ||
       nfeData.xmlUrl ||
-      nfeData.links?.xml ||
+      result.links?.xml ||
       result.linkXml ||
       null;
 
