@@ -18,6 +18,10 @@
     "chave_acesso": {
       "type": "string"
     },
+    "nfe_io_id": {
+      "type": "string",
+      "description": "ID interno da nota no NFE.io (usado para consultas futuras)"
+    },
     "status_sefaz": {
       "type": "string",
       "enum": [
@@ -31,8 +35,7 @@
       "default": "rascunho"
     },
     "natureza_operacao": {
-      "type": "string",
-      "description": "Descri\u00e7\u00e3o da natureza da opera\u00e7\u00e3o"
+      "type": "string"
     },
     "destinatario_id": {
       "type": "string"
@@ -68,12 +71,10 @@
       "type": "string"
     },
     "dest_codigo_municipio": {
-      "type": "string",
-      "description": "C\u00f3digo IBGE do munic\u00edpio do destinat\u00e1rio"
+      "type": "string"
     },
     "dest_ie": {
-      "type": "string",
-      "description": "Inscri\u00e7\u00e3o Estadual do destinat\u00e1rio"
+      "type": "string"
     },
     "dest_indicador_ie": {
       "type": "string",
@@ -82,17 +83,14 @@
         "Exempt",
         "NonTaxPayer"
       ],
-      "default": "NonTaxPayer",
-      "description": "Indicador da IE do destinat\u00e1rio"
+      "default": "NonTaxPayer"
     },
     "forma_pagamento": {
-      "type": "string",
-      "description": "Descri\u00e7\u00e3o da forma de pagamento"
+      "type": "string"
     },
     "forma_pagamento_codigo": {
       "type": "string",
-      "default": "01",
-      "description": "C\u00f3digo da forma de pagamento (01=Dinheiro, 03=Cart\u00e3o Cr\u00e9dito, 04=Cart\u00e3o D\u00e9bito, 17=PIX)"
+      "default": "01"
     },
     "tipo_cliente": {
       "type": "string",
