@@ -30,26 +30,26 @@ Deno.serve(async (req) => {
       };
 
       const payload = {
-        name: empresa.razao_social,
-        tradeName: empresa.nome_fantasia || empresa.razao_social,
-        federalTaxNumber: empresa.cnpj?.replace(/\D/g, ''),
-        municipalTaxNumber: empresa.inscricao_municipal || '',
-        email: empresa.email || '',
-        address: {
-          country: 'BRA',
-          postalCode: empresa.cep?.replace(/\D/g, '') || '',
-          street: empresa.logradouro || '',
-          number: empresa.numero || 'S/N',
-          additionalInformation: empresa.complemento || '',
-          district: empresa.bairro || '',
-          city: {
-            name: empresa.municipio || '',
-            ...(empresa.codigo_ibge_municipio ? { code: parseInt(empresa.codigo_ibge_municipio, 10) } : {}),
+        company: {
+          name: empresa.razao_social,
+          tradeName: empresa.nome_fantasia || empresa.razao_social,
+          federalTaxNumber: Number(empresa.cnpj?.replace(/\D/g, '')),
+          address: {
+            country: 'BRA',
+            postalCode: empresa.cep?.replace(/\D/g, '') || '',
+            street: empresa.logradouro || '',
+            number: empresa.numero || 'S/N',
+            additionalInformation: empresa.complemento || '',
+            district: empresa.bairro || '',
+            city: {
+              name: empresa.municipio || '',
+              ...(empresa.codigo_ibge_municipio ? { code: String(empresa.codigo_ibge_municipio) } : {}),
+            },
+            state: empresa.uf || '',
           },
-          state: empresa.uf || '',
+          stateTaxes: empresa.ie ? [empresa.ie] : [],
+          taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
         },
-        stateRegistration: empresa.ie || '',
-        taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
       };
 
       console.log('Criando empresa na NFE.io:', JSON.stringify(payload));
