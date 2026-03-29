@@ -298,13 +298,13 @@ export default function Produtos() {
             <table className="w-full text-sm min-w-[640px]">
               <thead>
                 <tr className={`border-b ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
-                  <th className={`text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Produto</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">NCM</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unid.</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Preço</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">CFOP</th>
-                  <th className="px-4 py-3"></th>
-                </tr>
+                  <th className={`text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Produto</th>
+                    <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>NCM</th>
+                    <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Unid.</th>
+                    <th className={`text-right px-4 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Preço</th>
+                    <th className={`text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>CFOP</th>
+                    <th className="px-4 py-3"></th>
+                  </tr>
               </thead>
               <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-50'}`}>
                 <AnimatePresence>

@@ -58,7 +58,7 @@ export default function Tributacao() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Tributação</h1>
-          <p className="text-gray-500 text-sm">
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {client?.razao_social} · {itens.length} regra(s) cadastrada(s)
             {isSimples && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Simples Nacional</span>}
           </p>
@@ -103,8 +103,8 @@ export default function Tributacao() {
 
                       <div className="flex items-center gap-1.5 mt-1">
                         {item.todos_estados
-                          ? <><Globe className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">Todos os estados</span></>
-                          : <><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className="text-xs text-gray-500">{(Array.isArray(item.estados) ? item.estados : []).join(", ")}</span></>
+                          ? <><Globe className="w-3.5 h-3.5 text-gray-400" /><span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Todos os estados</span></>
+                          : <><MapPin className="w-3.5 h-3.5 text-gray-400" /><span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{(Array.isArray(item.estados) ? item.estados : []).join(", ")}</span></>
                         }
                       </div>
 
@@ -121,9 +121,9 @@ export default function Tributacao() {
                                 {tipo === "revenda" ? "🏢 Cliente Revenda" : "👤 Consumidor Final"}
                               </p>
                               <div className="space-y-0.5">
-                                {csosn && <p className="text-xs text-gray-700">ICMS: <span className="font-medium">{isSimples ? "CSOSN" : "CST"} {csosn}</span></p>}
-                                {pisCst && <p className="text-xs text-gray-700">PIS: <span className="font-medium">CST {pisCst}</span> {conf.pis_aliquota > 0 && `· ${conf.pis_aliquota}%`}</p>}
-                                {cofinsCst && <p className="text-xs text-gray-700">COFINS: <span className="font-medium">CST {cofinsCst}</span> {conf.cofins_aliquota > 0 && `· ${conf.cofins_aliquota}%`}</p>}
+                                {csosn && <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>ICMS: <span className="font-medium">{isSimples ? "CSOSN" : "CST"} {csosn}</span></p>}
+                                {pisCst && <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>PIS: <span className="font-medium">CST {pisCst}</span> {conf.pis_aliquota > 0 && `· ${conf.pis_aliquota}%`}</p>}
+                                {cofinsCst && <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>COFINS: <span className="font-medium">CST {cofinsCst}</span> {conf.cofins_aliquota > 0 && `· ${conf.cofins_aliquota}%`}</p>}
                               </div>
                             </div>
                           );

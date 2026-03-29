@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Building2, MapPin, Settings, Save, Loader2, CheckCircle2, AlertTriangle, ExternalLink, Search } from "lucide-react";
 
@@ -10,6 +11,7 @@ const TABS = [
 ];
 
 export default function EditarEmpresa() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [empresa, setEmpresa] = useState(null);
@@ -205,17 +207,17 @@ export default function EditarEmpresa() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Editar Empresa</h1>
-        <p className="text-gray-500 text-sm">{client?.razao_social}</p>
+        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Editar Empresa</h1>
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social}</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl shadow-sm overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
         {/* Tabs */}
-        <div className="flex border-b border-gray-100">
+        <div className={`flex border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setAba(id)}
               className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors border-b-2 ${
-                aba === id ? "border-[#0B63D4] text-[#0B63D4]" : "border-transparent text-gray-400 hover:text-gray-600"
+                aba === id ? "border-[#0B63D4] text-[#0B63D4]" : theme === 'dark' ? 'border-transparent text-gray-400 hover:text-gray-200' : "border-transparent text-gray-400 hover:text-gray-600"
               }`}>
               <Icon className="w-4 h-4" /> {label}
             </button>
@@ -228,43 +230,43 @@ export default function EditarEmpresa() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Razão Social *</label>
-                  <input required className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Razão Social *</label>
+                  <input required className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     value={form.razao_social} onChange={e => set("razao_social", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Nome Fantasia</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Nome Fantasia</label>
+                  <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     value={form.nome_fantasia} onChange={e => set("nome_fantasia", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">CNPJ *</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>CNPJ *</label>
+                  <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     placeholder="00.000.000/0000-00" value={form.cnpj} onChange={e => set("cnpj", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Inscrição Estadual</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Inscrição Estadual</label>
+                  <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     placeholder="Deixe vazio se isento" value={form.ie} onChange={e => set("ie", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Inscrição Municipal (ISS)</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Inscrição Municipal (ISS)</label>
+                  <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     placeholder="Deixe vazio se não aplicável" value={form.inscricao_municipal} onChange={e => set("inscricao_municipal", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">E-mail</label>
-                  <input type="email" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>E-mail</label>
+                  <input type="email" className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     value={form.email} onChange={e => set("email", e.target.value)} />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Telefone</label>
-                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Telefone</label>
+                  <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                     value={form.telefone} onChange={e => set("telefone", e.target.value)} />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-sm font-semibold text-gray-700 block mb-1">Regime Tributário</label>
-                  <select className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] bg-white"
+                  <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Regime Tributário</label>
+                  <select className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                     value={form.regime_tributario} onChange={e => set("regime_tributario", e.target.value)}>
                     <option value="simples_nacional">Simples Nacional</option>
                     <option value="lucro_presumido">Lucro Presumido</option>
@@ -279,44 +281,44 @@ export default function EditarEmpresa() {
           {aba === "endereco" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Logradouro</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Logradouro</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   placeholder="Rua, Av, Travessa..." value={form.logradouro} onChange={e => set("logradouro", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Número</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Número</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.numero} onChange={e => set("numero", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Complemento</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Complemento</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.complemento} onChange={e => set("complemento", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Bairro</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Bairro</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.bairro} onChange={e => set("bairro", e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Município</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Município</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.municipio} onChange={e => handleMunicipioChange(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">UF</label>
-                <input maxLength={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] uppercase"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>UF</label>
+                <input maxLength={2} className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] uppercase ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.uf} onChange={e => handleUfChange(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">CEP</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>CEP</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   placeholder="00000-000" value={form.cep} onChange={e => set("cep", e.target.value)} />
               </div>
 
               {/* Código IBGE */}
               <div className="sm:col-span-2">
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Código IBGE do Município</label>
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Código IBGE do Município</label>
                 <div className="flex gap-2 items-center">
                   <input
                     className={`flex-1 border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] font-mono ${
@@ -351,8 +353,8 @@ export default function EditarEmpresa() {
           {aba === "nfeio" && (
             <div className="space-y-5">
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Company ID (Empresa ID na NFE.io) *</label>
-                <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] font-mono"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Company ID (Empresa ID na NFE.io) *</label>
+                <input className={`w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] font-mono ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   placeholder="Ex: 8283254bc21a45618bc77e2fbc817970"
                   value={form.nfe_io_company_id} onChange={e => set("nfe_io_company_id", e.target.value)} />
                 <p className="text-xs text-gray-400 mt-1">
@@ -361,10 +363,10 @@ export default function EditarEmpresa() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-2">Ambiente de Emissão</label>
+                <label className={`text-sm font-semibold block mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Ambiente de Emissão</label>
                 <div className="flex gap-3">
                   <label className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-colors ${
-                    form.nfe_ambiente === "homologacao" ? "border-amber-400 bg-amber-50" : "border-gray-200 hover:bg-gray-50"
+                    form.nfe_ambiente === "homologacao" ? "border-amber-400 bg-amber-50" : theme === 'dark' ? 'border-white/10 hover:bg-white/5' : "border-gray-200 hover:bg-gray-50"
                   }`}>
                     <input type="radio" name="ambiente" value="homologacao"
                       checked={form.nfe_ambiente === "homologacao"}
@@ -375,7 +377,7 @@ export default function EditarEmpresa() {
                     </div>
                   </label>
                   <label className={`flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-colors ${
-                    form.nfe_ambiente === "producao" ? "border-emerald-400 bg-emerald-50" : "border-gray-200 hover:bg-gray-50"
+                    form.nfe_ambiente === "producao" ? "border-emerald-400 bg-emerald-50" : theme === 'dark' ? 'border-white/10 hover:bg-white/5' : "border-gray-200 hover:bg-gray-50"
                   }`}>
                     <input type="radio" name="ambiente" value="producao"
                       checked={form.nfe_ambiente === "producao"}
@@ -389,14 +391,14 @@ export default function EditarEmpresa() {
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-gray-700 block mb-1">Série da NF-e</label>
-                <input maxLength={3} className="w-32 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                <label className={`text-sm font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Série da NF-e</label>
+                <input maxLength={3} className={`w-32 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`}
                   value={form.nfe_serie} onChange={e => set("nfe_serie", e.target.value)} />
               </div>
 
               {/* Teste de conexão / Criar empresa */}
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Conectar com NFE.io</p>
+              <div className={`border-t pt-4 ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
+                <p className={`text-sm font-semibold mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Conectar com NFE.io</p>
                 <div className="flex gap-2 flex-wrap">
                   <button onClick={testarConexao} disabled={testando || criando || !form.nfe_io_company_id}
                     className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 transition-colors">
@@ -503,7 +505,7 @@ export default function EditarEmpresa() {
         </div>
 
         {/* Botão salvar */}
-        <div className="px-6 pb-6">
+        <div className={`px-6 pb-6 border-t pt-6 ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
           <button onClick={handleSave} disabled={saving}
             className="w-full flex items-center justify-center gap-2 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50"
             style={{ backgroundColor: "#0B63D4" }}>
