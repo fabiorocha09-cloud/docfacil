@@ -432,7 +432,7 @@ export default function EmitirNFe() {
 
                   {/* Natureza */}
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 block mb-2">
+                    <label className={`text-sm font-semibold block mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                       <Layers className="w-4 h-4 inline mr-1" /> Natureza da Operação *
                     </label>
                     {naturezas.length === 0 ? (
@@ -459,7 +459,7 @@ export default function EmitirNFe() {
 
                   {/* Regra de Tributação + Tipo de Cliente */}
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 block mb-2">
+                    <label className={`text-sm font-semibold block mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                       <Calculator className="w-4 h-4 inline mr-1" /> Tributação
                     </label>
                     {regras.length === 0 ? (
@@ -515,7 +515,7 @@ export default function EmitirNFe() {
 
                   {/* Destinatário */}
                   <div>
-                    <label className="text-sm font-semibold text-gray-700 block mb-2">
+                    <label className={`text-sm font-semibold block mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
                       <User className="w-4 h-4 inline mr-1" /> Destinatário *
                     </label>
                     <div className="relative mb-3">
@@ -644,21 +644,21 @@ export default function EmitirNFe() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 block mb-1">Forma de pagamento *</label>
+                      <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Forma de pagamento *</label>
                       <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.forma_pagamento} onChange={e => setAv("forma_pagamento", e.target.value)}>
                         {FORMAS_PAGAMENTO.map(f => <option key={f}>{f}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 block mb-1">Indicador de intermediador</label>
+                      <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Indicador de intermediador</label>
                       <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.indicador_intermediador} onChange={e => setAv("indicador_intermediador", e.target.value)}>
                         {INDICADORES_INTERMEDIADOR.map(f => <option key={f}>{f}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-gray-500 block mb-1">Atendimento</label>
+                      <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Atendimento</label>
                       <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.atendimento} onChange={e => setAv("atendimento", e.target.value)}>
                         {TIPOS_ATENDIMENTO.map(f => <option key={f}>{f}</option>)}
@@ -667,7 +667,7 @@ export default function EmitirNFe() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 block mb-1">Indicador de operação *</label>
+                    <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Indicador de operação *</label>
                     <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                       value={avancado.indicador_operacao} onChange={e => setAv("indicador_operacao", e.target.value)}>
                       {INDICADORES_OPERACAO.map(f => <option key={f}>{f}</option>)}
@@ -675,7 +675,7 @@ export default function EmitirNFe() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 block mb-1">Informações Complementares de interesse do Contribuinte</label>
+                    <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>Informações Complementares de interesse do Contribuinte</label>
                     <textarea rows={3} value={avancado.info_complementar}
                       onChange={e => setAv("info_complementar", e.target.value)}
                       className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`} />
@@ -689,7 +689,7 @@ export default function EmitirNFe() {
                       ["desconto_total","Desconto total"],
                     ].map(([k, label]) => (
                       <div key={k}>
-                        <label className="text-xs font-semibold text-gray-500 block mb-1">{label}</label>
+                        <label className={`text-xs font-semibold block mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>{label}</label>
                         <div className="relative">
                           <span className="absolute left-3 top-2 text-xs text-gray-400">R$</span>
                           <input type="number" min="0" step="0.01"
