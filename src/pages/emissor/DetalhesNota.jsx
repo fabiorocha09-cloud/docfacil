@@ -78,11 +78,27 @@ export default function DetalhesNota() {
   };
 
   const handleCancelar = async () => {
-    if (!confirm("Confirmar cancelamento desta NF-e?")) return;
+    const justificativa = prompt("Informe a justificativa do cancelamento (mínimo 15 caracteres):");
+    if (!justificativa || justificativa.trim().length < 15) {
+      alert("Justificativa deve ter pelo menos 15 caracteres.");
+      return;
+    }
     setCancelando(true);
-    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: "cancelada" });
-    await carregar();
-    setCancelando(false);
+    try {
+      const res = await base44.functions.invoke('cancelarNfe', {
+        notaId: nota.id,
+        empresaId: nota.empresa_id,
+        justificativa: justificativa.trim(),
+      });
+      if (res.data?.error) {
+        alert('Erro ao cancelar: ' + res.data.error);
+      }
+    } catch (err) {
+      alert('Erro ao cancelar: ' + (err?.response?.data?.error || err?.message));
+    } finally {
+      setCancelando(false);
+      await carregar();
+    }
   };
 
   const handleReenviar = async () => {
