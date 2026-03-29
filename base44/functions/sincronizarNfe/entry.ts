@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { notaId, empresaId } = await req.json();
+    const { notaId, empresaId, chaveManual } = await req.json();
 
     const apiKey = Deno.env.get("NFE_IO_API_KEY");
     if (!apiKey) return Response.json({ error: 'NFE_IO_API_KEY não configurada' }, { status: 500 });
@@ -22,10 +22,17 @@ Deno.serve(async (req) => {
     const empresa = empresas[0];
 
     if (!nota || !empresa) return Response.json({ error: 'Nota ou empresa não encontrada' }, { status: 404 });
-    // Limpa chave de acesso (remove espaços e caracteres não numéricos)
-    const chave = (nota.chave_acesso || '').replace(/\D/g, '');
-    if (!chave || chave.length < 44) return Response.json({ error: 'Nota sem chave de acesso válida (44 dígitos) — não é possível sincronizar' }, { status: 400 });
-    if (!empresa.nfe_io_company_id) return Response.json({ error: 'NFE.io Company ID não configurado na empresa' }, { status: 400 });
+
+    // Usa chave manual se fornecida, senão usa a do banco
+    const chaveRaw = chaveManual || nota.chave_acesso || '';
+    const chave = chaveRaw.replace(/\D/g, '');
+
+    if (!chave || chave.length < 44) {
+      return Response.json({ error: 'Nota sem chave de acesso válida (44 dígitos) — informe a chave manualmente.' }, { status: 400 });
+    }
+    if (!empresa.nfe_io_company_id) {
+      return Response.json({ error: 'NFE.io Company ID não configurado na empresa' }, { status: 400 });
+    }
 
     // Busca dados da nota na NFE.io usando a chave de acesso (endpoint de notas emitidas)
     const response = await fetch(
@@ -52,11 +59,11 @@ Deno.serve(async (req) => {
 
     const updates = {
       nfe_io_raw: data,
+      chave_acesso: chaveRetorno,
     };
 
     if (danfePdf) updates.danfe_pdf_url = danfePdf;
     if (xmlUrl)   updates.retorno_xml_url = xmlUrl;
-    if (chaveRetorno) updates.chave_acesso = chaveRetorno;
     if (protocolo) updates.protocolo = protocolo;
 
     // Atualiza status se a NFE.io indicar autorizada

@@ -55,10 +55,20 @@ export default function HistoricoNotas() {
 
   const handleSincronizar = async (nota, e) => {
     e.stopPropagation();
+    let chaveManual = null;
+    if (!nota.chave_acesso || nota.chave_acesso.replace(/\D/g, '').length < 44) {
+      const input = prompt("A nota não possui chave de acesso salva. Informe a chave de acesso de 44 dígitos:");
+      if (!input || input.replace(/\D/g, '').length < 44) {
+        alert('Chave inválida. Informe os 44 dígitos.');
+        return;
+      }
+      chaveManual = input.trim();
+    }
     try {
       const res = await base44.functions.invoke('sincronizarNfe', {
         notaId: nota.id,
         empresaId: nota.empresa_id,
+        chaveManual,
       });
       if (res.data?.error) {
         alert('Erro ao sincronizar: ' + res.data.error);
