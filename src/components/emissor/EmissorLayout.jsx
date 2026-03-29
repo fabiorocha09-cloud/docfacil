@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import ModuloDropdown from "@/components/ModuloDropdown";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, ChevronDown, BookOpen, CreditCard, Layers, Package, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, History, Users, ShieldCheck, ArrowLeft, Menu, ChevronDown, BookOpen, CreditCard, Layers, Package, Settings, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
