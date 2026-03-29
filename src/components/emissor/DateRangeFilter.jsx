@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { Calendar, ChevronDown } from "lucide-react";
 import { startOfMonth, endOfMonth, subMonths, subDays } from "date-fns";
 
@@ -23,6 +24,7 @@ export function getDateRange(preset) {
 }
 
 export default function DateRangeFilter({ value, onChange }) {
+  const { theme } = useTheme();
   const [open, setOpen] = useState(false);
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -53,7 +55,7 @@ export default function DateRangeFilter({ value, onChange }) {
     <div className="relative">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 hover:border-[#0B63D4] shadow-sm whitespace-nowrap transition-colors"
+        className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium shadow-sm whitespace-nowrap transition-colors backdrop-blur-md ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-gray-300 hover:bg-white/20' : 'bg-white border border-gray-200 text-gray-700 hover:border-[#0B63D4]'}`}
       >
         <Calendar className="w-4 h-4 text-gray-400" />
         {currentLabel}
@@ -63,16 +65,12 @@ export default function DateRangeFilter({ value, onChange }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 p-2 min-w-[200px]">
+          <div className={`absolute right-0 top-full mt-1 rounded-2xl shadow-xl z-50 p-2 min-w-[200px] backdrop-blur-md ${theme === 'dark' ? 'bg-gray-800 border border-white/10' : 'bg-white border border-gray-200'}`}>
             {PRESETS.map(p => (
               <button
                 key={p.key}
                 onClick={() => handlePreset(p.key)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
-                  preset === p.key
-                    ? "bg-[#E6F0FF] text-[#0B63D4] font-semibold"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${preset === p.key ? (theme === 'dark' ? 'bg-blue-500/20 text-blue-300 font-semibold' : 'bg-[#E6F0FF] text-[#0B63D4] font-semibold') : (theme === 'dark' ? 'text-gray-300 hover:bg-white/10' : 'text-gray-700 hover:bg-gray-50')}`}
               >
                 {p.label}
               </button>

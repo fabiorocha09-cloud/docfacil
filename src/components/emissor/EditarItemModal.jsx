@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { X, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const fmt = v => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 export default function EditarItemModal({ item, onClose, onSave }) {
+  const { theme } = useTheme();
   const [form, setForm] = useState(item || {
     descricao: "", ncm: "", cfop: "5102", unidade: "UN",
     quantidade: 1, valor_unitario: 0,
@@ -32,9 +34,9 @@ export default function EditarItemModal({ item, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">{item ? "Editar Item" : "Novo Item"}</h2>
+        className={`rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-md ${theme === 'dark' ? 'bg-gray-800 border border-white/10' : 'bg-white'}`}>
+        <div className={`flex items-center justify-between p-5 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
+          <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{item ? "Editar Item" : "Novo Item"}</h2>
           <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">

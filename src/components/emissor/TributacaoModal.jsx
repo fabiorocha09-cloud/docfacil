@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { X, ChevronLeft, Loader2, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -336,6 +337,7 @@ function ClienteTab({ data, onChange, isSimples }) {
 }
 
 export default function TributacaoModal({ item, empresaId, regimeTributario, onClose, onSave }) {
+  const { theme } = useTheme();
   const isSimples = (regimeTributario || "simples_nacional") === "simples_nacional";
 
   const [step, setStep] = useState(0);
@@ -379,12 +381,12 @@ export default function TributacaoModal({ item, empresaId, regimeTributario, onC
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        className={`rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col backdrop-blur-md ${theme === 'dark' ? 'bg-gray-800 border border-white/10' : 'bg-white'}`}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className={`flex items-center justify-between px-6 py-4 border-b flex-shrink-0 ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
           <div>
-            <h2 className="font-semibold text-gray-900">
+            <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
               {step === 0 ? (item ? "Editar Regra de Tributação" : "Nova Regra de Tributação") : nome}
             </h2>
             <p className="text-xs text-gray-400 mt-0.5">
@@ -487,7 +489,7 @@ export default function TributacaoModal({ item, empresaId, regimeTributario, onC
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 flex-shrink-0">
+        <div className={`flex items-center justify-between px-6 py-4 border-t flex-shrink-0 ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
           {step === 0 ? (
             <>
               <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 font-medium">Cancelar</button>
