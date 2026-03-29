@@ -80,6 +80,19 @@ export default function DetalhesNota() {
   const params = new URLSearchParams(window.location.search);
   const notaId = params.get("id");
 
+  // Carrega empresa ao montar
+  useEffect(() => {
+    try {
+      const c = localStorage.getItem("emissor_current_client");
+      if (c) setEmpresa(JSON.parse(c));
+    } catch { }
+  }, []);
+
+  // Carrega a nota quando notaId muda
+  useEffect(() => {
+    if (notaId) carregar();
+  }, [notaId]);
+
   // Calcula totais dinamicamente baseado nos itens
   const totais = useMemo(() => {
     const produtos = itens.reduce((s, i) => s + Number(i.valor_total || 0), 0);
@@ -218,7 +231,7 @@ export default function DetalhesNota() {
     await base44.entities.NotaFiscal55.update(nota.id, nota);
     setEditando(false);
     alert("Nota salva!");
-    carregar();
+    await carregar();
   };
 
   const handleSalvarItem = async (dados) => {
@@ -229,13 +242,13 @@ export default function DetalhesNota() {
     }
     setItemModalOpen(false);
     setItemEditando(null);
-    carregar();
+    await carregar();
   };
 
   const handleExcluirItem = async (id) => {
     if (!confirm("Excluir este item?")) return;
     await base44.entities.ItemNota.delete(id);
-    carregar();
+    await carregar();
   };
 
   if (loading) return (
