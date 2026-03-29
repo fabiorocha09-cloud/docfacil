@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { FileCheck2, Building2, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +13,7 @@ const statusConfig = {
 };
 
 export default function Dashboard() {
+  const { theme } = useTheme();
   const [certidoes, setCertidoes] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,16 +52,16 @@ export default function Dashboard() {
   const recentes = certidoes.slice(0, 8);
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${theme === 'dark' ? 'bg-gray-900 min-h-screen' : 'bg-gray-50'}`}>
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Visão geral da saúde fiscal dos seus clientes</p>
+        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Dashboard</h1>
+        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Visão geral da saúde fiscal dos seus clientes</p>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
+            <div key={i} className={`h-24 rounded-xl animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />
           ))}
         </div>
       ) : (
@@ -68,42 +70,50 @@ export default function Dashboard() {
             <div
               key={label}
               onClick={onClick || undefined}
-              className={`bg-white rounded-xl border border-gray-200 p-5 ${onClick ? "cursor-pointer hover:shadow-md hover:border-blue-300 transition-all" : ""}`}
+              className={`rounded-xl border p-5 backdrop-blur-md transition-all ${
+                theme === 'dark'
+                  ? `bg-white/10 border-white/20 hover:bg-white/15 ${onClick ? 'cursor-pointer' : ''}`
+                  : `bg-white border-gray-200 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : ''}`
+              }`}
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${color}`}>
-                <Icon className="w-5 h-5" />
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 backdrop-blur-sm ${
+                theme === 'dark' ? 'bg-white/20' : color
+              }`}>
+                <Icon className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : ''}`} />
               </div>
-              <p className="text-2xl font-bold text-gray-900">{value}</p>
-              <p className="text-sm text-gray-500 mt-1">{label}</p>
+              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{value}</p>
+              <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{label}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-900">Certidões Recentes</h2>
-          <Link to="/Certidoes" className="text-sm text-blue-600 hover:underline">Ver todas</Link>
+      <div className={`rounded-xl border overflow-hidden backdrop-blur-md ${
+        theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-white border-gray-200'
+      }`}>
+        <div className={`flex items-center justify-between p-5 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
+          <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Certidões Recentes</h2>
+          <Link to="/Certidoes" className="text-sm hover:underline" style={{ color: theme === 'dark' ? '#93c5fd' : '#2563eb' }}>Ver todas</Link>
         </div>
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-100 rounded animate-pulse" />)}
+            {[...Array(5)].map((_, i) => <div key={i} className={`h-10 rounded animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />)}
           </div>
         ) : recentes.length === 0 ? (
-          <div className="p-10 text-center text-gray-400">
+          <div className={`p-10 text-center ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
             <FileCheck2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
             <p>Nenhuma certidão cadastrada ainda.</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-100'}`}>
             {recentes.map(cert => {
               const cfg = statusConfig[cert.status] || statusConfig.pendente;
               const Icon = cfg.icon;
               return (
-                <div key={cert.id} className="flex items-center justify-between px-5 py-3 hover:bg-gray-50">
+                <div key={cert.id} className={`flex items-center justify-between px-5 py-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-50'}`}>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{cert.empresa_nome}</p>
-                    <p className="text-xs text-gray-500">{cert.subtipo || cert.tipo} · {cert.empresa_cnpj}</p>
+                    <p className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{cert.empresa_nome}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{cert.subtipo || cert.tipo} · {cert.empresa_cnpj}</p>
                   </div>
                   <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
                     <Icon className="w-3.5 h-3.5" />
@@ -118,18 +128,22 @@ export default function Dashboard() {
 
       {vencendoEm7.length > 0 && (
         <div
-          className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 cursor-pointer hover:shadow-md hover:border-yellow-400 transition-all"
+          className={`rounded-xl p-5 cursor-pointer transition-all backdrop-blur-md border ${
+            theme === 'dark'
+              ? 'bg-amber-500/10 border-amber-400/30 hover:bg-amber-500/20'
+              : 'bg-yellow-50 border-yellow-200 hover:shadow-md hover:border-yellow-400'
+          }`}
           onClick={() => navigate("/Certidoes?vencimento=7dias")}
         >
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Certidões vencendo em 7 dias</h3>
+            <AlertTriangle className={`w-5 h-5 ${theme === 'dark' ? 'text-amber-400' : 'text-yellow-600'}`} />
+            <h3 className={`font-semibold ${theme === 'dark' ? 'text-amber-200' : 'text-yellow-800'}`}>Certidões vencendo em 7 dias</h3>
           </div>
           <div className="space-y-2">
             {vencendoEm7.map(c => (
               <div key={c.id} className="flex items-center justify-between text-sm">
-                <span className="text-yellow-800">{c.empresa_nome} — {c.subtipo || c.tipo}</span>
-                <span className="text-yellow-700 font-medium">{new Date(c.data_vencimento).toLocaleDateString("pt-BR")}</span>
+                <span className={theme === 'dark' ? 'text-amber-300' : 'text-yellow-800'}>{c.empresa_nome} — {c.subtipo || c.tipo}</span>
+                <span className={`font-medium ${theme === 'dark' ? 'text-amber-300' : 'text-yellow-700'}`}>{new Date(c.data_vencimento).toLocaleDateString("pt-BR")}</span>
               </div>
             ))}
           </div>

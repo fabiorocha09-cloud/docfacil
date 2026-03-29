@@ -89,4 +89,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Glass Morphism Effect */
+  .glass-morphism {
+    @apply backdrop-blur-xl bg-white/30 dark:bg-white/10 border border-white/40 dark:border-white/20 rounded-2xl;
+  }
+
+  .glass-morphism-dark {
+    @apply backdrop-blur-xl bg-gray-900/30 dark:bg-white/5 border border-white/10 rounded-2xl;
+  }
 }
