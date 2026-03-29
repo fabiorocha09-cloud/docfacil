@@ -136,37 +136,21 @@ Deno.serve(async (req) => {
       return Response.json({ ok: mtResp.ok, status: mtResp.status, data: mtResult });
     }
 
-    // Ação padrão: testar conexão com ID existente
-    const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, { method: 'GET', headers });
+    // Ação padrão: testar conexão com ID existente na NFSe.io v2
+    const getResp = await fetch(`${NFSE_IO_BASE}/companies/${companyId}`, {
+      method: 'GET',
+      headers: { 'Authorization': apiKey, 'Accept': 'application/json' },
+    });
     const getRaw = await getResp.text();
-    console.log('GET status:', getResp.status, getRaw.substring(0, 300));
+    console.log('GET /v2/companies status:', getResp.status, getRaw.substring(0, 300));
 
     let result;
     try { result = JSON.parse(getRaw); } catch { result = getRaw; }
 
-    if (getResp.ok) {
-      return Response.json({ companyId, status: getResp.status, ok: true, data: result });
-    }
-
-    const isMunicipalError =
-      result?.errors?.some(e => e.code === 40401) ||
-      getRaw.includes('municipal tax not found');
-
-    // Se deu erro de municipal ou 404, verifica se nossa API key tem acesso
-    // Tenta listar para diagnosticar
-    const listResp = await fetch(`${NFE_IO_BASE}/companies`, { method: 'GET', headers });
-    const listRaw = await listResp.text();
-    let listResult;
-    try { listResult = JSON.parse(listRaw); } catch { listResult = {}; }
-
-    const apiKeyHasNoCompanies = listResult?.companies?.length === 0;
-
     return Response.json({
       companyId,
       status: getResp.status,
-      ok: false,
-      municipal_error: isMunicipalError,
-      api_key_has_no_companies: apiKeyHasNoCompanies,
+      ok: getResp.ok,
       data: result,
     });
 
