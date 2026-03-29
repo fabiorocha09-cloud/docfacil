@@ -88,14 +88,29 @@ export default function DetalhesNota() {
   const handleReenviar = async () => {
     if (!nota) return;
     setReenviando(true);
-    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
-    const res = await base44.functions.invoke('emitirNfe', {
-      notaId: nota.id,
-      empresaId: nota.empresa_id,
-      ambiente: empresa?.nfe_ambiente,
-    });
-    setReenviando(false);
-    await carregar();
+    try {
+      await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
+      const res = await base44.functions.invoke('emitirNfe', {
+        notaId: nota.id,
+        empresaId: nota.empresa_id,
+        ambiente: empresa?.nfe_ambiente || nota.empresa_id,
+      });
+      if (res.data?.error) {
+        await base44.entities.NotaFiscal55.update(notaId, {
+          status_sefaz: 'rejeitada',
+          erros: [{ message: res.data.error, details: res.data.details }],
+        });
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.message || 'Erro desconhecido';
+      await base44.entities.NotaFiscal55.update(notaId, {
+        status_sefaz: 'rejeitada',
+        erros: [{ message: msg }],
+      });
+    } finally {
+      setReenviando(false);
+      await carregar();
+    }
   };
 
   const handleClonar = async () => {
