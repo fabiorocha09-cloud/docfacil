@@ -18,37 +18,44 @@ Deno.serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // Se houver inscrição municipal, envia para o NFE.io antes de testar
+    // Se houver inscrição municipal, tenta atualizar no NFE.io
     if (inscricao_municipal) {
       const patchUrl = `${NFE_IO_BASE}/companies/${companyId}`;
-      const patchBody = JSON.stringify({
-        municipalTaxNumber: inscricao_municipal,
-      });
-      console.log('Atualizando inscrição municipal no NFE.io...');
       const patchResp = await fetch(patchUrl, {
-        method: 'PUT',
+        method: 'PATCH',
         headers,
-        body: patchBody,
+        body: JSON.stringify({ municipalTaxNumber: inscricao_municipal }),
       });
       const patchText = await patchResp.text();
-      console.log('PATCH status:', patchResp.status, 'body:', patchText);
+      console.log('PATCH municipal status:', patchResp.status, patchText);
     }
 
     // Testa a conexão consultando a empresa
     const url = `${NFE_IO_BASE}/companies/${companyId}`;
-    console.log('Testando URL:', url);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-    });
+    const response = await fetch(url, { method: 'GET', headers });
 
     const rawText = await response.text();
-    console.log('Status:', response.status);
-    console.log('Resposta:', rawText);
+    console.log('GET status:', response.status, rawText);
 
     let result;
     try { result = JSON.parse(rawText); } catch { result = rawText; }
+
+    // Trata especificamente o erro de inscrição municipal ausente
+    const isMunicipalError = !response.ok && (
+      result?.errors?.some(e => e.code === 40401) ||
+      rawText.includes('municipal tax not found')
+    );
+
+    if (isMunicipalError) {
+      return Response.json({
+        companyId,
+        status: response.status,
+        ok: false,
+        municipal_error: true,
+        data: result,
+        message: 'Empresa encontrada, mas a Inscrição Municipal (ISS) não está configurada no NFE.io. Preencha o campo "Inscrição Municipal" e salve antes de testar, ou configure diretamente no painel do NFE.io.',
+      });
+    }
 
     return Response.json({
       companyId,

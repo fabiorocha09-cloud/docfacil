@@ -272,16 +272,23 @@ export default function EditarEmpresa() {
 
                 {testeResult && (
                   <div className={`mt-3 rounded-xl p-4 border text-sm ${
-                    testeResult.ok ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
+                    testeResult.ok ? "bg-emerald-50 border-emerald-200" : testeResult.municipal_error ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"
                   }`}>
                     <div className="flex items-center gap-2 font-semibold mb-2">
                       {testeResult.ok
                         ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">Empresa encontrada na NFE.io!</span></>
+                        : testeResult.municipal_error
+                        ? <><AlertTriangle className="w-4 h-4 text-amber-500" /> <span className="text-amber-700">Inscrição Municipal não configurada</span></>
                         : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">Status: {testeResult.status}</span></>}
                     </div>
-                    <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
-                      {JSON.stringify(testeResult.data, null, 2)}
-                    </pre>
+                    {testeResult.message && (
+                      <p className="text-sm text-amber-700 mb-2">{testeResult.message}</p>
+                    )}
+                    {!testeResult.message && (
+                      <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
+                        {JSON.stringify(testeResult.data, null, 2)}
+                      </pre>
+                    )}
                   </div>
                 )}
               </div>
