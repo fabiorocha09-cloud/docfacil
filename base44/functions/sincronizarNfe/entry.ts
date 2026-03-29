@@ -22,12 +22,14 @@ Deno.serve(async (req) => {
     const empresa = empresas[0];
 
     if (!nota || !empresa) return Response.json({ error: 'Nota ou empresa não encontrada' }, { status: 404 });
-    if (!nota.chave_acesso) return Response.json({ error: 'Nota sem chave de acesso — não é possível sincronizar' }, { status: 400 });
+    // Limpa chave de acesso (remove espaços e caracteres não numéricos)
+    const chave = (nota.chave_acesso || '').replace(/\D/g, '');
+    if (!chave || chave.length < 44) return Response.json({ error: 'Nota sem chave de acesso válida (44 dígitos) — não é possível sincronizar' }, { status: 400 });
     if (!empresa.nfe_io_company_id) return Response.json({ error: 'NFE.io Company ID não configurado na empresa' }, { status: 400 });
 
-    // Busca dados da nota na NFE.io usando a chave de acesso (endpoint inbound)
+    // Busca dados da nota na NFE.io usando a chave de acesso (endpoint de notas emitidas)
     const response = await fetch(
-      `${NFE_IO_BASE}/companies/${empresa.nfe_io_company_id}/inbound/productinvoices/${nota.chave_acesso}`,
+      `${NFE_IO_BASE}/companies/${empresa.nfe_io_company_id}/productinvoices/${chave}`,
       { headers: { 'Authorization': apiKey, 'Accept': 'application/json' } }
     );
 
@@ -42,8 +44,11 @@ Deno.serve(async (req) => {
     }
 
     // Extrai links conforme documentação NFE.io v2
-    const danfePdf = data.links?.pdf || data.links?.danfe || data.linkDanfe || data.pdfUrl || null;
-    const xmlUrl   = data.links?.xml  || data.linkXml  || data.xmlUrl  || null;
+    const nfeData = data.nfe || data;
+    const danfePdf = nfeData.links?.pdf || nfeData.links?.danfe || nfeData.linkDanfe || nfeData.pdfUrl || data.links?.pdf || data.linkDanfe || null;
+    const xmlUrl   = nfeData.links?.xml  || nfeData.linkXml  || nfeData.xmlUrl  || data.links?.xml  || data.linkXml  || null;
+    const chaveRetorno = nfeData.chaveAcesso || nfeData.accessKey || nfeData.key || chave;
+    const protocolo = nfeData.protocolo || nfeData.number || nfeData.nProtocolo || nota.protocolo;
 
     const updates = {
       nfe_io_raw: data,
@@ -51,9 +56,12 @@ Deno.serve(async (req) => {
 
     if (danfePdf) updates.danfe_pdf_url = danfePdf;
     if (xmlUrl)   updates.retorno_xml_url = xmlUrl;
+    if (chaveRetorno) updates.chave_acesso = chaveRetorno;
+    if (protocolo) updates.protocolo = protocolo;
 
     // Atualiza status se a NFE.io indicar autorizada
-    if (data.description?.toLowerCase().includes('autorizado')) {
+    const desc = (nfeData.description || data.description || nfeData.status || '').toLowerCase();
+    if (desc.includes('autorizado') || desc.includes('authorized')) {
       updates.status_sefaz = 'transmitida';
     }
 

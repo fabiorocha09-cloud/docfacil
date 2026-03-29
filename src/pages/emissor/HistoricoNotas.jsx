@@ -170,62 +170,78 @@ export default function HistoricoNotas() {
                     </span>
                   </td>
                   <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem onClick={() => goToNota(nota.id)}>
-                          <Eye className="w-4 h-4 mr-2" /> Visualizar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(`/emissor/nota?id=${nota.id}`, "_blank")}>
-                          <ExternalLink className="w-4 h-4 mr-2" /> Abrir outra aba
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={(e) => handleSincronizar(nota, e)} disabled={!nota.chave_acesso}>
-                          <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem disabled>
-                          <Mail className="w-4 h-4 mr-2" /> Enviar por e-mail
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {nota.danfe_pdf_url && (
-                          <DropdownMenuItem asChild>
-                            <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
-                              <Download className="w-4 h-4 mr-2" /> Baixar DANFE
-                            </a>
+                    <div className="flex items-center gap-1">
+                      {nota.danfe_pdf_url && (
+                        <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
+                          title="Baixar DANFE">
+                          <Download className="w-3.5 h-3.5" /> DANFE
+                        </a>
+                      )}
+                      {nota.retorno_xml_url && (
+                        <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors whitespace-nowrap"
+                          title="Baixar XML">
+                          <FileText className="w-3.5 h-3.5" /> XML
+                        </a>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => goToNota(nota.id)}>
+                            <Eye className="w-4 h-4 mr-2" /> Visualizar
                           </DropdownMenuItem>
-                        )}
-                        {nota.retorno_xml_url && (
-                          <DropdownMenuItem asChild>
-                            <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer">
-                              <FileText className="w-4 h-4 mr-2" /> Baixar XML
-                            </a>
+                          <DropdownMenuItem onClick={() => window.open(`/emissor/nota?id=${nota.id}`, "_blank")}>
+                            <ExternalLink className="w-4 h-4 mr-2" /> Abrir outra aba
                           </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem disabled>
-                          <Edit className="w-4 h-4 mr-2" /> Carta de Correção
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={(e) => handleClonar(nota, e)}>
-                          <Copy className="w-4 h-4 mr-2" /> Clonar nota
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => handleCopiarChave(nota, e)}
-                          disabled={!nota.chave_acesso}>
-                          <Copy className="w-4 h-4 mr-2" /> Copiar chave
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={(e) => handleCancelar(nota, e)}
-                          disabled={nota.status_sefaz === "cancelada"}
-                          className="text-red-600 focus:text-red-600">
-                          <Ban className="w-4 h-4 mr-2" /> Cancelar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => handleSincronizar(nota, e)}>
+                            <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem disabled>
+                            <Mail className="w-4 h-4 mr-2" /> Enviar por e-mail
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          {nota.danfe_pdf_url && (
+                            <DropdownMenuItem asChild>
+                              <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
+                                <Download className="w-4 h-4 mr-2" /> Baixar DANFE
+                              </a>
+                            </DropdownMenuItem>
+                          )}
+                          {nota.retorno_xml_url && (
+                            <DropdownMenuItem asChild>
+                              <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer">
+                                <FileText className="w-4 h-4 mr-2" /> Baixar XML
+                              </a>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem disabled>
+                            <Edit className="w-4 h-4 mr-2" /> Carta de Correção
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => handleClonar(nota, e)}>
+                            <Copy className="w-4 h-4 mr-2" /> Clonar nota
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => handleCopiarChave(nota, e)}
+                            disabled={!nota.chave_acesso}>
+                            <Copy className="w-4 h-4 mr-2" /> Copiar chave
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={(e) => handleCancelar(nota, e)}
+                            disabled={nota.status_sefaz === "cancelada"}
+                            className="text-red-600 focus:text-red-600">
+                            <Ban className="w-4 h-4 mr-2" /> Cancelar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </td>
                 </tr>
               );
