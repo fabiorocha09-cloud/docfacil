@@ -239,6 +239,7 @@ export default function EmitirNFe() {
   const [transmitindo, setTransmitindo] = useState(false);
   const [transmitida, setTransmitida] = useState(false);
   const [notaId, setNotaId] = useState(null);
+  const [erroTransmissao, setErroTransmissao] = useState(null);
 
   useEffect(() => {
     try {
@@ -271,50 +272,59 @@ export default function EmitirNFe() {
 
   const transmitir = async () => {
     setTransmitindo(true);
-    // Cria a nota APENAS no momento da transmissão
-    const nota = await base44.entities.NotaFiscal55.create({
-      empresa_id: client?.id,
-      empresa_nome: client?.razao_social,
-      status_sefaz: "transmitindo",
-      destinatario_id: selectedDest?.id,
-      destinatario_nome: selectedDest?.nome,
-      destinatario_cnpj: selectedDest?.cnpj,
-      dest_logradouro: selectedDest?.logradouro,
-      dest_numero: selectedDest?.numero,
-      dest_bairro: selectedDest?.bairro,
-      dest_municipio: selectedDest?.municipio,
-      dest_uf: selectedDest?.uf,
-      dest_cep: selectedDest?.cep,
-      destinatario_email: selectedDest?.email,
-      natureza_operacao: selectedNatureza?.nome,
-      forma_pagamento_codigo: avancado.forma_pagamento_codigo || "01",
-      valor_produtos: totais.produtos,
-      valor_impostos: totais.impostos,
-      valor_total: totais.total,
-      observacoes: avancado.info_complementar,
-    });
-    setNotaId(nota.id);
+    setErroTransmissao(null);
+    let nota;
+    try {
+      nota = await base44.entities.NotaFiscal55.create({
+        empresa_id: client?.id,
+        empresa_nome: client?.razao_social,
+        status_sefaz: "transmitindo",
+        destinatario_id: selectedDest?.id,
+        destinatario_nome: selectedDest?.nome,
+        destinatario_cnpj: selectedDest?.cnpj,
+        dest_logradouro: selectedDest?.logradouro,
+        dest_numero: selectedDest?.numero,
+        dest_bairro: selectedDest?.bairro,
+        dest_municipio: selectedDest?.municipio,
+        dest_uf: selectedDest?.uf,
+        dest_cep: selectedDest?.cep,
+        destinatario_email: selectedDest?.email,
+        natureza_operacao: selectedNatureza?.nome,
+        forma_pagamento_codigo: avancado.forma_pagamento_codigo || "01",
+        valor_produtos: totais.produtos,
+        valor_impostos: totais.impostos,
+        valor_total: totais.total,
+        observacoes: avancado.info_complementar,
+      });
+      setNotaId(nota.id);
 
-    // Salva itens
-    await Promise.all(itens.map(item =>
-      base44.entities.ItemNota.create({ ...item, nota_id: nota.id, empresa_id: client?.id })
-    ));
+      await Promise.all(itens.map(item =>
+        base44.entities.ItemNota.create({ ...item, nota_id: nota.id, empresa_id: client?.id })
+      ));
 
-    // Chama backend NFE.io
-    const res = await base44.functions.invoke('emitirNfe', {
-      notaId: nota.id,
-      empresaId: client?.id,
-      ambiente: client?.ambiente,
-    });
+      const res = await base44.functions.invoke('emitirNfe', {
+        notaId: nota.id,
+        empresaId: client?.id,
+        ambiente: client?.ambiente,
+      });
 
-    if (res.data?.error) {
+      if (res.data?.error) {
+        setErroTransmissao(res.data.error + (res.data.details ? '\n\nDetalhes: ' + JSON.stringify(res.data.details, null, 2) : ''));
+        setTransmitindo(false);
+        return;
+      }
+
       setTransmitindo(false);
-      alert('Erro ao emitir: ' + res.data.error);
-      return;
+      setTransmitida(true);
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.response?.data?.message || err?.message || 'Erro desconhecido';
+      const details = err?.response?.data?.details;
+      setErroTransmissao(msg + (details ? '\n\nDetalhes: ' + JSON.stringify(details, null, 2) : ''));
+      if (nota?.id) {
+        await base44.entities.NotaFiscal55.update(nota.id, { status_sefaz: 'rejeitada', erros: [{ message: msg }] });
+      }
+      setTransmitindo(false);
     }
-
-    setTransmitindo(false);
-    setTransmitida(true);
   };
 
   const destFiltrados = destinatarios.filter(d =>
@@ -620,13 +630,19 @@ export default function EmitirNFe() {
                           <span className="font-bold text-2xl" style={{ color: "#0B63D4" }}>R$ {fmt(totais.total)}</span>
                         </div>
                       </div>
+                      {erroTransmissao && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+                          <p className="font-semibold mb-1">❌ Erro na transmissão:</p>
+                          <pre className="whitespace-pre-wrap text-xs font-mono">{erroTransmissao}</pre>
+                        </div>
+                      )}
                       <button onClick={transmitir}
                         disabled={transmitindo || !selectedDest || itens.length === 0}
                         className="w-full flex items-center justify-center gap-3 text-white font-bold py-4 rounded-2xl text-lg disabled:opacity-40 transition-all shadow-lg shadow-blue-200"
                         style={{ backgroundColor: "#0B63D4" }}>
                         {transmitindo
                           ? <><Loader2 className="w-6 h-6 animate-spin" /> Transmitindo para SEFAZ...</>
-                          : <><Send className="w-5 h-5" /> Transmitir Nota</>}
+                          : <><Send className="w-5 h-5" /> {erroTransmissao ? 'Tentar novamente' : 'Transmitir Nota'}</>}
                       </button>
                     </>
                   ) : (
