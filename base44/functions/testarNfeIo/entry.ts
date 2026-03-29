@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
 
       console.log('Criando empresa na NFSe.io v2:', JSON.stringify(payload));
 
-      const postResp = await fetch(`${NFE_IO_BASE}/companies`, {
+      const postResp = await fetch(`${NFSE_IO_BASE}/companies`, {
         method: 'POST',
         headers: { ...headers, 'Accept': 'application/json' },
         body: JSON.stringify(payload),
