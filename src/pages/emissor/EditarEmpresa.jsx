@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Building2, MapPin, Settings, Save, Loader2, CheckCircle2, AlertTriangle, ExternalLink } from "lucide-react";
+import { Building2, MapPin, Settings, Save, Loader2, CheckCircle2, AlertTriangle, ExternalLink, Search } from "lucide-react";
 
 const TABS = [
   { id: "basico", label: "Dados Básicos", icon: Building2 },
@@ -20,16 +20,53 @@ export default function EditarEmpresa() {
   const [testando, setTestando] = useState(false);
   const [testeResult, setTesteResult] = useState(null);
 
+  const [ibgeBuscando, setIbgeBuscando] = useState(false);
+  const [ibgeManual, setIbgeManual] = useState(false);
+
   const [form, setForm] = useState({
     razao_social: "", nome_fantasia: "", cnpj: "", ie: "",
     email: "", telefone: "", regime_tributario: "simples_nacional",
     inscricao_municipal: "",
     logradouro: "", numero: "", complemento: "", bairro: "",
-    municipio: "", uf: "", cep: "",
+    municipio: "", uf: "", cep: "", codigo_ibge_municipio: "",
     nfe_io_company_id: "", nfe_ambiente: "homologacao", nfe_serie: "1",
   });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const buscarIBGE = async (municipio, uf) => {
+    if (!municipio || !uf || municipio.length < 3) return;
+    setIbgeBuscando(true);
+    try {
+      const resp = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+      const lista = await resp.json();
+      const encontrado = lista.find(m =>
+        m.nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ===
+        municipio.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      );
+      if (encontrado) {
+        setForm(f => ({ ...f, codigo_ibge_municipio: String(encontrado.id) }));
+        setIbgeManual(false);
+      } else {
+        setIbgeManual(true);
+      }
+    } catch {
+      setIbgeManual(true);
+    }
+    setIbgeBuscando(false);
+  };
+
+  const handleMunicipioChange = (v) => {
+    set('municipio', v);
+  };
+
+  const handleUfChange = (v) => {
+    set('uf', v.toUpperCase());
+  };
+
+  const handleBuscarIBGE = () => {
+    buscarIBGE(form.municipio, form.uf);
+  };
 
   useEffect(() => {
     try {
@@ -57,6 +94,7 @@ export default function EditarEmpresa() {
             uf: emp.uf || "",
             cep: emp.cep || "",
             inscricao_municipal: emp.inscricao_municipal || "",
+            codigo_ibge_municipio: emp.codigo_ibge_municipio || "",
             nfe_io_company_id: emp.nfe_io_company_id || "",
             nfe_ambiente: emp.nfe_ambiente || "homologacao",
             nfe_serie: emp.nfe_serie || "1",
@@ -233,17 +271,48 @@ export default function EditarEmpresa() {
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1">Município</label>
                 <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                  value={form.municipio} onChange={e => set("municipio", e.target.value)} />
+                  value={form.municipio} onChange={e => handleMunicipioChange(e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1">UF</label>
                 <input maxLength={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] uppercase"
-                  value={form.uf} onChange={e => set("uf", e.target.value.toUpperCase())} />
+                  value={form.uf} onChange={e => handleUfChange(e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1">CEP</label>
                 <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
                   placeholder="00000-000" value={form.cep} onChange={e => set("cep", e.target.value)} />
+              </div>
+
+              {/* Código IBGE */}
+              <div className="sm:col-span-2">
+                <label className="text-sm font-semibold text-gray-700 block mb-1">Código IBGE do Município</label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    className={`flex-1 border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] font-mono ${
+                      form.codigo_ibge_municipio ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200'
+                    }`}
+                    placeholder="Ex: 1501402"
+                    value={form.codigo_ibge_municipio}
+                    onChange={e => set('codigo_ibge_municipio', e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleBuscarIBGE}
+                    disabled={ibgeBuscando || !form.municipio || !form.uf}
+                    className="flex items-center gap-1.5 text-sm font-medium px-4 py-2.5 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 whitespace-nowrap transition-colors"
+                  >
+                    {ibgeBuscando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                    Buscar IBGE
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {form.codigo_ibge_municipio
+                    ? <span className="text-emerald-600 font-medium">✓ Código IBGE preenchido</span>
+                    : ibgeManual
+                    ? 'Município não encontrado automaticamente — preencha manualmente acima.'
+                    : 'Preencha UF e Município e clique em "Buscar IBGE", ou insira manualmente.'}
+                </p>
               </div>
             </div>
           )}

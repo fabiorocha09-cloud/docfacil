@@ -42,8 +42,10 @@ Deno.serve(async (req) => {
           number: empresa.numero || 'S/N',
           additionalInformation: empresa.complemento || '',
           district: empresa.bairro || '',
-          city: { name: empresa.municipio || '' },
-          state: empresa.uf || '',
+          city: {
+            name: empresa.municipio || '',
+            ...(empresa.codigo_ibge_municipio ? { code: empresa.codigo_ibge_municipio } : {}),
+          },
         },
         taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
       };

@@ -38,6 +38,10 @@
     "cep": {
       "type": "string"
     },
+    "codigo_ibge_municipio": {
+      "type": "string",
+      "description": "C\u00f3digo IBGE do munic\u00edpio (7 d\u00edgitos) \u2014 necess\u00e1rio para emiss\u00e3o de NF-e"
+    },
     "email": {
       "type": "string"
     },
