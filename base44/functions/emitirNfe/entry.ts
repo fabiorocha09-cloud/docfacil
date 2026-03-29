@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     };
 
     // Envia para NFE.io
-    const response = await fetch(`${NFE_IO_BASE}/companies/${nfeIoCompanyId}/nfe`, {
+    const response = await fetch(`${NFE_IO_BASE}/companies/${nfeIoCompanyId}/productinvoices`, {
       method: 'POST',
       headers: {
         'Authorization': apiKey,
