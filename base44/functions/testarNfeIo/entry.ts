@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
 
       console.log('Criando empresa na NFSe.io v2:', JSON.stringify(payload));
 
-      const postResp = await fetch(`${NFSE_IO_BASE}/companies`, {
+      const postResp = await fetch(`${NFE_IO_BASE}/companies`, {
         method: 'POST',
         headers: { ...headers, 'Accept': 'application/json' },
         body: JSON.stringify(payload),
@@ -136,23 +136,22 @@ Deno.serve(async (req) => {
       return Response.json({ ok: mtResp.ok, status: mtResp.status, data: mtResult });
     }
 
-    // Ação padrão: testar conexão com ID existente na NFSe.io v2
-    const getResp = await fetch(`${NFSE_IO_BASE}/companies/${companyId}`, {
+    // Ação padrão: testar conexão com ID existente na NFe.io v1 (NF-e modelo 55)
+    const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, {
       method: 'GET',
       headers: { 'Authorization': apiKey, 'Accept': 'application/json' },
     });
     const getRaw = await getResp.text();
-    console.log('GET /v2/companies status:', getResp.status, getRaw.substring(0, 300));
+    console.log('GET /v1/companies status:', getResp.status, getRaw.substring(0, 300));
 
     let result;
     try { result = JSON.parse(getRaw); } catch { result = getRaw; }
 
-    return Response.json({
-      companyId,
-      status: getResp.status,
-      ok: getResp.ok,
-      data: result,
-    });
+    if (getResp.ok) {
+      return Response.json({ companyId, status: getResp.status, ok: true, data: result });
+    }
+
+    return Response.json({ companyId, status: getResp.status, ok: false, data: result });
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
