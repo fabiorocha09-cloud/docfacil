@@ -39,28 +39,45 @@ Deno.serve(async (req) => {
     const docLimpo = nota.destinatario_cnpj?.replace(/\D/g, "") || "";
     const isLegalEntity = docLimpo.length === 14;
 
+    if (!nota.destinatario_nome || !docLimpo) {
+      return Response.json({ error: 'Destinatário inválido: nome e CNPJ/CPF são obrigatórios' }, { status: 400 });
+    }
+    if (!nota.natureza_operacao) {
+      return Response.json({ error: 'Natureza da operação não informada' }, { status: 400 });
+    }
+    if (!itens.length) {
+      return Response.json({ error: 'A nota não possui itens' }, { status: 400 });
+    }
+
+    // Determina destino da operação
+    const ufEmitente = empresa.uf || "";
+    const ufDest = nota.dest_uf || ufEmitente;
+    const destination = ufDest === ufEmitente ? "Internal_Operation" : "Interstate_Operation";
+
     // Monta payload NFE.io para NF-e modelo 55 (API v2)
     const payload = {
       environment: ambienteEmissao === "producao" ? "Production" : "Test",
-      operationNature: nota.natureza_operacao || "VENDA DE MERCADORIA",
+      operationNature: nota.natureza_operacao,
       operationType: "Outgoing",
-      destination: empresa.uf === (nota.dest_uf || empresa.uf) ? "Internal_Operation" : "Interstate_Operation",
+      destination,
       presenceType: "Internet",
       buyer: {
         name: nota.destinatario_nome,
         federalTaxNumber: parseInt(docLimpo, 10),
         type: isLegalEntity ? "LegalEntity" : "NaturalPerson",
-        stateTaxNumberIndicator: "NonTaxPayer",
+        stateTaxNumberIndicator: nota.dest_indicador_ie || "NonTaxPayer",
+        stateTaxNumber: nota.dest_ie || undefined,
         email: nota.destinatario_email || undefined,
         address: {
           street: nota.dest_logradouro || "Não informado",
           number: nota.dest_numero || "S/N",
+          additionalInformation: nota.dest_complemento || undefined,
           district: nota.dest_bairro || "Não informado",
           city: {
             code: nota.dest_codigo_municipio ? parseInt(nota.dest_codigo_municipio, 10) : undefined,
             name: nota.dest_municipio || "",
           },
-          state: nota.dest_uf || empresa.uf || "",
+          state: ufDest,
           postalCode: nota.dest_cep?.replace(/\D/g, "") || "",
           country: "BRA",
         },
@@ -71,15 +88,20 @@ Deno.serve(async (req) => {
         ncm: item.ncm || "00000000",
         cfop: parseInt(item.cfop || "5102", 10),
         unit: item.unidade || "UN",
+        unitTax: item.unidade || "UN",
         quantity: Number(item.quantidade),
         unitAmount: Number(item.valor_unitario),
         totalAmount: Number(item.valor_total),
         totalIndicator: true,
         tax: {
+          totalTax: 0,
           icms: {
-            origin: "0",
+            origin: item.origem || "0",
+            csosn: item.icms_csosn || undefined,
             cst: item.icms_cst || undefined,
-            csosn: item.icms_csosn || "400",
+            baseTax: Number(item.icms_base || 0),
+            rate: Number(item.icms_aliquota || 0),
+            amount: Number(item.valor_icms || 0),
           },
           pis: {
             cst: item.pis_cst || "07",
@@ -98,13 +120,13 @@ Deno.serve(async (req) => {
       transport: {
         freightModality: "Free",
       },
-      payment: {
+      payment: [{
         paymentDetail: [{
           method: "Cash",
           amount: Number(nota.valor_total),
           paymentType: "InCash",
         }],
-      },
+      }],
       totals: {
         icms: {
           productAmount: Number(nota.valor_produtos || nota.valor_total),
@@ -112,7 +134,7 @@ Deno.serve(async (req) => {
         },
       },
       additionalInformation: {
-        taxpayer: nota.observacoes || "",
+        taxpayer: nota.observacoes || undefined,
       },
     };
 
