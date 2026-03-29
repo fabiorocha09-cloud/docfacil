@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
           district: empresa.bairro || '',
           city: {
             name: empresa.municipio || '',
-            ...(empresa.codigo_ibge_municipio ? { code: empresa.codigo_ibge_municipio } : {}),
+            ...(empresa.codigo_ibge_municipio ? { code: parseInt(empresa.codigo_ibge_municipio, 10) } : {}),
           },
           state: empresa.uf || '',
         },

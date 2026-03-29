@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
         enderecoLogradouro: nota.dest_logradouro || "",
         enderecoNumero: nota.dest_numero || "S/N",
         enderecoBairro: nota.dest_bairro || "",
-        enderecoCodigoMunicipio: nota.dest_codigo_municipio || "",
+        enderecoCodigoMunicipio: nota.dest_codigo_municipio ? parseInt(nota.dest_codigo_municipio, 10) : undefined,
         enderecoNomeMunicipio: nota.dest_municipio || "",
         enderecoUf: nota.dest_uf || "",
         enderecoCep: nota.dest_cep?.replace(/\D/g, "") || "",
