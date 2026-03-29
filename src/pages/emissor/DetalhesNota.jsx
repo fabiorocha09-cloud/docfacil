@@ -129,11 +129,31 @@ export default function DetalhesNota() {
     }
   };
 
+  const CAMPOS_CLONE = [
+    "empresa_id","empresa_nome","natureza_operacao","destinatario_id","destinatario_nome",
+    "destinatario_cnpj","destinatario_email","dest_logradouro","dest_numero","dest_complemento",
+    "dest_bairro","dest_municipio","dest_uf","dest_cep","dest_codigo_municipio","dest_ie",
+    "dest_indicador_ie","forma_pagamento","forma_pagamento_codigo","tipo_cliente",
+    "regra_tributacao_id","regra_tributacao_nome","valor_produtos","valor_frete","valor_seguro",
+    "outras_despesas","valor_desconto","valor_impostos","valor_total","observacoes",
+  ];
+
   const handleClonar = async () => {
     if (!nota) return;
-    const { id, created_date, updated_date, numero, chave_acesso, protocolo, status_sefaz, ...rest } = nota;
-    await base44.entities.NotaFiscal55.create({ ...rest, status_sefaz: "rascunho" });
-    navigate("/emissor/historico");
+    const dadosClone = {};
+    CAMPOS_CLONE.forEach(k => { if (nota[k] !== undefined) dadosClone[k] = nota[k]; });
+    dadosClone.status_sefaz = "rascunho";
+
+    const novaNotaData = await base44.entities.NotaFiscal55.create(dadosClone);
+
+    // Clona os itens
+    await Promise.all(itens.map(item => {
+      const { id, created_date, updated_date, nota_id, ...resto } = item;
+      return base44.entities.ItemNota.create({ ...resto, nota_id: novaNotaData.id });
+    }));
+
+    alert("Nota clonada! Redirecionando para o rascunho.");
+    navigate(`/emissor/nota?id=${novaNotaData.id}`);
   };
 
   const handleEnviarEmail = async () => {
@@ -203,6 +223,34 @@ export default function DetalhesNota() {
           <ActionBtn icon={FileEdit} label="Carta de Correção" disabled={!podeAgir} />
           <ActionBtn icon={enviandoEmail ? Loader2 : Mail} label="Enviar e-mail"
             onClick={handleEnviarEmail} disabled={enviandoEmail} />
+          {nota.status_sefaz === 'rascunho' && (
+            <ActionBtn
+              icon={Send}
+              label="Transmitir"
+              onClick={async () => {
+                if (!empresa) return;
+                setReenviando(true);
+                try {
+                  await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
+                  const res = await base44.functions.invoke('emitirNfe', {
+                    notaId: nota.id,
+                    empresaId: nota.empresa_id,
+                    ambiente: empresa?.nfe_ambiente,
+                  });
+                  if (res.data?.error) {
+                    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: res.data.error }] });
+                  }
+                } catch (err) {
+                  const msg = err?.response?.data?.error || err?.message || 'Erro';
+                  await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: msg }] });
+                } finally {
+                  setReenviando(false);
+                  await carregar();
+                }
+              }}
+              disabled={reenviando}
+            />
+          )}
           <ActionBtn icon={Ban} label="Cancelar" danger
             onClick={handleCancelar} disabled={cancelando || !podeAgir} />
         </div>
