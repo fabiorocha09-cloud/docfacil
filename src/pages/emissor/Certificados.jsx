@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { ShieldCheck, Plus, ShieldAlert, Shield, Trash2, X, Loader2, Upload, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -86,6 +87,7 @@ function CertModal({ empresaId, onClose, onSave }) {
 }
 
 export default function Certificados() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [certs, setCerts] = useState([]);
@@ -132,8 +134,8 @@ export default function Certificados() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Certificados Digitais</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social}</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Certificados Digitais</h1>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social}</p>
         </div>
         <button onClick={() => setModalOpen(true)}
           className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm"
@@ -142,15 +144,15 @@ export default function Certificados() {
         </button>
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
+      <div className={`rounded-2xl p-4 text-sm ${theme === 'dark' ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
         <strong>🔐 Segurança:</strong> Arquivos .pfx são armazenados criptografados no backend e nunca expostos ao navegador.
         Apenas metadados do certificado são exibidos aqui.
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl animate-pulse border border-gray-100" />)}</div>
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className={`h-24 rounded-2xl animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-white border border-gray-100'}`} />)}</div>
       ) : certs.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+        <div className={`rounded-2xl shadow-sm p-16 text-center ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-100'}`}>
           <Shield className="w-10 h-10 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">Nenhum certificado cadastrado.</p>
           <button onClick={() => setModalOpen(true)} className="mt-3 text-sm font-medium hover:underline" style={{ color: "#0B63D4" }}>
@@ -164,7 +166,7 @@ export default function Certificados() {
             const BadgeIcon = badge.Icon;
             return (
               <motion.div key={cert.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                className={`rounded-2xl shadow-sm p-5 ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 min-w-0">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${badge.cls}`}>
@@ -172,7 +174,7 @@ export default function Certificados() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-gray-900">{cert.nome || cert.subject_cn || "Certificado"}</p>
+                        <p className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{cert.nome || cert.subject_cn || "Certificado"}</p>
                         <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${badge.cls}`}>{badge.label}</span>
                         {cert.ativo && badge.label.startsWith("Válido") && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, Pencil, Trash2, X, Loader2, Package } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -222,6 +223,7 @@ function ProdutoModal({ item, empresaId, onClose, onSave }) {
 }
 
 export default function Produtos() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [produtos, setProdutos] = useState([]);
@@ -263,8 +265,8 @@ export default function Produtos() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produtos</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social} · {produtos.length} produto(s)</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Produtos</h1>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social} · {produtos.length} produto(s)</p>
         </div>
         <button onClick={() => { setEditando(null); setModalOpen(true); }}
           className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm"
@@ -275,14 +277,14 @@ export default function Produtos() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+        <input className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200'}`}
           placeholder="Buscar por nome, código de barras ou NCM..."
           value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl shadow-sm overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
         {loading ? (
-          <div className="p-8 text-center text-gray-400 text-sm">Carregando...</div>
+          <div className={`p-8 text-center text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Carregando...</div>
         ) : filtrados.length === 0 ? (
           <div className="p-16 text-center">
             <Package className="w-10 h-10 text-gray-200 mx-auto mb-3" />
@@ -295,8 +297,8 @@ export default function Produtos() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Produto</th>
+                <tr className={`border-b ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
+                  <th className={`text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Produto</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">NCM</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Unid.</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Preço</th>
@@ -304,12 +306,12 @@ export default function Produtos() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-50'}`}>
                 <AnimatePresence>
                   {filtrados.map(p => (
-                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hover:bg-gray-50">
+                    <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50'}>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-gray-900">{p.descricao}</p>
+                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{p.descricao}</p>
                         {p.codigo_barras && <p className="text-xs text-gray-400">{p.codigo_barras}</p>}
                       </td>
                       <td className="px-4 py-4 text-gray-600 font-mono text-xs">{p.ncm || "—"}</td>

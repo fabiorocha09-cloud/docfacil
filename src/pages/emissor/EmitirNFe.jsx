@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -222,6 +223,7 @@ function ItemModal({ empresaId, regraConfig, onAdd, onClose }) {
 }
 
 export default function EmitirNFe() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [step, setStep] = useState(0);
@@ -379,14 +381,14 @@ export default function EmitirNFe() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Emitir NF-e 55</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social}</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Emitir NF-e 55</h1>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl shadow-sm overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
         {/* Stepper */}
-        <div className="border-b border-gray-100 px-4 py-5">
+        <div className={`border-b px-4 py-5 ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             {STEPS.map((s, i) => {
               const Icon = s.icon;
@@ -399,7 +401,7 @@ export default function EmitirNFe() {
                       className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all ${
                         isActive ? "border-[#0B63D4] shadow-md shadow-blue-200 text-white" :
                         isDone ? "border-emerald-500 bg-emerald-500 text-white cursor-pointer" :
-                        "bg-gray-100 border-gray-200 text-gray-400"
+                        theme === 'dark' ? "bg-white/10 border-white/20 text-gray-400" : "bg-gray-100 border-gray-200 text-gray-400"
                       }`}
                       style={isActive ? { backgroundColor: "#0B63D4" } : {}}>
                       {isDone ? <Check className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
@@ -409,7 +411,7 @@ export default function EmitirNFe() {
                     </span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-2 mb-5 transition-colors ${isDone ? "bg-emerald-400" : "bg-gray-100"}`} />
+                    <div className={`flex-1 h-0.5 mx-2 mb-5 transition-colors ${isDone ? "bg-emerald-400" : theme === 'dark' ? 'bg-white/10' : "bg-gray-100"}`} />
                   )}
                 </div>
               );
@@ -418,7 +420,7 @@ export default function EmitirNFe() {
         </div>
 
         {/* Content */}
-        <div className="p-6 min-h-80">
+        <div className={`p-6 min-h-80 ${theme === 'dark' ? 'text-white' : ''}`}>
           <AnimatePresence mode="wait" custom={dir}>
             <motion.div key={step} custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
               transition={{ duration: 0.25, ease: "easeOut" }}>
@@ -426,7 +428,7 @@ export default function EmitirNFe() {
               {/* Passo 0 – Destinatário + Natureza */}
               {step === 0 && (
                 <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800">Destinatário e Natureza da Operação</h2>
+                  <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Destinatário e Natureza da Operação</h2>
 
                   {/* Natureza */}
                   <div>
@@ -445,7 +447,7 @@ export default function EmitirNFe() {
                             className={`text-left px-4 py-3 rounded-xl border text-sm transition-colors ${
                               selectedNatureza?.id === n.id
                                 ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]"
-                                : "border-gray-100 hover:bg-gray-50"
+                                : theme === 'dark' ? 'border-white/10 hover:bg-white/5 text-gray-300' : "border-gray-100 hover:bg-gray-50"
                             }`}>
                             <p className="font-medium">{n.nome}</p>
                             <p className="text-xs text-gray-400 mt-0.5">CFOP: {n.cfop_estadual} / {n.cfop_interestadual} · {n.finalidade}</p>
@@ -469,12 +471,12 @@ export default function EmitirNFe() {
                       <div className="space-y-3">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {regras.map(r => (
-                            <button key={r.id} onClick={() => setSelectedRegra(r)}
-                              className={`text-left px-4 py-3 rounded-xl border text-sm transition-colors ${
-                                selectedRegra?.id === r.id
-                                  ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]"
-                                  : "border-gray-100 hover:bg-gray-50"
-                              }`}>
+                              <button key={r.id} onClick={() => setSelectedRegra(r)}
+                                className={`text-left px-4 py-3 rounded-xl border text-sm transition-colors ${
+                                  selectedRegra?.id === r.id
+                                    ? "border-[#0B63D4] bg-[#E6F0FF] text-[#0B63D4]"
+                                    : theme === 'dark' ? 'border-white/10 hover:bg-white/5 text-gray-300' : "border-gray-100 hover:bg-gray-50"
+                                }`}>
                               <p className="font-medium">{r.nome}</p>
                               <p className="text-xs text-gray-400 mt-0.5">
                                 {r.todos_estados ? "Todos os estados" : (r.estados || []).join(", ")}
@@ -532,7 +534,7 @@ export default function EmitirNFe() {
                         {destFiltrados.map(d => (
                           <button key={d.id} onClick={() => setSelectedDest(d)}
                             className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
-                              selectedDest?.id === d.id ? "border-[#0B63D4] bg-[#E6F0FF]" : "border-gray-100 hover:bg-gray-50"
+                              selectedDest?.id === d.id ? "border-[#0B63D4] bg-[#E6F0FF]" : theme === 'dark' ? 'border-white/10 hover:bg-white/5' : "border-gray-100 hover:bg-gray-50"
                             }`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                               selectedDest?.id === d.id ? "text-white" : "bg-gray-100 text-gray-600"
@@ -556,7 +558,7 @@ export default function EmitirNFe() {
               {step === 1 && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-800">Produtos / Itens</h2>
+                    <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Produtos / Itens</h2>
                     {selectedRegra && (
                       <div className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-full">
                         {selectedRegra.nome} · {tipoCliente === "revenda" ? "🏢 Revenda" : "👤 Cons. Final"}
@@ -577,7 +579,7 @@ export default function EmitirNFe() {
                     <div className="space-y-2">
                       {itens.map((item, i) => (
                         <motion.div key={i} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                          className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-100">
+                          className={`flex items-center justify-between p-3.5 rounded-xl border ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">{item.descricao}</p>
                             <p className="text-xs text-gray-400">{item.quantidade} {item.unidade} × R$ {fmt(item.valor_unitario)} · NCM {item.ncm || "—"} · CFOP {item.cfop}</p>
@@ -602,16 +604,16 @@ export default function EmitirNFe() {
               {/* Passo 2 – Impostos */}
               {step === 2 && (
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-gray-800">Revisão de Impostos</h2>
-                  <div className="rounded-2xl overflow-hidden border border-gray-100">
+                  <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Revisão de Impostos</h2>
+                  <div className={`rounded-2xl overflow-hidden border ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-100">
+                        <tr className={`border-b ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
                           <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tributo</th>
                           <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Valor</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-50 bg-white">
+                      <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/10 bg-transparent' : 'divide-gray-50 bg-white'}`}>
                         {[
                           ["Total de Produtos", totais.produtos],
                           ["ICMS", totais.icms],
@@ -638,26 +640,26 @@ export default function EmitirNFe() {
               {/* Passo 3 – Avançado */}
               {step === 3 && (
                 <div className="space-y-5">
-                  <h2 className="text-lg font-semibold text-gray-800">Opções Avançadas</h2>
+                  <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Opções Avançadas</h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="text-xs font-semibold text-gray-500 block mb-1">Forma de pagamento *</label>
-                      <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.forma_pagamento} onChange={e => setAv("forma_pagamento", e.target.value)}>
                         {FORMAS_PAGAMENTO.map(f => <option key={f}>{f}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-500 block mb-1">Indicador de intermediador</label>
-                      <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.indicador_intermediador} onChange={e => setAv("indicador_intermediador", e.target.value)}>
                         {INDICADORES_INTERMEDIADOR.map(f => <option key={f}>{f}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-gray-500 block mb-1">Atendimento</label>
-                      <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                         value={avancado.atendimento} onChange={e => setAv("atendimento", e.target.value)}>
                         {TIPOS_ATENDIMENTO.map(f => <option key={f}>{f}</option>)}
                       </select>
@@ -666,7 +668,7 @@ export default function EmitirNFe() {
 
                   <div>
                     <label className="text-xs font-semibold text-gray-500 block mb-1">Indicador de operação *</label>
-                    <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                    <select className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
                       value={avancado.indicador_operacao} onChange={e => setAv("indicador_operacao", e.target.value)}>
                       {INDICADORES_OPERACAO.map(f => <option key={f}>{f}</option>)}
                     </select>
@@ -676,7 +678,7 @@ export default function EmitirNFe() {
                     <label className="text-xs font-semibold text-gray-500 block mb-1">Informações Complementares de interesse do Contribuinte</label>
                     <textarea rows={3} value={avancado.info_complementar}
                       onChange={e => setAv("info_complementar", e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none" />
+                      className={`w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200'}`} />
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -718,8 +720,8 @@ export default function EmitirNFe() {
                 <div className="space-y-5">
                   {!transmitida ? (
                     <>
-                      <h2 className="text-lg font-semibold text-gray-800">Confirmar e Transmitir</h2>
-                      <div className="bg-gray-50 rounded-2xl p-5 space-y-3 border border-gray-100">
+                      <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Confirmar e Transmitir</h2>
+                          <div className={`rounded-2xl p-5 space-y-3 border ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
                         <div className="flex justify-between text-sm"><span className="text-gray-500">Destinatário</span><span className="font-semibold text-gray-900">{selectedDest?.nome || "—"}</span></div>
                         <div className="flex justify-between text-sm"><span className="text-gray-500">Natureza</span><span className="font-medium text-gray-700">{selectedNatureza?.nome || "—"}</span></div>
                         <div className="flex justify-between text-sm"><span className="text-gray-500">Forma de Pagamento</span><span className="font-medium text-gray-700">{avancado.forma_pagamento}</span></div>
@@ -768,7 +770,7 @@ export default function EmitirNFe() {
 
         {/* Footer navegação */}
         {!transmitida && (
-          <div className="border-t border-gray-100 px-6 py-4 flex items-center justify-between">
+           <div className={`border-t px-6 py-4 flex items-center justify-between ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
             <button onClick={() => goTo(step - 1)} disabled={step === 0}
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 font-medium">
               <ChevronLeft className="w-4 h-4" /> Anterior

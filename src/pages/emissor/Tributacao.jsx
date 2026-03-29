@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Plus, Pencil, Trash2, BookOpen, Globe, MapPin, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +13,7 @@ const CSOSN_SHORT = {
 };
 
 export default function Tributacao() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [itens, setItens] = useState([]);
@@ -55,7 +57,7 @@ export default function Tributacao() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tributação</h1>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Tributação</h1>
           <p className="text-gray-500 text-sm">
             {client?.razao_social} · {itens.length} regra(s) cadastrada(s)
             {isSimples && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Simples Nacional</span>}
@@ -69,9 +71,9 @@ export default function Tributacao() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl border border-gray-100 animate-pulse" />)}</div>
+        <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className={`h-24 rounded-2xl animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-white border border-gray-100'}`} />)}</div>
       ) : itens.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
+        <div className={`rounded-2xl shadow-sm p-16 text-center ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-100'}`}>
           <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
           <p className="text-gray-500 text-sm font-medium">Nenhuma regra de tributação cadastrada.</p>
           <p className="text-gray-400 text-xs mt-1">Crie regras para aplicar automaticamente nos produtos da NF-e.</p>
@@ -85,7 +87,7 @@ export default function Tributacao() {
           <AnimatePresence>
             {itens.map(item => (
               <motion.div key={item.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                className={`rounded-2xl shadow-sm hover:shadow-md transition-shadow ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
                 <div className="flex items-start justify-between p-5">
                   <div className="flex items-start gap-4 min-w-0 flex-1">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#E6F0FF" }}>
@@ -93,7 +95,7 @@ export default function Tributacao() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-gray-900">{item.nome}</p>
+                        <p className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{item.nome}</p>
                         {item.ativo
                           ? <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">Ativo</span>
                           : <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Inativo</span>}
@@ -114,8 +116,8 @@ export default function Tributacao() {
                           const pisCst = conf.pis_cst;
                           const cofinsCst = conf.cofins_cst;
                           return (
-                            <div key={tipo} className="bg-gray-50 rounded-xl px-3 py-2">
-                              <p className="text-xs font-semibold text-gray-500 mb-1">
+                            <div key={tipo} className={`rounded-xl px-3 py-2 ${theme === 'dark' ? 'bg-white/5' : 'bg-gray-50'}`}>
+                                <p className={`text-xs font-semibold mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                                 {tipo === "revenda" ? "🏢 Cliente Revenda" : "👤 Consumidor Final"}
                               </p>
                               <div className="space-y-0.5">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Users, Plus, Search, Pencil, Trash2, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -148,6 +149,7 @@ function DestModal({ dest, empresaId, onClose, onSave }) {
 }
 
 export default function Destinatarios() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [destinatarios, setDestinatarios] = useState([]);
@@ -187,8 +189,8 @@ export default function Destinatarios() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Destinatários</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social} · {destinatarios.length} cadastrado(s)</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Destinatários</h1>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social} · {destinatarios.length} cadastrado(s)</p>
         </div>
         <button onClick={() => { setEditando(null); setModalOpen(true); }}
           className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm"
@@ -199,14 +201,14 @@ export default function Destinatarios() {
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+        <input className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200'}`}
           placeholder="Buscar por nome ou CNPJ..."
           value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl shadow-sm overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
         {loading ? (
-          <div className="p-8 text-center text-gray-400 text-sm">Carregando...</div>
+          <div className={`p-8 text-center text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Carregando...</div>
         ) : filtrados.length === 0 ? (
           <div className="p-16 text-center">
             <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
@@ -216,17 +218,17 @@ export default function Destinatarios() {
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
-            <AnimatePresence>
+          <div className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-50'}`}>
+              <AnimatePresence>
               {filtrados.map(d => (
                 <motion.div key={d.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors">
+                  className={`flex items-center justify-between px-5 py-4 transition-colors ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 text-white" style={{ backgroundColor: "#0B63D4" }}>
                       {d.nome?.[0]?.toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900 truncate">{d.nome}</p>
+                      <p className={`font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{d.nome}</p>
                       <p className="text-xs text-gray-400">{d.cnpj} {d.municipio && `· ${d.municipio}/${d.uf}`}</p>
                     </div>
                   </div>

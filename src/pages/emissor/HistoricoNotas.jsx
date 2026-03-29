@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import {
   FileText, Search, Download, CheckCircle2, XCircle, Clock,
@@ -32,6 +33,7 @@ const CAMPOS_CLONE = [
 ];
 
 export default function HistoricoNotas() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -159,8 +161,8 @@ export default function HistoricoNotas() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Histórico de Notas</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social} · {filtradas.length} nota(s)</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Histórico de Notas</h1>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social} · {filtradas.length} nota(s)</p>
         </div>
         <Link to="/emissor/emitir"
           className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm"
@@ -174,13 +176,13 @@ export default function HistoricoNotas() {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+            className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200'}`}
             placeholder="Buscar destinatário, CNPJ ou chave..."
             value={search} onChange={e => setSearch(e.target.value)}
           />
         </div>
         <select
-          className="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+          className={`rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200'}`}
           value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}>
           <option value="todos">Todos os status</option>
           {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
@@ -189,9 +191,9 @@ export default function HistoricoNotas() {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className={`rounded-2xl shadow-sm overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
         {loading ? (
-          <div className="p-8 text-center text-gray-400 text-sm">Carregando...</div>
+          <div className={`p-8 text-center text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Carregando...</div>
         ) : filtradas.length === 0 ? (
           <div className="p-16 text-center">
             <FileText className="w-10 h-10 text-gray-200 mx-auto mb-3" />
@@ -201,7 +203,7 @@ export default function HistoricoNotas() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
+                <tr className={`border-b ${theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-100'}`}>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Destinatário</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Data</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
@@ -209,22 +211,22 @@ export default function HistoricoNotas() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-50'}`}>
                 {filtradas.map(nota => {
                   const cfg = STATUS[nota.status_sefaz] || STATUS.rascunho;
                   const Icon = cfg.Icon;
                   return (
                     <tr key={nota.id}
                       onClick={() => navigate(`/emissor/nota?id=${nota.id}`)}
-                      className="hover:bg-blue-50 cursor-pointer transition-colors">
+                      className={`cursor-pointer transition-colors ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-blue-50'}`}>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-gray-900">{nota.destinatario_nome || "—"}</p>
+                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{nota.destinatario_nome || "—"}</p>
                         <p className="text-xs text-gray-400 mt-0.5">{nota.destinatario_cnpj || "—"}</p>
                       </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
+                      <td className={`px-4 py-4 whitespace-nowrap ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                         {new Date(nota.created_date).toLocaleDateString("pt-BR")}
                       </td>
-                      <td className="px-4 py-4 text-right font-semibold text-gray-900">
+                      <td className={`px-4 py-4 text-right font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                         {nota.valor_total ? `R$ ${fmt(nota.valor_total)}` : "—"}
                       </td>
                       <td className="px-4 py-4">

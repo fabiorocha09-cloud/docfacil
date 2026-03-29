@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ModuloDropdown from "@/components/ModuloDropdown";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, Building2, Zap, ShieldCheck, ShieldAlert, Shield, ChevronRight, Edit2, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -138,6 +139,7 @@ function EmpresaModal({ empresa, onClose, onSave }) {
 }
 
 export default function PainelContador() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [empresas, setEmpresas] = useState([]);
   const [certs, setCerts] = useState([]);
@@ -189,7 +191,7 @@ export default function PainelContador() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F0F6FF" }}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : ''}`} style={theme === 'dark' ? {} : { backgroundColor: "#F0F6FF" }}>
       {/* Header azul */}
       <div className="px-6 pt-10 pb-8" style={{ backgroundColor: "#0B63D4" }}>
         <div className="max-w-5xl mx-auto">
@@ -215,7 +217,7 @@ export default function PainelContador() {
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm"
+            <input className={`w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] shadow-sm ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'bg-white border border-gray-200'}`}
               placeholder="Buscar por razão social ou CNPJ..."
               value={search} onChange={e => setSearch(e.target.value)} />
           </div>
@@ -228,12 +230,12 @@ export default function PainelContador() {
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => <div key={i} className="h-48 bg-white rounded-2xl animate-pulse border border-gray-100" />)}
+            {[...Array(6)].map((_, i) => <div key={i} className={`h-48 rounded-2xl animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-white border border-gray-100'}`} />)}
           </div>
         ) : filtradas.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center shadow-sm">
-            <Building2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm">Nenhuma empresa encontrada.</p>
+          <div className={`rounded-2xl p-16 text-center shadow-sm ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-100'}`}>
+            <Building2 className={`w-10 h-10 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-200'}`} />
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Nenhuma empresa encontrada.</p>
             <button onClick={() => { setEditando(null); setModalOpen(true); }} className="mt-3 text-sm font-medium hover:underline" style={{ color: "#0B63D4" }}>
               + Adicionar empresa
             </button>
@@ -246,16 +248,16 @@ export default function PainelContador() {
                 const { label, cls, Icon: BadgeIcon } = certBadge[status];
                 return (
                   <motion.div key={empresa.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-shadow">
+                    className={`rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-shadow backdrop-blur-md ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-100'}`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#E6F0FF" }}>
                           <Building2 className="w-5 h-5" style={{ color: "#0B63D4" }} />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 text-sm truncate">{empresa.razao_social}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{empresa.cnpj}</p>
-                        </div>
+                            <p className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{empresa.razao_social}</p>
+                            <p className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>{empresa.cnpj}</p>
+                          </div>
                       </div>
                       <button onClick={() => { setEditando(empresa); setModalOpen(true); }} className="text-gray-300 hover:text-[#0B63D4] p-1">
                         <Edit2 className="w-3.5 h-3.5" />
@@ -264,8 +266,8 @@ export default function PainelContador() {
 
                     <div className="flex items-center gap-2 flex-wrap">
                       {empresa.regime_tributario && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{REGIME_LABELS[empresa.regime_tributario]}</span>
-                      )}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>{REGIME_LABELS[empresa.regime_tributario]}</span>
+                        )}
                       <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${cls}`}>
                       <BadgeIcon className={`w-3 h-3 ${status === "expirando" ? "animate-pulse" : ""}`} />
                       {label}
