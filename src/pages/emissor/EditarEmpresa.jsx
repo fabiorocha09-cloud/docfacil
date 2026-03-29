@@ -23,6 +23,7 @@ export default function EditarEmpresa() {
   const [form, setForm] = useState({
     razao_social: "", nome_fantasia: "", cnpj: "", ie: "",
     email: "", telefone: "", regime_tributario: "simples_nacional",
+    inscricao_municipal: "",
     logradouro: "", numero: "", complemento: "", bairro: "",
     municipio: "", uf: "", cep: "",
     nfe_io_company_id: "", nfe_ambiente: "homologacao", nfe_serie: "1",
@@ -55,6 +56,7 @@ export default function EditarEmpresa() {
             municipio: emp.municipio || "",
             uf: emp.uf || "",
             cep: emp.cep || "",
+            inscricao_municipal: emp.inscricao_municipal || "",
             nfe_io_company_id: emp.nfe_io_company_id || "",
             nfe_ambiente: emp.nfe_ambiente || "homologacao",
             nfe_serie: emp.nfe_serie || "1",
@@ -88,7 +90,7 @@ export default function EditarEmpresa() {
     if (!form.nfe_io_company_id) return;
     setTestando(true);
     setTesteResult(null);
-    const res = await base44.functions.invoke('testarNfeIo', { companyId: form.nfe_io_company_id });
+    const res = await base44.functions.invoke('testarNfeIo', { companyId: form.nfe_io_company_id, inscricao_municipal: form.inscricao_municipal || "" });
     setTesteResult(res.data);
     setTestando(false);
   };
@@ -143,6 +145,11 @@ export default function EditarEmpresa() {
                   <label className="text-sm font-semibold text-gray-700 block mb-1">Inscrição Estadual</label>
                   <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
                     placeholder="Deixe vazio se isento" value={form.ie} onChange={e => set("ie", e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 block mb-1">Inscrição Municipal (ISS)</label>
+                  <input className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                    placeholder="Deixe vazio se não aplicável" value={form.inscricao_municipal} onChange={e => set("inscricao_municipal", e.target.value)} />
                 </div>
                 <div>
                   <label className="text-sm font-semibold text-gray-700 block mb-1">E-mail</label>

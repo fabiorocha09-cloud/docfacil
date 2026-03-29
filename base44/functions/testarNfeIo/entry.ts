@@ -11,17 +11,36 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("NFE_IO_API_KEY");
     if (!apiKey) return Response.json({ error: 'NFE_IO_API_KEY não configurada' }, { status: 500 });
 
-    const { companyId } = await req.json();
+    const { companyId, inscricao_municipal } = await req.json();
 
+    const headers = {
+      'Authorization': apiKey,
+      'Content-Type': 'application/json',
+    };
+
+    // Se houver inscrição municipal, envia para o NFE.io antes de testar
+    if (inscricao_municipal) {
+      const patchUrl = `${NFE_IO_BASE}/companies/${companyId}`;
+      const patchBody = JSON.stringify({
+        municipalTaxNumber: inscricao_municipal,
+      });
+      console.log('Atualizando inscrição municipal no NFE.io...');
+      const patchResp = await fetch(patchUrl, {
+        method: 'PUT',
+        headers,
+        body: patchBody,
+      });
+      const patchText = await patchResp.text();
+      console.log('PATCH status:', patchResp.status, 'body:', patchText);
+    }
+
+    // Testa a conexão consultando a empresa
     const url = `${NFE_IO_BASE}/companies/${companyId}`;
     console.log('Testando URL:', url);
 
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Authorization': apiKey,
-        'Content-Type': 'application/json',
-      },
+      headers,
     });
 
     const rawText = await response.text();
