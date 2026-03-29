@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Download, Copy, FileEdit, Ban, Mail, FileText,
   CheckCircle2, XCircle, Clock, Send, AlertTriangle, Loader2,
-  Package, User, Settings2, ChevronDown, ChevronUp, Printer
+  Package, User, Settings2, ChevronDown, ChevronUp, Printer, RotateCcw
 } from "lucide-react";
 import { gerarDanfePrevia } from "@/components/emissor/DanfePdfPreview";
 import { motion } from "framer-motion";
@@ -50,6 +50,7 @@ export default function DetalhesNota() {
   const [errosOpen, setErrosOpen] = useState(true);
   const [cancelando, setCancelando] = useState(false);
   const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [reenviando, setReenviando] = useState(false);
   const [empresa, setEmpresa] = useState(null);
 
   const params = new URLSearchParams(window.location.search);
@@ -82,6 +83,19 @@ export default function DetalhesNota() {
     await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: "cancelada" });
     await carregar();
     setCancelando(false);
+  };
+
+  const handleReenviar = async () => {
+    if (!nota) return;
+    setReenviando(true);
+    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
+    const res = await base44.functions.invoke('emitirNfe', {
+      notaId: nota.id,
+      empresaId: nota.empresa_id,
+      ambiente: empresa?.nfe_ambiente,
+    });
+    setReenviando(false);
+    await carregar();
   };
 
   const handleClonar = async () => {
@@ -145,6 +159,14 @@ export default function DetalhesNota() {
             <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer">
               <ActionBtn icon={FileText} label="XML" />
             </a>
+          )}
+          {nota.status_sefaz === 'rejeitada' && (
+            <ActionBtn
+              icon={reenviando ? Loader2 : RotateCcw}
+              label={reenviando ? 'Reenviando...' : 'Reenviar'}
+              onClick={handleReenviar}
+              disabled={reenviando}
+            />
           )}
           <ActionBtn icon={Copy} label="Clonar nota" onClick={handleClonar} />
           <ActionBtn icon={FileEdit} label="Carta de Correção" disabled={!podeAgir} />

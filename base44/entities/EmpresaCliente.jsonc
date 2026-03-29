@@ -72,6 +72,16 @@
       ],
       "default": "homologacao",
       "description": "Ambiente de emiss\u00e3o: homologacao ou producao"
+    },
+    "nfe_serie": {
+      "type": "string",
+      "default": "1",
+      "description": "S\u00e9rie da NF-e"
+    },
+    "nfe_ultimo_numero": {
+      "type": "number",
+      "default": 0,
+      "description": "\u00daltimo n\u00famero de NF-e emitida (controle de sequ\u00eancia)"
     }
   },
   "required": [
