@@ -42,6 +42,9 @@ Deno.serve(async (req) => {
     if (!nota.destinatario_nome || !docLimpo) {
       return Response.json({ error: 'Destinatário inválido: nome e CNPJ/CPF são obrigatórios' }, { status: 400 });
     }
+    if (!nota.dest_codigo_municipio) {
+      return Response.json({ error: 'Código IBGE do município do destinatário é obrigatório. Cadastre o destinatário com o código IBGE preenchido.' }, { status: 400 });
+    }
     if (!nota.natureza_operacao) {
       return Response.json({ error: 'Natureza da operação não informada' }, { status: 400 });
     }
@@ -122,7 +125,16 @@ Deno.serve(async (req) => {
       },
       payment: [{
         paymentDetail: [{
-          method: "Cash",
+          method: (() => {
+            const map = {
+              "01": "Cash", "02": "Check", "03": "CreditCard", "04": "DebitCard",
+              "05": "StoreCredit", "10": "FoodVoucher", "11": "MealVoucher",
+              "12": "GiftVoucher", "13": "FuelVoucher", "14": "TradeNote",
+              "15": "BankSlip", "16": "BankDeposit", "17": "InstantPayment",
+              "18": "BankTransfer", "90": "None", "99": "Others",
+            };
+            return map[nota.forma_pagamento_codigo] || "Cash";
+          })(),
           amount: Number(nota.valor_total),
           paymentType: "InCash",
         }],

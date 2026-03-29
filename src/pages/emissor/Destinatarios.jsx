@@ -5,9 +5,27 @@ import { Users, Plus, Search, Pencil, Trash2, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function DestModal({ dest, empresaId, onClose, onSave }) {
-  const [form, setForm] = useState(dest || { cnpj: "", nome: "", email: "", telefone: "", municipio: "", uf: "", cep: "", logradouro: "", numero: "", bairro: "" });
-  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(dest || {
+    cnpj: "", nome: "", ie: "", indIEDest: "NonTaxPayer",
+    email: "", telefone: "",
+    logradouro: "", numero: "", complemento: "", bairro: "",
+    municipio: "", uf: "", cep: "", codigo_ibge_municipio: "",
+  });
+  const [ibgeBuscando, setIbgeBuscando] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const buscarIBGE = async () => {
+    if (!form.municipio || !form.uf || form.uf.length < 2) return;
+    setIbgeBuscando(true);
+    try {
+      const resp = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${form.uf}/municipios`);
+      const lista = await resp.json();
+      const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const found = lista.find(m => norm(m.nome) === norm(form.municipio));
+      if (found) set('codigo_ibge_municipio', String(found.id));
+    } catch {}
+    setIbgeBuscando(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +58,17 @@ function DestModal({ dest, empresaId, onClose, onSave }) {
             <div>
               <label className="text-sm font-medium text-gray-700">I.E.</label>
               <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                placeholder="Deixe vazio se isento"
                 value={form.ie || ""} onChange={e => set("ie", e.target.value)} />
+            </div>
+            <div className="col-span-2">
+              <label className="text-sm font-medium text-gray-700">Indicador IE do Destinatário *</label>
+              <select required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                value={form.indIEDest || "NonTaxPayer"} onChange={e => set("indIEDest", e.target.value)}>
+                <option value="TaxPayer">Contribuinte de ICMS (TaxPayer)</option>
+                <option value="Exempt">Contribuinte isento de IE (Exempt)</option>
+                <option value="NonTaxPayer">Não contribuinte de ICMS (NonTaxPayer)</option>
+              </select>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">E-mail</label>
@@ -52,30 +80,58 @@ function DestModal({ dest, empresaId, onClose, onSave }) {
               <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
                 value={form.telefone} onChange={e => set("telefone", e.target.value)} />
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">Município</label>
-              <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={form.municipio} onChange={e => set("municipio", e.target.value)} />
+            <div className="col-span-2">
+              <label className="text-sm font-medium text-gray-700">Logradouro *</label>
+              <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                value={form.logradouro} onChange={e => set("logradouro", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">UF</label>
+              <label className="text-sm font-medium text-gray-700">Número *</label>
+              <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                value={form.numero} onChange={e => set("numero", e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Complemento</label>
               <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={form.uf} onChange={e => set("uf", e.target.value)} />
+                value={form.complemento || ""} onChange={e => set("complemento", e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Bairro *</label>
+              <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                value={form.bairro} onChange={e => set("bairro", e.target.value)} />
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">CEP</label>
               <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={form.cep} onChange={e => set("cep", e.target.value)} />
+                placeholder="00000-000" value={form.cep} onChange={e => set("cep", e.target.value)} />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Bairro</label>
-              <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={form.bairro} onChange={e => set("bairro", e.target.value)} />
+              <label className="text-sm font-medium text-gray-700">Município *</label>
+              <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                value={form.municipio} onChange={e => set("municipio", e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">UF *</label>
+              <input required maxLength={2} className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] uppercase"
+                value={form.uf} onChange={e => set("uf", e.target.value.toUpperCase())} />
             </div>
             <div className="col-span-2">
-              <label className="text-sm font-medium text-gray-700">Logradouro</label>
-              <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
-                value={form.logradouro} onChange={e => set("logradouro", e.target.value)} />
+              <label className="text-sm font-medium text-gray-700">Código IBGE do Município *</label>
+              <div className="flex gap-2 mt-1">
+                <input
+                  className={`flex-1 border rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${
+                    form.codigo_ibge_municipio ? 'border-emerald-400 bg-emerald-50' : 'border-gray-200'
+                  }`}
+                  placeholder="Ex: 1501402"
+                  value={form.codigo_ibge_municipio || ""}
+                  onChange={e => set("codigo_ibge_municipio", e.target.value)}
+                />
+                <button type="button" onClick={buscarIBGE} disabled={ibgeBuscando || !form.municipio || !form.uf}
+                  className="text-sm font-medium px-3 py-2 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 whitespace-nowrap transition-colors">
+                  {ibgeBuscando ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
+                </button>
+              </div>
+              {!form.codigo_ibge_municipio && <p className="text-xs text-amber-600 mt-1">⚠️ Obrigatório para emissão de NF-e</p>}
             </div>
           </div>
           <div className="flex gap-3 pt-2">
