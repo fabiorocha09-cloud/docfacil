@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
-const NFE_IO_BASE = "https://api.nfe.io/v2";
+const NFE_IO_BASE = "https://api.nfse.io/v2";
 
 Deno.serve(async (req) => {
   try {
