@@ -171,19 +171,25 @@ export default function HistoricoNotas() {
                   </td>
                   <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
-                      {nota.danfe_pdf_url && (
+                      {nota.danfe_pdf_url ? (
                         <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap"
-                          title="Baixar DANFE">
+                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors whitespace-nowrap">
                           <Download className="w-3.5 h-3.5" /> DANFE
                         </a>
+                      ) : (
+                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-gray-100 text-gray-400 whitespace-nowrap cursor-not-allowed">
+                          <Download className="w-3.5 h-3.5" /> DANFE
+                        </span>
                       )}
-                      {nota.retorno_xml_url && (
+                      {nota.retorno_xml_url ? (
                         <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors whitespace-nowrap"
-                          title="Baixar XML">
+                          className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors whitespace-nowrap">
                           <FileText className="w-3.5 h-3.5" /> XML
                         </a>
+                      ) : (
+                        <span className="flex items-center gap-1 text-xs font-medium px-2 py-1.5 rounded-lg bg-gray-100 text-gray-400 whitespace-nowrap cursor-not-allowed">
+                          <FileText className="w-3.5 h-3.5" /> XML
+                        </span>
                       )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
