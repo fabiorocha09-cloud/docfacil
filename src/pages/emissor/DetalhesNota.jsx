@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 import {
   ArrowLeft, Download, Copy, FileEdit, Ban, Mail, FileText,
   CheckCircle2, XCircle, Clock, Send, AlertTriangle, Loader2,
-  Package, User, Settings2, ChevronDown, ChevronUp
+  Package, User, Settings2, ChevronDown, ChevronUp, Printer
 } from "lucide-react";
+import { gerarDanfePrevia } from "@/components/emissor/DanfePdfPreview";
 import { motion } from "framer-motion";
 
 const STATUS_CFG = {
@@ -49,12 +50,18 @@ export default function DetalhesNota() {
   const [errosOpen, setErrosOpen] = useState(true);
   const [cancelando, setCancelando] = useState(false);
   const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [empresa, setEmpresa] = useState(null);
 
   const params = new URLSearchParams(window.location.search);
   const notaId = params.get("id");
 
   useEffect(() => {
     if (!notaId) { navigate("/emissor/historico"); return; }
+    // Carrega empresa do localStorage
+    try {
+      const c = localStorage.getItem("emissor_current_client");
+      if (c) setEmpresa(JSON.parse(c));
+    } catch {}
     carregar();
   }, [notaId]);
 
@@ -124,7 +131,12 @@ export default function DetalhesNota() {
       {/* Barra de Ações */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
         <div className="flex items-center gap-1 flex-wrap">
-          {nota.danfe_pdf_url && (
+          <ActionBtn
+            icon={Printer}
+            label="Prévia PDF"
+            onClick={() => gerarDanfePrevia({ nota, itens, empresa })}
+          />
+        {nota.danfe_pdf_url && (
             <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
               <ActionBtn icon={Download} label="DANFE PDF" />
             </a>
@@ -312,9 +324,11 @@ export default function DetalhesNota() {
               )}
 
               {/* Log de transmissão */}
-              {nota.log_transmissao?.length > 0 && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Log de Transmissão</p>
+              <div className="pt-2 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Log de Transmissão</p>
+                {(!nota.log_transmissao || nota.log_transmissao.length === 0) ? (
+                  <p className="text-xs text-gray-400 italic">Nenhuma tentativa de transmissão registrada.</p>
+                ) : (
                   <div className="space-y-2">
                     {nota.log_transmissao.map((entry, i) => (
                       <div key={i} className={`rounded-xl p-3 text-xs border ${
@@ -326,10 +340,32 @@ export default function DetalhesNota() {
                           }`}>{entry.status === 'transmitida' ? '✅ Autorizada' : '❌ Rejeitada'}</span>
                           <span className="text-gray-400">{new Date(entry.timestamp).toLocaleString('pt-BR')}</span>
                         </div>
-                        {entry.danfe_pdf_url && <p className="text-gray-600">DANFE: <a href={entry.danfe_pdf_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">{entry.danfe_pdf_url}</a></p>}
+                        {entry.danfe_pdf_url && (
+                          <p className="text-gray-600">DANFE: <a href={entry.danfe_pdf_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">{entry.danfe_pdf_url}</a></p>
+                        )}
+                        {entry.raw && (
+                          <details className="mt-2">
+                            <summary className="cursor-pointer text-gray-400 hover:text-gray-700">Ver resposta bruta</summary>
+                            <pre className="bg-gray-900 text-gray-100 rounded-lg p-2 text-xs overflow-auto max-h-48 mt-1 whitespace-pre-wrap">
+                              {JSON.stringify(entry.raw, null, 2)}
+                            </pre>
+                          </details>
+                        )}
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+
+              {/* Erros */}
+              {nota.erros && nota.erros.length > 0 && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-2">Erros Registrados</p>
+                  {nota.erros.map((e, i) => (
+                    <div key={i} className="bg-red-50 border border-red-100 rounded-xl p-3 mb-2">
+                      <pre className="text-xs text-red-700 font-mono whitespace-pre-wrap">{typeof e === "string" ? e : JSON.stringify(e, null, 2)}</pre>
+                    </div>
+                  ))}
                 </div>
               )}
 
