@@ -87,7 +87,20 @@ Deno.serve(async (req) => {
       body: JSON.stringify(payload),
     });
 
-    const result = await response.json();
+    const rawText = await response.text();
+    console.log('NFE.io status:', response.status);
+    console.log('NFE.io raw response:', rawText);
+
+    let result;
+    try {
+      result = JSON.parse(rawText);
+    } catch (parseError) {
+      await base44.asServiceRole.entities.NotaFiscal55.update(notaId, {
+        status_sefaz: 'rejeitada',
+        erros: [{ message: 'Resposta inválida da NFE.io', raw: rawText }],
+      });
+      return Response.json({ error: 'Resposta inválida da NFE.io: ' + rawText }, { status: 500 });
+    }
 
     if (!response.ok) {
       const logEntryErr = {
