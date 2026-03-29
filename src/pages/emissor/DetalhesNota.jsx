@@ -282,13 +282,66 @@ export default function DetalhesNota() {
 
           {/* Aba Avançado */}
           {aba === "avancado" && (
-            <div>
+            <div className="space-y-4">
               <InfoRow label="Status SEFAZ" value={cfg.label} />
               <InfoRow label="Protocolo" value={nota.protocolo} />
               <InfoRow label="Chave de Acesso" value={nota.chave_acesso} />
               <InfoRow label="Série" value={nota.serie} />
               <InfoRow label="Número" value={nota.numero?.toString()} />
               <InfoRow label="Certificado" value={nota.certificado_id} />
+
+              {/* Links de download */}
+              {(nota.danfe_pdf_url || nota.retorno_xml_url) && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Links de Download</p>
+                  {nota.danfe_pdf_url && (
+                    <div className="mb-1">
+                      <p className="text-xs text-gray-500">DANFE PDF URL:</p>
+                      <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
+                        className="text-xs text-blue-600 underline break-all">{nota.danfe_pdf_url}</a>
+                    </div>
+                  )}
+                  {nota.retorno_xml_url && (
+                    <div>
+                      <p className="text-xs text-gray-500">XML URL:</p>
+                      <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer"
+                        className="text-xs text-blue-600 underline break-all">{nota.retorno_xml_url}</a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Log de transmissão */}
+              {nota.log_transmissao?.length > 0 && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Log de Transmissão</p>
+                  <div className="space-y-2">
+                    {nota.log_transmissao.map((entry, i) => (
+                      <div key={i} className={`rounded-xl p-3 text-xs border ${
+                        entry.status === 'transmitida' ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'
+                      }`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`font-semibold ${
+                            entry.status === 'transmitida' ? 'text-emerald-700' : 'text-red-700'
+                          }`}>{entry.status === 'transmitida' ? '✅ Autorizada' : '❌ Rejeitada'}</span>
+                          <span className="text-gray-400">{new Date(entry.timestamp).toLocaleString('pt-BR')}</span>
+                        </div>
+                        {entry.danfe_pdf_url && <p className="text-gray-600">DANFE: <a href={entry.danfe_pdf_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">{entry.danfe_pdf_url}</a></p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Resposta bruta NFE.io */}
+              {nota.nfe_io_raw && (
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Resposta Bruta NFE.io</p>
+                  <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-auto max-h-64 whitespace-pre-wrap">
+                    {JSON.stringify(nota.nfe_io_raw, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           )}
         </div>

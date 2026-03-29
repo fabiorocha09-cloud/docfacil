@@ -71,6 +71,17 @@
     },
     "observacoes": {
       "type": "string"
+    },
+    "nfe_io_raw": {
+      "type": "object",
+      "description": "Resposta bruta da API NFE.io para diagn\u00f3stico"
+    },
+    "log_transmissao": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Hist\u00f3rico de tentativas de transmiss\u00e3o"
     }
   },
   "required": [

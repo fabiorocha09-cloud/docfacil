@@ -90,32 +90,92 @@ Deno.serve(async (req) => {
     const result = await response.json();
 
     if (!response.ok) {
-      // Atualiza nota como rejeitada
+      const logEntryErr = {
+        timestamp: new Date().toISOString(),
+        status: "rejeitada",
+        raw: result,
+      };
+      // Busca log anterior para append
+      const notaAtual = notas[0];
+      const logAnterior = notaAtual?.log_transmissao || [];
       await base44.asServiceRole.entities.NotaFiscal55.update(notaId, {
         status_sefaz: "rejeitada",
         erros: [result],
+        nfe_io_raw: result,
+        log_transmissao: [...logAnterior, logEntryErr],
       });
       return Response.json({ error: result.message || 'Erro ao emitir NF-e', details: result }, { status: 400 });
     }
 
-    // Atualiza nota com retorno do NFE.io
+    // Atualiza nota com retorno do NFE.io — salva raw para diagnóstico
     const nfeData = result.nfe || result;
+
+    // Tenta todas as variações de campo que a API NFE.io pode retornar
+    const danfePdf =
+      nfeData.linkDanfe ||
+      nfeData.danfeUrl ||
+      nfeData.pdfUrl ||
+      nfeData.linkDanfePdf ||
+      nfeData.links?.danfe ||
+      result.linkDanfe ||
+      null;
+
+    const xmlUrl =
+      nfeData.linkXml ||
+      nfeData.xmlUrl ||
+      nfeData.links?.xml ||
+      result.linkXml ||
+      null;
+
+    const chave =
+      nfeData.chaveAcesso ||
+      nfeData.accessKey ||
+      nfeData.key ||
+      result.chaveAcesso ||
+      null;
+
+    const prot =
+      nfeData.protocolo ||
+      nfeData.number ||
+      nfeData.nProtocolo ||
+      result.protocolo ||
+      null;
+
+    const num =
+      nfeData.numero ||
+      nfeData.number ||
+      nfeData.nNF ||
+      null;
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      status: "transmitida",
+      danfe_pdf_url: danfePdf,
+      xml_url: xmlUrl,
+      chave_acesso: chave,
+      protocolo: prot,
+      raw: result,
+    };
+
     await base44.asServiceRole.entities.NotaFiscal55.update(notaId, {
       status_sefaz: "transmitida",
-      chave_acesso: nfeData.chaveAcesso || nfeData.accessKey || "",
-      protocolo: nfeData.protocolo || nfeData.number || "",
-      danfe_pdf_url: nfeData.linkDanfe || nfeData.pdfUrl || "",
-      retorno_xml_url: nfeData.linkXml || nfeData.xmlUrl || "",
-      numero: nfeData.numero || nfeData.number || null,
+      chave_acesso: chave || "",
+      protocolo: prot || "",
+      danfe_pdf_url: danfePdf || "",
+      retorno_xml_url: xmlUrl || "",
+      numero: num || null,
       erros: [],
+      nfe_io_raw: result,
+      log_transmissao: [logEntry],
     });
 
-    return Response.json({ 
-      success: true, 
-      chaveAcesso: nfeData.chaveAcesso || nfeData.accessKey,
-      protocolo: nfeData.protocolo || nfeData.number,
-      danfe: nfeData.linkDanfe || nfeData.pdfUrl,
-      xml: nfeData.linkXml || nfeData.xmlUrl,
+    return Response.json({
+      success: true,
+      chaveAcesso: chave,
+      protocolo: prot,
+      danfe: danfePdf,
+      xml: xmlUrl,
+      raw: result,
     });
 
   } catch (error) {
