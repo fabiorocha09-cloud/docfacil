@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const MODULOS = [
   {
     id: "certidaohub",
-    label: "CertidãoHub",
+    label: "DocFácil Hub",
     desc: "Gestão de certidões",
     path: "/Dashboard",
     icon: FileCheck2,
