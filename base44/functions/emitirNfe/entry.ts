@@ -194,7 +194,14 @@ Deno.serve(async (req) => {
     }
 
     // Atualiza nota com retorno do NFE.io — salva raw para diagnóstico
-    const nfeData = result.nfe || result;
+    const nfeData = result.productInvoice || result.nfe || result;
+
+    // ID interno da NFE.io (necessário para sincronização futura)
+    const nfeIoId =
+      nfeData.id ||
+      result.productInvoice?.id ||
+      result.id ||
+      null;
 
     // Extrai links conforme documentação NFE.io v2
     const danfePdf =
@@ -217,13 +224,15 @@ Deno.serve(async (req) => {
       null;
 
     const chave =
-      nfeData.chaveAcesso ||
       nfeData.accessKey ||
+      nfeData.chaveAcesso ||
       nfeData.key ||
+      result.accessKey ||
       result.chaveAcesso ||
       null;
 
     const prot =
+      nfeData.protocol ||
       nfeData.protocolo ||
       nfeData.number ||
       nfeData.nProtocolo ||
@@ -231,9 +240,10 @@ Deno.serve(async (req) => {
       null;
 
     const num =
-      nfeData.numero ||
       nfeData.number ||
+      nfeData.numero ||
       nfeData.nNF ||
+      result.number ||
       null;
 
     const logEntry = {
@@ -249,10 +259,11 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.NotaFiscal55.update(notaId, {
       status_sefaz: "transmitida",
       chave_acesso: chave || "",
-      protocolo: prot || "",
+      protocolo: prot ? String(prot) : "",
       danfe_pdf_url: danfePdf || "",
       retorno_xml_url: xmlUrl || "",
       numero: num || null,
+      nfe_io_id: nfeIoId || "",
       erros: [],
       nfe_io_raw: result,
       log_transmissao: [logEntry],
