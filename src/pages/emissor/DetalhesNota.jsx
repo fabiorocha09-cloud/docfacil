@@ -638,26 +638,26 @@ export default function DetalhesNota() {
                       onChange={e => setNota(n => ({ ...n, observacoes: e.target.value }))}
                       className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none" />
                   </div>
-                  </div>
-                  ) : null}
-                  <InfoRow label="Status SEFAZ" value={cfg.label} />
-                  <InfoRow label="Natureza" value={nota.natureza_operacao} />
-                  <InfoRow label="Forma de Pagamento" value={nota.forma_pagamento} />
-                  <InfoRow label="Série" value={nota.serie} />
-                  <InfoRow label="Número" value={nota.numero?.toString()} />
-                  <InfoRow label="Certificado" value={nota.certificado_id} />
-                  </div>
-                  )}
-                  </div>
-                  </div>
+                </div>
+              ) : null}
+              <InfoRow label="Status SEFAZ" value={cfg.label} />
+              <InfoRow label="Natureza" value={nota.natureza_operacao} />
+              <InfoRow label="Forma de Pagamento" value={nota.forma_pagamento} />
+              <InfoRow label="Série" value={nota.serie} />
+              <InfoRow label="Número" value={nota.numero?.toString()} />
+              <InfoRow label="Certificado" value={nota.certificado_id} />
+            </div>
+          )}
+        </div>
+      </div>
 
-                  {itemModalOpen && (
-                  <EditarItemModal
-                  item={itemEditando}
-                  onClose={() => { setItemModalOpen(false); setItemEditando(null); }}
-                  onSave={handleSalvarItem}
-                  />
-                  )}
-                  </div>
-                  );
-                  }
+      {itemModalOpen && (
+        <EditarItemModal
+          item={itemEditando}
+          onClose={() => { setItemModalOpen(false); setItemEditando(null); }}
+          onSave={handleSalvarItem}
+        />
+      )}
+    </div>
+  );
+}
