@@ -18,6 +18,7 @@ const cadastros = [
   { label: "Formas de Pagamento", path: "/emissor/formas-pagamento", icon: CreditCard },
   { label: "Naturezas", path: "/emissor/naturezas", icon: Layers },
   { label: "Configurações NF-e", path: "/emissor/configuracao", icon: Settings },
+  { label: "Editar Empresa", path: "/emissor/empresa", icon: Building2 },
 ];
 
 export default function EmissorLayout() {

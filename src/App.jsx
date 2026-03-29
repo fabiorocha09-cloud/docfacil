@@ -34,6 +34,7 @@ import DetalhesNota from '@/pages/emissor/DetalhesNota';
 import FormasPagamento from '@/pages/emissor/FormasPagamento';
 import NaturezasTributarias from '@/pages/emissor/NaturezasTributarias';
 import ConfiguracaoNFe from '@/pages/emissor/ConfiguracaoNFe';
+import EditarEmpresa from '@/pages/emissor/EditarEmpresa';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,6 +88,7 @@ const AuthenticatedApp = () => {
         <Route path="/emissor/produtos" element={<Produtos />} />
         <Route path="/emissor/nota" element={<DetalhesNota />} />
         <Route path="/emissor/configuracao" element={<ConfiguracaoNFe />} />
+        <Route path="/emissor/empresa" element={<EditarEmpresa />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
