@@ -46,7 +46,9 @@ Deno.serve(async (req) => {
             name: empresa.municipio || '',
             ...(empresa.codigo_ibge_municipio ? { code: empresa.codigo_ibge_municipio } : {}),
           },
+          state: empresa.uf || '',
         },
+        stateRegistration: empresa.ie || '',
         taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
       };
 
