@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import EditarItemModal from "@/components/emissor/EditarItemModal";
@@ -80,14 +80,29 @@ export default function DetalhesNota() {
   const params = new URLSearchParams(window.location.search);
   const notaId = params.get("id");
 
+  // Calcula totais dinamicamente baseado nos itens
+  const totais = useMemo(() => {
+    const produtos = itens.reduce((s, i) => s + Number(i.valor_total || 0), 0);
+    const icms = itens.reduce((s, i) => s + Number(i.valor_icms || 0), 0);
+    const pis = itens.reduce((s, i) => s + Number(i.valor_pis || 0), 0);
+    const cofins = itens.reduce((s, i) => s + Number(i.valor_cofins || 0), 0);
+    const impostos = icms + pis + cofins;
+    const total = produtos + Number(nota?.valor_frete || 0) + Number(nota?.valor_seguro || 0) + 
+                  Number(nota?.outras_despesas || 0) - Number(nota?.valor_desconto || 0);
+    return { produtos, impostos, icms, pis, cofins, total };
+  }, [itens, nota?.valor_frete, nota?.valor_seguro, nota?.outras_despesas, nota?.valor_desconto]);
+
+  // Sincroniza totais calculados com a nota
   useEffect(() => {
-    if (!notaId) { navigate("/emissor/historico"); return; }
-    try {
-      const c = localStorage.getItem("emissor_current_client");
-      if (c) setEmpresa(JSON.parse(c));
-    } catch {}
-    carregar();
-  }, [notaId]);
+    if (nota) {
+      setNota(n => ({
+        ...n,
+        valor_produtos: totais.produtos,
+        valor_impostos: totais.impostos,
+        valor_total: totais.total
+      }));
+    }
+  }, [totais]);
 
   useEffect(() => {
     if (!empresa?.id) return;
@@ -530,17 +545,17 @@ export default function DetalhesNota() {
                   <div className="rounded-xl p-4 mt-2" style={{ backgroundColor: "#E6F0FF" }}>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Total Produtos</span>
-                      <span className="font-bold" style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_produtos)}</span>
+                      <span className="font-bold" style={{ color: "#0B63D4" }}>R$ {fmt(totais.produtos)}</span>
                     </div>
-                    {nota.valor_impostos > 0 && (
+                    {totais.impostos > 0 && (
                       <div className="flex justify-between text-sm mt-1">
                         <span className="text-gray-600">Total Impostos</span>
-                        <span className="font-semibold text-gray-700">R$ {fmt(nota.valor_impostos)}</span>
+                        <span className="font-semibold text-gray-700">R$ {fmt(totais.impostos)}</span>
                       </div>
                     )}
                     <div className="flex justify-between text-base font-bold mt-2 border-t border-blue-200 pt-2">
                       <span style={{ color: "#0B63D4" }}>Total da Nota</span>
-                      <span style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_total)}</span>
+                      <span style={{ color: "#0B63D4" }}>R$ {fmt(totais.total)}</span>
                     </div>
                   </div>
                 </div>
@@ -578,7 +593,7 @@ export default function DetalhesNota() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 bg-white">
-                    {[["Total de Produtos", fmt(nota.valor_produtos)],["ICMS", "0,00"],["PIS", "0,00"],["COFINS", "0,00"]].map(([lbl, val]) => (
+                    {[["Total de Produtos", fmt(totais.produtos)],["ICMS", fmt(totais.icms)],["PIS", fmt(totais.pis)],["COFINS", fmt(totais.cofins)]].map(([lbl, val]) => (
                       <tr key={lbl}>
                         <td className="px-5 py-3 text-gray-700">{lbl}</td>
                         <td className="px-5 py-3 text-right font-medium">R$ {val}</td>
@@ -588,7 +603,7 @@ export default function DetalhesNota() {
                   <tfoot>
                     <tr style={{ backgroundColor: "#E6F0FF" }}>
                       <td className="px-5 py-4 font-bold" style={{ color: "#0B63D4" }}>Total da Nota</td>
-                      <td className="px-5 py-4 text-right font-bold text-lg" style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_total)}</td>
+                      <td className="px-5 py-4 text-right font-bold text-lg" style={{ color: "#0B63D4" }}>R$ {fmt(totais.total)}</td>
                     </tr>
                   </tfoot>
                 </table>
