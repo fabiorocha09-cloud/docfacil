@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import {
   FileText, TrendingUp, CheckCircle2, XCircle, Clock,
@@ -19,6 +20,7 @@ const STATUS = {
 const fmt = v => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 });
 
 export default function EmissorDashboard() {
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [notas, setNotas] = useState([]);
@@ -78,8 +80,8 @@ export default function EmissorDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm">{client?.razao_social}</p>
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Dashboard</h1>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{client?.razao_social}</p>
         </div>
         <div className="flex items-center gap-3">
           <DateRangeFilter value={dateFilter} onChange={setDateFilter} />
@@ -110,14 +112,14 @@ export default function EmissorDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Curva ABC */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className={`rounded-2xl shadow-sm p-5 ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800 text-sm">Top Clientes (Faturamento)</h2>
+            <h2 className={`font-semibold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Top Clientes (Faturamento)</h2>
           </div>
           {loading ? (
-            <div className="space-y-2">{[...Array(4)].map((_, i) => <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />)}</div>
+            <div className="space-y-2">{[...Array(4)].map((_, i) => <div key={i} className={`h-8 rounded-lg animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />)}</div>
           ) : topClientes.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-8">Sem notas autorizadas no período.</p>
+            <p className={`text-sm text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Sem notas autorizadas no período.</p>
           ) : (
             <div className="space-y-3">
               {topClientes.map(([nome, total], i) => {
@@ -126,13 +128,13 @@ export default function EmissorDashboard() {
                 return (
                   <div key={nome}>
                     <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-gray-700 truncate max-w-[60%]">{nome}</span>
-                      <span className="font-semibold text-gray-900">R$ {fmt(total)}</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: cores[i] }} />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">{pct.toFixed(1)}% do faturamento</p>
+                         <span className={`truncate max-w-[60%] ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{nome}</span>
+                         <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>R$ {fmt(total)}</span>
+                       </div>
+                       <div className={`h-2 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`}>
+                         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: cores[i] }} />
+                       </div>
+                       <p className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>{pct.toFixed(1)}% do faturamento</p>
                   </div>
                 );
               })}
@@ -141,34 +143,34 @@ export default function EmissorDashboard() {
         </div>
 
         {/* Últimas notas */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div className={`rounded-2xl shadow-sm p-5 ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-100'}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-800 text-sm">Últimas Notas</h2>
+            <h2 className={`font-semibold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Últimas Notas</h2>
             <Link to="/emissor/historico" className="text-xs font-medium flex items-center gap-1" style={{ color: "#0B63D4" }}>
               Ver todas <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           {loading ? (
-            <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />)}</div>
+            <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className={`h-12 rounded-lg animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />)}</div>
           ) : filtradas.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-8">Nenhuma nota no período.</p>
+            <p className={`text-sm text-center py-8 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Nenhuma nota no período.</p>
           ) : (
             <div className="space-y-2">
               {filtradas.slice(0, 6).map(nota => {
                 const cfg = STATUS[nota.status_sefaz] || STATUS.rascunho;
                 return (
                   <button key={nota.id} onClick={() => navigate(`/emissor/nota?id=${nota.id}`)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors text-left">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{nota.destinatario_nome || "—"}</p>
-                      <p className="text-xs text-gray-400">{new Date(nota.created_date).toLocaleDateString("pt-BR")}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {nota.valor_total ? `R$ ${fmt(nota.valor_total)}` : "—"}
-                      </span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.cls}`}>{cfg.label}</span>
-                    </div>
+                     className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors text-left ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
+                     <div className="flex-1 min-w-0">
+                       <p className={`text-sm font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{nota.destinatario_nome || "—"}</p>
+                       <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>{new Date(nota.created_date).toLocaleDateString("pt-BR")}</p>
+                     </div>
+                     <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                       <span className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                         {nota.valor_total ? `R$ ${fmt(nota.valor_total)}` : "—"}
+                       </span>
+                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.cls}`}>{cfg.label}</span>
+                     </div>
                   </button>
                 );
               })}

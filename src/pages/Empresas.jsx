@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,6 +14,7 @@ import SolicitarTJModal from "@/components/SolicitarTJModal";
 import GerarLinkModal from "@/components/GerarLinkModal";
 
 export default function Empresas() {
+  const { theme } = useTheme();
   const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -162,8 +164,8 @@ export default function Empresas() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Empresas</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Empresas</h1>
+          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             {ativas.length} ativa(s){naLixeira.length > 0 && ` · ${naLixeira.length} na lixeira`}
           </p>
         </div>
@@ -237,7 +239,7 @@ export default function Empresas() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
-          className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={`w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
           placeholder="Buscar por nome ou CNPJ..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -245,7 +247,7 @@ export default function Empresas() {
       </div>
 
       {lixeira && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+        <div className={`rounded-xl p-4 text-sm ${theme === 'dark' ? 'bg-red-500/10 border border-red-500/30 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           Você está na lixeira. Empresas aqui podem ser restauradas ou excluídas permanentemente.
         </div>
       )}
@@ -255,17 +257,17 @@ export default function Empresas() {
           {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />)}
         </div>
       ) : filtradas.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
-          <Building2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{lixeira ? "Lixeira vazia." : "Nenhuma empresa encontrada."}</p>
+        <div className={`rounded-xl p-16 text-center ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+          <Building2 className={`w-10 h-10 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>{lixeira ? "Lixeira vazia." : "Nenhuma empresa encontrada."}</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-200'}`}>
           {/* Barra de seleção */}
-          <div className="flex items-center justify-between px-5 py-2 border-b border-gray-100 bg-gray-50">
-            <span className="text-xs text-gray-500">{filtradas.length} resultado(s)</span>
+          <div className={`flex items-center justify-between px-5 py-2 border-b ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-gray-50'}`}>
+            <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{filtradas.length} resultado(s)</span>
             <button
-              className="text-xs text-blue-600 hover:underline"
+              className="text-xs text-[#0B63D4] hover:underline"
               onClick={() => {
                 if (selecionados.length === filtradas.length) setSelecionados([]);
                 else setSelecionados(filtradas.map(e => e.id));
@@ -280,7 +282,7 @@ export default function Empresas() {
               return (
                 <div key={empresa.id} className="border-b border-gray-100 last:border-b-0">
                   <div
-                    className={`flex items-center justify-between px-5 py-4 hover:bg-gray-50 cursor-pointer ${isSel ? "bg-blue-50" : ""}`}
+                    className={`flex items-center justify-between px-5 py-4 cursor-pointer transition-colors ${isSel ? (theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50') : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')}`}
                     onClick={() => setSelecionados(prev => isSel ? prev.filter(id => id !== empresa.id) : [...prev, empresa.id])}
                   >
                     <div className="flex items-center gap-4">
@@ -288,12 +290,12 @@ export default function Empresas() {
                       <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${isSel ? "bg-blue-600 border-blue-600" : "border-gray-300"}`}>
                         {isSel && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                       </div>
-                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-blue-600" />
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-blue-500/20' : 'bg-blue-50'}`}>
+                        <Building2 className={`w-5 h-5 ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{empresa.nome}</p>
-                        <p className="text-sm text-gray-500">{empresa.cnpj} · {empresa.responsavel || "—"}</p>
+                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{empresa.nome}</p>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{empresa.cnpj} · {empresa.responsavel || "—"}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>

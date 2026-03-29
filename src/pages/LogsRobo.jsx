@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
 import { ClipboardList, Search, CheckCircle2, XCircle, AlertTriangle, Info, Building2 } from "lucide-react";
 
@@ -12,6 +13,7 @@ const statusConfig = {
 const tipoLabels = { federal: "Federal", estadual: "Estadual", municipal: "Municipal", fgts: "FGTS", trabalhista: "Trabalhista" };
 
 export default function LogsRobo() {
+  const { theme } = useTheme();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -38,15 +40,15 @@ export default function LogsRobo() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Logs de Auditoria</h1>
-        <p className="text-gray-500 text-sm mt-1">Histórico de ações do robô de busca</p>
+        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Logs de Auditoria</h1>
+        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Histórico de ações do robô de busca</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
             placeholder="Buscar empresa, ação ou usuário..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -75,18 +77,18 @@ export default function LogsRobo() {
           {[...Array(6)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />)}
         </div>
       ) : filtrados.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
-          <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Nenhum log encontrado.</p>
+        <div className={`rounded-xl p-16 text-center ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
+          <ClipboardList className={`w-10 h-10 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>Nenhum log encontrado.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="divide-y divide-gray-100">
+        <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-200'}`}>
+          <div className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-100'}`}>
             {filtrados.map(log => {
               const cfg = statusConfig[log.status] || statusConfig.info;
               const StatusIcon = cfg.icon;
               return (
-                <div key={log.id} className="px-5 py-4 hover:bg-gray-50">
+                <div key={log.id} className={`px-5 py-4 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div className={`mt-0.5 p-1.5 rounded-lg border flex-shrink-0 ${cfg.color}`}>
@@ -94,17 +96,17 @@ export default function LogsRobo() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                          <p className="font-medium text-gray-900 text-sm">{log.empresa_nome}</p>
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                          <p className={`font-medium text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{log.empresa_nome}</p>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
                             {tipoLabels[log.tipo_certidao]}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-700">{log.acao}</p>
+                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{log.acao}</p>
                         {log.detalhes && (
-                          <p className="text-xs text-gray-500 mt-0.5 truncate">{log.detalhes}</p>
+                          <p className={`text-xs mt-0.5 truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{log.detalhes}</p>
                         )}
                         {log.iniciada_por_nome && (
-                          <p className="text-xs text-gray-400 mt-1">Por: {log.iniciada_por_nome}</p>
+                          <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-400'}`}>Por: {log.iniciada_por_nome}</p>
                         )}
                       </div>
                     </div>
