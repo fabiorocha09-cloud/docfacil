@@ -773,13 +773,49 @@ export default function EmitirNFe() {
               className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 disabled:opacity-30 font-medium">
               <ChevronLeft className="w-4 h-4" /> Anterior
             </button>
-            {step < STEPS.length - 1 && (
-              <button onClick={() => goTo(step + 1)} disabled={!canNext()}
-                className="flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-40"
-                style={{ backgroundColor: "#0B63D4" }}>
-                Próximo <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+            <div className="flex gap-2">
+              {step > 0 && (
+                <button onClick={async () => {
+                  if (!selectedDest || itens.length === 0) { alert("Preencha destinatário e produtos"); return; }
+                  setTransmitindo(true);
+                  try {
+                    const nota = await base44.entities.NotaFiscal55.create({
+                      empresa_id: client?.id, empresa_nome: client?.razao_social, status_sefaz: "rascunho",
+                      destinatario_id: selectedDest?.id, destinatario_nome: selectedDest?.nome,
+                      destinatario_cnpj: selectedDest?.cnpj, destinatario_email: selectedDest?.email,
+                      dest_logradouro: selectedDest?.logradouro, dest_numero: selectedDest?.numero,
+                      dest_complemento: selectedDest?.complemento, dest_bairro: selectedDest?.bairro,
+                      dest_municipio: selectedDest?.municipio, dest_uf: selectedDest?.uf,
+                      dest_cep: selectedDest?.cep, dest_codigo_municipio: selectedDest?.codigo_ibge_municipio,
+                      dest_ie: selectedDest?.ie, dest_indicador_ie: selectedDest?.indIEDest || "NonTaxPayer",
+                      natureza_operacao: selectedNatureza?.nome, forma_pagamento: avancado.forma_pagamento,
+                      forma_pagamento_codigo: PAGAMENTO_CODIGO[avancado.forma_pagamento] || "01",
+                      regra_tributacao_id: selectedRegra?.id || null, regra_tributacao_nome: selectedRegra?.nome || null,
+                      tipo_cliente: tipoCliente, valor_produtos: totais.produtos,
+                      valor_frete: Number(avancado.valor_frete || 0), valor_seguro: Number(avancado.valor_seguro || 0),
+                      outras_despesas: Number(avancado.outras_despesas || 0),
+                      valor_desconto: Number(avancado.desconto_total || 0), valor_impostos: totais.impostos,
+                      valor_total: totais.total, observacoes: avancado.info_complementar,
+                    });
+                    await Promise.all(itens.map(item => base44.entities.ItemNota.create({ ...item, nota_id: nota.id, empresa_id: client?.id })));
+                    alert("Rascunho salvo!");
+                    navigate(`/emissor/nota?id=${nota.id}`);
+                  } catch (err) { alert("Erro ao salvar rascunho: " + err?.message); }
+                  finally { setTransmitindo(false); }
+                }}
+                  className="flex items-center gap-1.5 text-gray-600 text-sm font-semibold px-4 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40"
+                  disabled={transmitindo}>
+                  💾 Salvar Rascunho
+                </button>
+              )}
+              {step < STEPS.length - 1 && (
+                <button onClick={() => goTo(step + 1)} disabled={!canNext()}
+                  className="flex items-center gap-1.5 text-white text-sm font-semibold px-5 py-2.5 rounded-xl disabled:opacity-40"
+                  style={{ backgroundColor: "#0B63D4" }}>
+                  Próximo <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import EditarItemModal from "@/components/emissor/EditarItemModal";
 import {
   ArrowLeft, Download, Copy, FileEdit, Ban, Mail, FileText,
   CheckCircle2, XCircle, Clock, Send, AlertTriangle, Loader2,
-  Package, User, Settings2, ChevronDown, ChevronUp, Printer, RotateCcw
+  Package, User, Settings2, ChevronDown, ChevronUp, Printer, RotateCcw, Edit, Trash2, Plus
 } from "lucide-react";
 import { gerarDanfePrevia } from "@/components/emissor/DanfePdfPreview";
 import { motion } from "framer-motion";
@@ -52,13 +53,15 @@ export default function DetalhesNota() {
   const [enviandoEmail, setEnviandoEmail] = useState(false);
   const [reenviando, setReenviando] = useState(false);
   const [empresa, setEmpresa] = useState(null);
+  const [editando, setEditando] = useState(false);
+  const [itemEditando, setItemEditando] = useState(null);
+  const [itemModalOpen, setItemModalOpen] = useState(false);
 
   const params = new URLSearchParams(window.location.search);
   const notaId = params.get("id");
 
   useEffect(() => {
     if (!notaId) { navigate("/emissor/historico"); return; }
-    // Carrega empresa do localStorage
     try {
       const c = localStorage.getItem("emissor_current_client");
       if (c) setEmpresa(JSON.parse(c));
@@ -146,7 +149,6 @@ export default function DetalhesNota() {
 
     const novaNotaData = await base44.entities.NotaFiscal55.create(dadosClone);
 
-    // Clona os itens
     await Promise.all(itens.map(item => {
       const { id, created_date, updated_date, nota_id, ...resto } = item;
       return base44.entities.ItemNota.create({ ...resto, nota_id: novaNotaData.id });
@@ -159,10 +161,33 @@ export default function DetalhesNota() {
   const handleEnviarEmail = async () => {
     if (!nota?.destinatario_id) return;
     setEnviandoEmail(true);
-    // Simulação — integrar com SendEmail quando tiver dados reais
     await new Promise(r => setTimeout(r, 1200));
     setEnviandoEmail(false);
     alert("E-mail enviado com sucesso!");
+  };
+
+  const handleSalvarNota = async () => {
+    await base44.entities.NotaFiscal55.update(nota.id, nota);
+    setEditando(false);
+    alert("Nota salva!");
+    carregar();
+  };
+
+  const handleSalvarItem = async (dados) => {
+    if (itemEditando?.id) {
+      await base44.entities.ItemNota.update(itemEditando.id, dados);
+    } else {
+      await base44.entities.ItemNota.create({ ...dados, nota_id: nota.id, empresa_id: nota.empresa_id });
+    }
+    setItemModalOpen(false);
+    setItemEditando(null);
+    carregar();
+  };
+
+  const handleExcluirItem = async (id) => {
+    if (!confirm("Excluir este item?")) return;
+    await base44.entities.ItemNota.delete(id);
+    carregar();
   };
 
   if (loading) return (
@@ -201,7 +226,7 @@ export default function DetalhesNota() {
             label="Prévia PDF"
             onClick={() => gerarDanfePrevia({ nota, itens, empresa })}
           />
-        {nota.danfe_pdf_url && (
+          {nota.danfe_pdf_url && (
             <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer">
               <ActionBtn icon={Download} label="DANFE PDF" />
             </a>
@@ -224,32 +249,49 @@ export default function DetalhesNota() {
           <ActionBtn icon={enviandoEmail ? Loader2 : Mail} label="Enviar e-mail"
             onClick={handleEnviarEmail} disabled={enviandoEmail} />
           {nota.status_sefaz === 'rascunho' && (
-            <ActionBtn
-              icon={Send}
-              label="Transmitir"
-              onClick={async () => {
-                if (!empresa) return;
-                setReenviando(true);
-                try {
-                  await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
-                  const res = await base44.functions.invoke('emitirNfe', {
-                    notaId: nota.id,
-                    empresaId: nota.empresa_id,
-                    ambiente: empresa?.nfe_ambiente,
-                  });
-                  if (res.data?.error) {
-                    await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: res.data.error }] });
-                  }
-                } catch (err) {
-                  const msg = err?.response?.data?.error || err?.message || 'Erro';
-                  await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: msg }] });
-                } finally {
-                  setReenviando(false);
-                  await carregar();
-                }
-              }}
-              disabled={reenviando}
-            />
+            <>
+              {editando ? (
+                <ActionBtn
+                  icon={CheckCircle2}
+                  label="Salvar"
+                  onClick={handleSalvarNota}
+                />
+              ) : (
+                <ActionBtn
+                  icon={FileEdit}
+                  label="Editar"
+                  onClick={() => setEditando(true)}
+                />
+              )}
+              {!editando && (
+                <ActionBtn
+                  icon={Send}
+                  label="Transmitir"
+                  onClick={async () => {
+                    if (!empresa) return;
+                    setReenviando(true);
+                    try {
+                      await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'transmitindo', erros: [] });
+                      const res = await base44.functions.invoke('emitirNfe', {
+                        notaId: nota.id,
+                        empresaId: nota.empresa_id,
+                        ambiente: empresa?.nfe_ambiente,
+                      });
+                      if (res.data?.error) {
+                        await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: res.data.error }] });
+                      }
+                    } catch (err) {
+                      const msg = err?.response?.data?.error || err?.message || 'Erro';
+                      await base44.entities.NotaFiscal55.update(notaId, { status_sefaz: 'rejeitada', erros: [{ message: msg }] });
+                    } finally {
+                      setReenviando(false);
+                      await carregar();
+                    }
+                  }}
+                  disabled={reenviando}
+                />
+              )}
+            </>
           )}
           <ActionBtn icon={Ban} label="Cancelar" danger
             onClick={handleCancelar} disabled={cancelando || !podeAgir} />
@@ -329,17 +371,51 @@ export default function DetalhesNota() {
           {aba === "cliente" && (
             <div>
               <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Destinatário</h3>
-              <InfoRow label="Razão Social / Nome" value={nota.destinatario_nome} />
-              <InfoRow label="CNPJ / CPF" value={nota.destinatario_cnpj} />
-              <InfoRow label="Data de Emissão" value={nota.created_date ? new Date(nota.created_date).toLocaleDateString("pt-BR") : null} />
-              <InfoRow label="Série" value={nota.serie} />
-              <InfoRow label="Observações" value={nota.observacoes} />
+              {editando ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Razão Social *</label>
+                    <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      value={nota.destinatario_nome || ""} onChange={e => setNota(n => ({ ...n, destinatario_nome: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">CNPJ / CPF</label>
+                    <input className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      value={nota.destinatario_cnpj || ""} onChange={e => setNota(n => ({ ...n, destinatario_cnpj: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">E-mail</label>
+                    <input type="email" className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                      value={nota.destinatario_email || ""} onChange={e => setNota(n => ({ ...n, destinatario_email: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Observações</label>
+                    <textarea className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none"
+                      rows={3} value={nota.observacoes || ""} onChange={e => setNota(n => ({ ...n, observacoes: e.target.value }))} />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <InfoRow label="Razão Social / Nome" value={nota.destinatario_nome} />
+                  <InfoRow label="CNPJ / CPF" value={nota.destinatario_cnpj} />
+                  <InfoRow label="Data de Emissão" value={nota.created_date ? new Date(nota.created_date).toLocaleDateString("pt-BR") : null} />
+                  <InfoRow label="Série" value={nota.serie} />
+                  <InfoRow label="Observações" value={nota.observacoes} />
+                </>
+              )}
             </div>
           )}
 
           {/* Aba Produtos */}
           {aba === "produtos" && (
             <div>
+              {editando && (
+                <button onClick={() => { setItemEditando(null); setItemModalOpen(true); }}
+                  className="mb-3 flex items-center gap-2 text-sm font-semibold text-white px-3 py-2 rounded-xl"
+                  style={{ backgroundColor: "#0B63D4" }}>
+                  <Plus className="w-4 h-4" /> Adicionar Item
+                </button>
+              )}
               {itens.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 text-sm">
                   <Package className="w-8 h-8 mx-auto mb-2 text-gray-200" />
@@ -368,6 +444,18 @@ export default function DetalhesNota() {
                             {item.aliquota_cofins > 0 && <p>COFINS: {item.aliquota_cofins}%</p>}
                           </div>
                         </div>
+                        {editando && (
+                          <div className="flex gap-1">
+                            <button onClick={() => { setItemEditando(item); setItemModalOpen(true); }}
+                              className="p-1 text-gray-400 hover:text-blue-600 rounded">
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleExcluirItem(item.id)}
+                              className="p-1 text-gray-400 hover:text-red-600 rounded">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   ))}
@@ -483,6 +571,14 @@ export default function DetalhesNota() {
           )}
         </div>
       </div>
+
+      {itemModalOpen && (
+        <EditarItemModal
+          item={itemEditando}
+          onClose={() => { setItemModalOpen(false); setItemEditando(null); }}
+          onSave={handleSalvarItem}
+        />
+      )}
     </div>
   );
 }
