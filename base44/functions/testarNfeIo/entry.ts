@@ -25,24 +25,26 @@ Deno.serve(async (req) => {
       if (!empresa) return Response.json({ error: 'Dados da empresa não fornecidos' }, { status: 400 });
 
       const taxRegimeMap = {
-        simples_nacional: 'simplesNacional',
-        lucro_presumido: 'lucroPresumido',
-        lucro_real: 'lucroReal',
-        mei: 'mei',
+        simples_nacional: 'SimplesNacional',
+        lucro_presumido: 'LucroPresumido',
+        lucro_real: 'LucroReal',
+        mei: 'MicroempreendedorIndividual',
+        isento: 'Isento',
       };
 
       const payload = {
         company: {
           name: empresa.razao_social,
-          tradeName: empresa.nome_fantasia || empresa.razao_social,
+          tradeName: empresa.nome_fantasia || null,
           federalTaxNumber: Number(empresa.cnpj?.replace(/\D/g, '')),
-          taxRegime: taxRegimeMap[empresa.regime_tributario] || 'simplesNacional',
+          municipalTaxNumber: empresa.inscricao_municipal || null,
+          taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
           address: {
             country: 'BRA',
             postalCode: empresa.cep?.replace(/\D/g, '') || '',
             street: empresa.logradouro || '',
             number: empresa.numero || 'S/N',
-            additionalInformation: empresa.complemento || '',
+            additionalInformation: empresa.complemento || null,
             district: empresa.bairro || '',
             city: {
               name: empresa.municipio || '',
