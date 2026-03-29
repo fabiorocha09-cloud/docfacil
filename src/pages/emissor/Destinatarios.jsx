@@ -11,6 +11,7 @@ function DestModal({ dest, empresaId, onClose, onSave }) {
     logradouro: "", numero: "", complemento: "", bairro: "",
     municipio: "", uf: "", cep: "", codigo_ibge_municipio: "",
   });
+  const [saving, setSaving] = useState(false);
   const [ibgeBuscando, setIbgeBuscando] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
