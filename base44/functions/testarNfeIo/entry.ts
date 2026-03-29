@@ -74,6 +74,66 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, status: postResp.status, data: postResult });
     }
 
+    // Ação: configurar imposto municipal (municipaltaxes)
+    if (action === 'criar_municipal_tax') {
+      if (!companyId) return Response.json({ error: 'companyId não fornecido' }, { status: 400 });
+      if (!empresa) return Response.json({ error: 'Dados da empresa não fornecidos' }, { status: 400 });
+
+      const envMap = { homologacao: 'Development', producao: 'Production' };
+      const specialTaxRegimeMap = {
+        simples_nacional: 'SimplesNacional',
+        lucro_presumido: 'LucroPresumido',
+        lucro_real: 'LucroReal',
+        mei: 'Mei',
+      };
+
+      const mtPayload = {
+        municipalTax: {
+          city: {
+            code: String(empresa.codigo_ibge_municipio || ''),
+            name: empresa.municipio || '',
+            country: 'BRA',
+            state: empresa.uf || '',
+          },
+          taxNumber: empresa.inscricao_municipal || '',
+          environment: envMap[empresa.nfe_ambiente] || 'Development',
+          specialTaxRegime: specialTaxRegimeMap[empresa.regime_tributario] || 'Nenhum',
+          email: empresa.email || '',
+          legalNature: 'None',
+          companyRegistryNumber: 0,
+          regionalTaxNumber: Number(empresa.ie?.replace(/\D/g, '') || 0),
+          issRate: Number(empresa.iss_rate || 0),
+          federalTaxDetermination: 'NotInformed',
+          municipalTaxDetermination: 'NotInformed',
+          loginName: empresa.portal_login || '',
+          loginPassword: empresa.portal_senha || '',
+          authIssueValue: '',
+          rpsNumber: Number(empresa.rps_number || 0),
+          lastRpsSent: Number(empresa.rps_number || 0),
+          rpsSerialNumber: empresa.rps_serial_number || 'RPS',
+        },
+      };
+
+      console.log('POST municipaltaxes payload:', JSON.stringify(mtPayload));
+
+      const mtResp = await fetch(`${NFSE_IO_BASE}/companies/${companyId}/municipaltaxes`, {
+        method: 'POST',
+        headers: {
+          'Authorization': apiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(mtPayload),
+      });
+      const mtRaw = await mtResp.text();
+      console.log('municipaltaxes status:', mtResp.status, mtRaw.substring(0, 400));
+
+      let mtResult;
+      try { mtResult = JSON.parse(mtRaw); } catch { mtResult = mtRaw; }
+
+      return Response.json({ ok: mtResp.ok, status: mtResp.status, data: mtResult });
+    }
+
     // Ação padrão: testar conexão com ID existente
     const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, { method: 'GET', headers });
     const getRaw = await getResp.text();

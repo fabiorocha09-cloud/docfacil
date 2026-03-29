@@ -20,6 +20,9 @@ export default function EditarEmpresa() {
   const [testando, setTestando] = useState(false);
   const [testeResult, setTesteResult] = useState(null);
   const [criando, setCriando] = useState(false);
+  const [configurandoISS, setConfigurandoISS] = useState(false);
+  const [issForm, setIssForm] = useState({ inscricao_municipal: '', iss_rate: 0, rps_serial_number: 'RPS', rps_number: 0, portal_login: '', portal_senha: '' });
+  const [issOpen, setIssOpen] = useState(false);
 
   const [ibgeBuscando, setIbgeBuscando] = useState(false);
   const [ibgeManual, setIbgeManual] = useState(false);
@@ -164,6 +167,33 @@ export default function EditarEmpresa() {
       setTesteResult({ ok: false, data });
     }
     setCriando(false);
+  };
+
+  const configurarImpostoMunicipal = async () => {
+    if (!form.nfe_io_company_id) return;
+    setConfigurandoISS(true);
+    setTesteResult(null);
+    const res = await base44.functions.invoke('testarNfeIo', {
+      action: 'criar_municipal_tax',
+      companyId: form.nfe_io_company_id,
+      empresa: {
+        municipio: form.municipio,
+        uf: form.uf,
+        codigo_ibge_municipio: form.codigo_ibge_municipio,
+        nfe_ambiente: form.nfe_ambiente,
+        regime_tributario: form.regime_tributario,
+        email: form.email,
+        ie: form.ie,
+        inscricao_municipal: issForm.inscricao_municipal || form.inscricao_municipal,
+        iss_rate: issForm.iss_rate,
+        rps_serial_number: issForm.rps_serial_number,
+        rps_number: issForm.rps_number,
+        portal_login: issForm.portal_login,
+        portal_senha: issForm.portal_senha,
+      },
+    });
+    setTesteResult(res.data);
+    setConfigurandoISS(false);
   };
 
   if (loading) return (
@@ -378,6 +408,69 @@ export default function EditarEmpresa() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Preencha os dados nas abas <em>Dados Básicos</em>, <em>Endereço</em> (incluindo Código IBGE) antes de criar.</p>
+              </div>
+
+              {/* Imposto Municipal (NFS-e) */}
+              <div className="border-t border-gray-100 pt-4">
+                <button onClick={() => setIssOpen(v => !v)}
+                  className="text-sm font-semibold text-gray-700 flex items-center gap-2 hover:text-[#0B63D4] transition-colors">
+                  <Settings className="w-4 h-4" /> Configurar Imposto Municipal (NFS-e)
+                  <span className="text-xs text-gray-400">{issOpen ? '▲' : '▼'}</span>
+                </button>
+
+                {issOpen && (
+                  <div className="mt-3 space-y-3">
+                    <p className="text-xs text-gray-400">Cadastra a inscrição municipal e configurações de NFS-e para este Company ID na NFSe.io.</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Inscrição Municipal</label>
+                        <input className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          placeholder={form.inscricao_municipal || 'Ex: 12345'}
+                          value={issForm.inscricao_municipal}
+                          onChange={e => setIssForm(f => ({ ...f, inscricao_municipal: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Alíquota ISS (%)</label>
+                        <input type="number" min="0" step="0.01" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          value={issForm.iss_rate}
+                          onChange={e => setIssForm(f => ({ ...f, iss_rate: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Série do RPS</label>
+                        <input className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          value={issForm.rps_serial_number}
+                          onChange={e => setIssForm(f => ({ ...f, rps_serial_number: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Número RPS inicial</label>
+                        <input type="number" min="0" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          value={issForm.rps_number}
+                          onChange={e => setIssForm(f => ({ ...f, rps_number: parseInt(e.target.value) || 0 }))} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Login Portal Prefeitura</label>
+                        <input className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          value={issForm.portal_login}
+                          onChange={e => setIssForm(f => ({ ...f, portal_login: e.target.value }))} />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-600 block mb-1">Senha Portal Prefeitura</label>
+                        <input type="password" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          value={issForm.portal_senha}
+                          onChange={e => setIssForm(f => ({ ...f, portal_senha: e.target.value }))} />
+                      </div>
+                    </div>
+                    <button onClick={configurarImpostoMunicipal}
+                      disabled={configurandoISS || !form.nfe_io_company_id}
+                      className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-purple-500 text-purple-700 hover:bg-purple-50 disabled:opacity-40 transition-colors">
+                      {configurandoISS ? <><Loader2 className="w-4 h-4 animate-spin" /> Configurando...</> : 'Enviar Imposto Municipal'}
+                    </button>
+                    {!form.nfe_io_company_id && <p className="text-xs text-amber-600">⚠️ Preencha o Company ID acima primeiro.</p>}
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-gray-100 pt-2">
 
                 {testeResult && (
                   <div className={`mt-3 rounded-xl p-4 border text-sm ${
