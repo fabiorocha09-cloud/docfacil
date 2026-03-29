@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 const NFE_IO_BASE = "https://api.nfe.io/v1";
+const NFSE_IO_BASE = "https://api.nfse.io/v2";
 
 Deno.serve(async (req) => {
   try {
@@ -18,6 +19,60 @@ Deno.serve(async (req) => {
       'Authorization': apiKey,
       'Content-Type': 'application/json',
     };
+
+    // Ação: criar empresa na NFSe.io v2
+    if (action === 'criar_empresa') {
+      if (!empresa) return Response.json({ error: 'Dados da empresa não fornecidos' }, { status: 400 });
+
+      const taxRegimeMap = {
+        simples_nacional: 'simplesNacional',
+        lucro_presumido: 'lucroPresumido',
+        lucro_real: 'lucroReal',
+        mei: 'mei',
+      };
+
+      const payload = {
+        company: {
+          name: empresa.razao_social,
+          tradeName: empresa.nome_fantasia || empresa.razao_social,
+          federalTaxNumber: Number(empresa.cnpj?.replace(/\D/g, '')),
+          taxRegime: taxRegimeMap[empresa.regime_tributario] || 'simplesNacional',
+          address: {
+            country: 'BRA',
+            postalCode: empresa.cep?.replace(/\D/g, '') || '',
+            street: empresa.logradouro || '',
+            number: empresa.numero || 'S/N',
+            additionalInformation: empresa.complemento || '',
+            district: empresa.bairro || '',
+            city: {
+              name: empresa.municipio || '',
+              code: String(empresa.codigo_ibge_municipio || ''),
+            },
+            state: empresa.uf || '',
+          },
+        },
+      };
+
+      console.log('Criando empresa na NFSe.io v2:', JSON.stringify(payload));
+
+      const postResp = await fetch(`${NFSE_IO_BASE}/companies`, {
+        method: 'POST',
+        headers: { ...headers, 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const postRaw = await postResp.text();
+      console.log('POST /v2/companies status:', postResp.status, postRaw);
+
+      let postResult;
+      try { postResult = JSON.parse(postRaw); } catch { postResult = postRaw; }
+
+      if (postResp.ok) {
+        const newId = postResult?.company?.id || postResult?.id;
+        return Response.json({ ok: true, company_id: newId, data: postResult });
+      }
+
+      return Response.json({ ok: false, status: postResp.status, data: postResult });
+    }
 
     // Ação padrão: testar conexão com ID existente
     const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, { method: 'GET', headers });

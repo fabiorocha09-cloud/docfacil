@@ -19,6 +19,7 @@ export default function EditarEmpresa() {
   const [aba, setAba] = useState("basico");
   const [testando, setTestando] = useState(false);
   const [testeResult, setTesteResult] = useState(null);
+  const [criando, setCriando] = useState(false);
 
   const [ibgeBuscando, setIbgeBuscando] = useState(false);
   const [ibgeManual, setIbgeManual] = useState(false);
@@ -131,6 +132,38 @@ export default function EditarEmpresa() {
     const res = await base44.functions.invoke('testarNfeIo', { companyId: form.nfe_io_company_id });
     setTesteResult(res.data);
     setTestando(false);
+  };
+
+  const criarEmpresaApiNfeIo = async () => {
+    setCriando(true);
+    setTesteResult(null);
+    const res = await base44.functions.invoke('testarNfeIo', {
+      action: 'criar_empresa',
+      empresa: {
+        razao_social: form.razao_social,
+        nome_fantasia: form.nome_fantasia,
+        cnpj: form.cnpj,
+        ie: form.ie,
+        logradouro: form.logradouro,
+        numero: form.numero,
+        complemento: form.complemento,
+        bairro: form.bairro,
+        municipio: form.municipio,
+        uf: form.uf,
+        cep: form.cep,
+        codigo_ibge_municipio: form.codigo_ibge_municipio,
+        regime_tributario: form.regime_tributario,
+      },
+    });
+    const data = res.data;
+    if (data?.ok && data?.company_id) {
+      setForm(f => ({ ...f, nfe_io_company_id: data.company_id }));
+      if (empresa?.id) await base44.entities.EmpresaCliente.update(empresa.id, { nfe_io_company_id: data.company_id });
+      setTesteResult({ ok: true, criada: true, company_id: data.company_id, data: data.data });
+    } else {
+      setTesteResult({ ok: false, data });
+    }
+    setCriando(false);
   };
 
   if (loading) return (
@@ -335,11 +368,16 @@ export default function EditarEmpresa() {
               <div className="border-t border-gray-100 pt-4">
                 <p className="text-sm font-semibold text-gray-700 mb-2">Conectar com NFE.io</p>
                 <div className="flex gap-2 flex-wrap">
-                  <button onClick={testarConexao} disabled={testando || !form.nfe_io_company_id}
+                  <button onClick={testarConexao} disabled={testando || criando || !form.nfe_io_company_id}
                     className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 transition-colors">
                     {testando ? <><Loader2 className="w-4 h-4 animate-spin" /> Testando...</> : "Testar Conexão"}
                   </button>
+                  <button onClick={criarEmpresaApiNfeIo} disabled={testando || criando || !form.razao_social || !form.cnpj || !form.codigo_ibge_municipio}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 transition-colors">
+                    {criando ? <><Loader2 className="w-4 h-4 animate-spin" /> Criando...</> : "+ Criar empresa via API"}
+                  </button>
                 </div>
+                <p className="text-xs text-gray-400 mt-1">Preencha os dados nas abas <em>Dados Básicos</em>, <em>Endereço</em> (incluindo Código IBGE) antes de criar.</p>
 
                 {testeResult && (
                   <div className={`mt-3 rounded-xl p-4 border text-sm ${
@@ -349,9 +387,16 @@ export default function EditarEmpresa() {
                   }`}>
                     <div className="flex items-center gap-2 font-semibold mb-2">
                       {testeResult.ok
-                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">Conexão OK — empresa encontrada!</span></>
+                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                            <span className="text-emerald-700">
+                              {testeResult.criada ? `✅ Empresa criada! ID: ${testeResult.company_id}` : 'Conexão OK — empresa encontrada!'}
+                            </span>
+                          </>
                         : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">Erro (status {testeResult.status})</span></>}
                     </div>
+                    {testeResult.criada && (
+                      <p className="text-sm text-emerald-800">O Company ID foi preenchido automaticamente. Clique em <strong>Salvar Alterações</strong> para confirmar.</p>
+                    )}
                     {!testeResult.ok && (
                       <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
                         {JSON.stringify(testeResult.data, null, 2)}
