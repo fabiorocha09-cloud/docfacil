@@ -90,8 +90,41 @@ export default function EditarEmpresa() {
     if (!form.nfe_io_company_id) return;
     setTestando(true);
     setTesteResult(null);
-    const res = await base44.functions.invoke('testarNfeIo', { companyId: form.nfe_io_company_id, inscricao_municipal: form.inscricao_municipal || "" });
+    const res = await base44.functions.invoke('testarNfeIo', { companyId: form.nfe_io_company_id });
     setTesteResult(res.data);
+    setTestando(false);
+  };
+
+  const criarEmpresaApiNfeIo = async () => {
+    setTestando(true);
+    setTesteResult(null);
+    const res = await base44.functions.invoke('testarNfeIo', {
+      action: 'criar_empresa',
+      empresa: {
+        razao_social: form.razao_social,
+        nome_fantasia: form.nome_fantasia,
+        cnpj: form.cnpj,
+        email: form.email,
+        inscricao_municipal: form.inscricao_municipal,
+        logradouro: form.logradouro,
+        numero: form.numero,
+        complemento: form.complemento,
+        bairro: form.bairro,
+        municipio: form.municipio,
+        uf: form.uf,
+        cep: form.cep,
+        regime_tributario: form.regime_tributario,
+      },
+    });
+    const data = res.data;
+    if (data?.ok && data?.company_id) {
+      // Salva o novo ID automaticamente
+      setForm(f => ({ ...f, nfe_io_company_id: data.company_id }));
+      await base44.entities.EmpresaCliente.update(empresa.id, { nfe_io_company_id: data.company_id });
+      setTesteResult({ ok: true, criada: true, company_id: data.company_id, data: data.data });
+    } else {
+      setTesteResult({ ok: false, criacao_error: true, data });
+    }
     setTestando(false);
   };
 
@@ -262,13 +295,20 @@ export default function EditarEmpresa() {
                   value={form.nfe_serie} onChange={e => set("nfe_serie", e.target.value)} />
               </div>
 
-              {/* Teste de conexão */}
+              {/* Teste de conexão / Criar empresa */}
               <div className="border-t border-gray-100 pt-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Testar Conexão com NFE.io</p>
-                <button onClick={testarConexao} disabled={testando || !form.nfe_io_company_id}
-                  className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 transition-colors">
-                  {testando ? <><Loader2 className="w-4 h-4 animate-spin" /> Testando...</> : "Testar agora"}
-                </button>
+                <p className="text-sm font-semibold text-gray-700 mb-2">Conectar com NFE.io</p>
+                <div className="flex gap-2 flex-wrap">
+                  <button onClick={testarConexao} disabled={testando || !form.nfe_io_company_id}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-[#0B63D4] text-[#0B63D4] hover:bg-blue-50 disabled:opacity-40 transition-colors">
+                    {testando ? <><Loader2 className="w-4 h-4 animate-spin" /> Testando...</> : "Testar ID existente"}
+                  </button>
+                  <button onClick={criarEmpresaApiNfeIo} disabled={testando || !form.razao_social || !form.cnpj}
+                    className="flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border border-emerald-500 text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 transition-colors">
+                    {testando ? <><Loader2 className="w-4 h-4 animate-spin" /> Criando...</> : "+ Criar empresa via API"}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Use "Criar empresa via API" se a empresa ainda não existe na NFE.io via API, ou se o ID atual não é reconhecido. Preencha os dados nas abas anteriores antes de criar.</p>
 
                 {testeResult && (
                   <div className={`mt-3 rounded-xl p-4 border text-sm ${
@@ -278,25 +318,26 @@ export default function EditarEmpresa() {
                   }`}>
                     <div className="flex items-center gap-2 font-semibold mb-2">
                       {testeResult.ok
-                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">Empresa encontrada na NFE.io! Conexão OK.</span></>
+                        ? <><CheckCircle2 className="w-4 h-4 text-emerald-600" /> <span className="text-emerald-700">{testeResult.criada ? `✅ Empresa criada! Novo ID: ${testeResult.company_id}` : 'Conexão OK — empresa encontrada!'}</span></>
                         : testeResult.municipal_error
-                        ? <><CheckCircle2 className="w-4 h-4 text-amber-500" /> <span className="text-amber-700">Empresa encontrada — Inscrição Municipal pendente</span></>
-                        : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">Erro ao conectar (status {testeResult.status})</span></>}
+                        ? <><AlertTriangle className="w-4 h-4 text-amber-500" /> <span className="text-amber-700">ID não reconhecido pela API key atual</span></>
+                        : <><AlertTriangle className="w-4 h-4 text-red-500" /> <span className="text-red-700">{testeResult.criacao_error ? 'Erro ao criar empresa' : `Erro (status ${testeResult.status})`}</span></>}
                     </div>
+                    {testeResult.criada && (
+                      <p className="text-sm text-emerald-800">O Company ID foi atualizado automaticamente. Clique em <strong>Salvar Alterações</strong> para confirmar.</p>
+                    )}
                     {testeResult.municipal_error && (
-                      <div className="text-sm text-amber-800 space-y-2">
-                        <p>✅ <strong>Company ID válido</strong> — a empresa foi localizada no NFE.io.</p>
-                        <p>⚠️ A <strong>Inscrição Municipal (ISS)</strong> não está configurada no sistema do NFE.io.</p>
-                        <p>Para corrigir, acesse o painel do NFE.io:</p>
-                        <ol className="list-decimal ml-5 space-y-1 text-xs">
-                          <li>Acesse <a href="https://app.nfe.io" target="_blank" rel="noreferrer" className="underline font-medium">app.nfe.io</a></li>
-                          <li>Vá em <strong>Empresa → Dados da Empresa</strong></li>
-                          <li>Preencha o campo <strong>Inscrição Municipal</strong> com: <code className="bg-amber-100 px-1 rounded font-mono">{form.inscricao_municipal || "(preencha acima)"}</code></li>
-                          <li>Salve e teste novamente</li>
-                        </ol>
+                      <div className="text-sm text-amber-800 space-y-1">
+                        <p>Este ID foi criado no painel web do NFE.io com uma API key diferente da configurada aqui.</p>
+                        <p className="font-medium">Clique em <strong>"+ Criar empresa via API"</strong> para registrar a empresa usando a API key atual. Preencha os dados nas abas <em>Dados Básicos</em> e <em>Endereço</em> antes de criar.</p>
                       </div>
                     )}
-                    {!testeResult.municipal_error && !testeResult.ok && (
+                    {(testeResult.criacao_error) && (
+                      <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
+                        {JSON.stringify(testeResult.data, null, 2)}
+                      </pre>
+                    )}
+                    {(!testeResult.ok && !testeResult.municipal_error && !testeResult.criacao_error && !testeResult.criada) && (
                       <pre className="text-xs font-mono overflow-auto max-h-40 whitespace-pre-wrap text-gray-600">
                         {JSON.stringify(testeResult.data, null, 2)}
                       </pre>

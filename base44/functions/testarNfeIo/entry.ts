@@ -11,62 +11,97 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get("NFE_IO_API_KEY");
     if (!apiKey) return Response.json({ error: 'NFE_IO_API_KEY não configurada' }, { status: 500 });
 
-    const { companyId, inscricao_municipal } = await req.json();
+    const body = await req.json();
+    const { companyId, action, empresa } = body;
 
     const headers = {
       'Authorization': apiKey,
       'Content-Type': 'application/json',
     };
 
-    const companyUrl = `${NFE_IO_BASE}/companies/${companyId}`;
+    // Ação: criar empresa na NFE.io via API e retornar o ID gerado
+    if (action === 'criar_empresa') {
+      if (!empresa) return Response.json({ error: 'Dados da empresa não fornecidos' }, { status: 400 });
 
-    // Se tem inscrição municipal, tenta atualizar na NFE.io via PUT com só esse campo
-    if (inscricao_municipal) {
-      console.log('Tentando atualizar inscrição municipal via PUT...');
-      const putResp = await fetch(companyUrl, {
-        method: 'PUT',
+      const taxRegimeMap = {
+        simples_nacional: 'SimplesNacional',
+        lucro_presumido: 'LucroPresumido',
+        lucro_real: 'LucroReal',
+      };
+
+      const payload = {
+        name: empresa.razao_social,
+        tradeName: empresa.nome_fantasia || empresa.razao_social,
+        federalTaxNumber: empresa.cnpj?.replace(/\D/g, ''),
+        municipalTaxNumber: empresa.inscricao_municipal || '',
+        email: empresa.email || '',
+        address: {
+          country: 'BRA',
+          postalCode: empresa.cep?.replace(/\D/g, '') || '',
+          street: empresa.logradouro || '',
+          number: empresa.numero || 'S/N',
+          additionalInformation: empresa.complemento || '',
+          district: empresa.bairro || '',
+          city: { name: empresa.municipio || '' },
+          state: empresa.uf || '',
+        },
+        taxRegime: taxRegimeMap[empresa.regime_tributario] || 'SimplesNacional',
+      };
+
+      console.log('Criando empresa na NFE.io:', JSON.stringify(payload));
+
+      const postResp = await fetch(`${NFE_IO_BASE}/companies`, {
+        method: 'POST',
         headers,
-        body: JSON.stringify({ municipalTaxNumber: inscricao_municipal }),
+        body: JSON.stringify(payload),
       });
-      const putRaw = await putResp.text();
-      console.log('PUT status:', putResp.status, putRaw);
+      const postRaw = await postResp.text();
+      console.log('POST status:', postResp.status, postRaw);
 
-      // Tenta GET após PUT para confirmar
-      const getAfterPut = await fetch(companyUrl, { method: 'GET', headers });
-      const getAfterRaw = await getAfterPut.text();
-      console.log('GET após PUT status:', getAfterPut.status, getAfterRaw);
+      let postResult;
+      try { postResult = JSON.parse(postRaw); } catch { postResult = postRaw; }
 
-      if (getAfterPut.ok) {
-        let result;
-        try { result = JSON.parse(getAfterRaw); } catch { result = getAfterRaw; }
-        return Response.json({ companyId, status: getAfterPut.status, ok: true, data: result });
+      if (postResp.ok) {
+        const newId = postResult?.id || postResult?.company?.id;
+        return Response.json({ ok: true, company_id: newId, data: postResult });
       }
+
+      return Response.json({ ok: false, status: postResp.status, data: postResult });
     }
 
-    // Teste simples de conexão
-    const getResp = await fetch(companyUrl, { method: 'GET', headers });
+    // Ação padrão: testar conexão com ID existente
+    const getResp = await fetch(`${NFE_IO_BASE}/companies/${companyId}`, { method: 'GET', headers });
     const getRaw = await getResp.text();
-    console.log('GET status:', getResp.status, getRaw);
+    console.log('GET status:', getResp.status, getRaw.substring(0, 300));
 
     let result;
     try { result = JSON.parse(getRaw); } catch { result = getRaw; }
+
+    if (getResp.ok) {
+      return Response.json({ companyId, status: getResp.status, ok: true, data: result });
+    }
 
     const isMunicipalError =
       result?.errors?.some(e => e.code === 40401) ||
       getRaw.includes('municipal tax not found');
 
-    if (isMunicipalError) {
-      return Response.json({
-        companyId,
-        status: getResp.status,
-        ok: false,
-        municipal_error: true,
-        data: result,
-        message: 'Empresa encontrada no NFE.io, mas sem Inscrição Municipal configurada. Você precisa configurar isso diretamente no painel do NFE.io em: Empresa → Dados da Empresa → Inscrição Municipal.',
-      });
-    }
+    // Se deu erro de municipal ou 404, verifica se nossa API key tem acesso
+    // Tenta listar para diagnosticar
+    const listResp = await fetch(`${NFE_IO_BASE}/companies`, { method: 'GET', headers });
+    const listRaw = await listResp.text();
+    let listResult;
+    try { listResult = JSON.parse(listRaw); } catch { listResult = {}; }
 
-    return Response.json({ companyId, status: getResp.status, ok: getResp.ok, data: result });
+    const apiKeyHasNoCompanies = listResult?.companies?.length === 0;
+
+    return Response.json({
+      companyId,
+      status: getResp.status,
+      ok: false,
+      municipal_error: isMunicipalError,
+      api_key_has_no_companies: apiKeyHasNoCompanies,
+      data: result,
+    });
 
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
