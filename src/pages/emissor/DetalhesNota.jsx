@@ -5,10 +5,26 @@ import EditarItemModal from "@/components/emissor/EditarItemModal";
 import {
   ArrowLeft, Download, Copy, FileEdit, Ban, Mail, FileText,
   CheckCircle2, XCircle, Clock, Send, AlertTriangle, Loader2,
-  Package, User, Settings2, ChevronDown, ChevronUp, Printer, RotateCcw, Edit, Trash2, Plus
+  Package, User, Settings2, ChevronDown, ChevronUp, Printer, RotateCcw, Edit, Trash2, Plus,
+  Search, Calculator, Layers
 } from "lucide-react";
 import { gerarDanfePrevia } from "@/components/emissor/DanfePdfPreview";
 import { motion } from "framer-motion";
+
+const FORMAS_PAGAMENTO = [
+  "Dinheiro","Cheque","Cartão de Crédito","Cartão de Débito","Crédito Loja",
+  "Vale Alimentação","Vale Refeição","Vale Presente","Vale Combustível",
+  "Duplicata Mercantil","Boleto Bancário","Depósito Bancário",
+  "Pagamento Instantâneo (PIX)","Transferência Bancária","Sem Pagamento","Outros",
+];
+const PAGAMENTO_CODIGO = {
+  "Dinheiro": "01", "Cheque": "02", "Cartão de Crédito": "03", "Cartão de Débito": "04",
+  "Crédito Loja": "05", "Vale Alimentação": "10", "Vale Refeição": "11",
+  "Vale Presente": "12", "Vale Combustível": "13", "Duplicata Mercantil": "14",
+  "Boleto Bancário": "15", "Depósito Bancário": "16",
+  "Pagamento Instantâneo (PIX)": "17", "Transferência Bancária": "18",
+  "Sem Pagamento": "90", "Outros": "99",
+};
 
 const STATUS_CFG = {
   rascunho:    { label: "Rascunho",    cls: "bg-gray-100 text-gray-600" },
@@ -56,6 +72,10 @@ export default function DetalhesNota() {
   const [editando, setEditando] = useState(false);
   const [itemEditando, setItemEditando] = useState(null);
   const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [destinatarios, setDestinatarios] = useState([]);
+  const [naturezas, setNaturezas] = useState([]);
+  const [regras, setRegras] = useState([]);
+  const [searchDest, setSearchDest] = useState("");
 
   const params = new URLSearchParams(window.location.search);
   const notaId = params.get("id");
@@ -68,6 +88,19 @@ export default function DetalhesNota() {
     } catch {}
     carregar();
   }, [notaId]);
+
+  useEffect(() => {
+    if (!empresa?.id) return;
+    Promise.all([
+      base44.entities.Destinatario.filter({ empresa_id: empresa.id }),
+      base44.entities.NaturezaTributaria.filter({ empresa_id: empresa.id }),
+      base44.entities.RegraTributacao.filter({ empresa_id: empresa.id }),
+    ]).then(([dests, nats, regs]) => {
+      setDestinatarios(dests);
+      setNaturezas(nats);
+      setRegras(regs.filter(r => r.ativo !== false));
+    });
+  }, [empresa?.id]);
 
   const carregar = async () => {
     setLoading(true);
@@ -351,14 +384,15 @@ export default function DetalhesNota() {
 
       {/* Tabs de dados */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex border-b border-gray-100">
+        <div className="flex border-b border-gray-100 overflow-x-auto">
           {[
             { id: "cliente", label: "Cliente", icon: User },
             { id: "produtos", label: "Produtos", icon: Package },
+            { id: "impostos", label: "Impostos", icon: Calculator },
             { id: "avancado", label: "Avançado", icon: Settings2 },
           ].map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setAba(id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors border-b-2 ${
+              className={`flex items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors border-b-2 px-4 whitespace-nowrap ${
                 aba === id ? "border-[#0B63D4] text-[#0B63D4]" : "border-transparent text-gray-400 hover:text-gray-600"
               }`}>
               <Icon className="w-4 h-4" /> {label}
@@ -372,7 +406,40 @@ export default function DetalhesNota() {
             <div>
               <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Destinatário</h3>
               {editando ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  {destinatarios.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-2">Buscar Destinatário Existente</label>
+                      <div className="relative mb-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                          placeholder="Buscar por nome ou CNPJ..." value={searchDest}
+                          onChange={e => setSearchDest(e.target.value)} />
+                      </div>
+                      {searchDest && (
+                        <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl shadow-lg">
+                          {destinatarios.filter(d => d.nome?.toLowerCase().includes(searchDest.toLowerCase()) || d.cnpj?.includes(searchDest)).map(d => (
+                            <button key={d.id} onClick={() => {
+                              setNota(n => ({
+                                ...n, destinatario_id: d.id, destinatario_nome: d.nome,
+                                destinatario_cnpj: d.cnpj, destinatario_email: d.email,
+                                dest_logradouro: d.logradouro, dest_numero: d.numero,
+                                dest_complemento: d.complemento, dest_bairro: d.bairro,
+                                dest_municipio: d.municipio, dest_uf: d.uf, dest_cep: d.cep,
+                                dest_codigo_municipio: d.codigo_ibge_municipio, dest_ie: d.ie,
+                                dest_indicador_ie: d.indIEDest || "NonTaxPayer"
+                              }));
+                              setSearchDest("");
+                            }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-gray-50 last:border-0 text-sm">
+                              <p className="font-medium text-gray-900">{d.nome}</p>
+                              <p className="text-xs text-gray-400">{d.cnpj}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium text-gray-700">Razão Social *</label>
                     <input required className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
@@ -481,104 +548,101 @@ export default function DetalhesNota() {
             </div>
           )}
 
-          {/* Aba Avançado */}
-          {aba === "avancado" && (
+          {/* Aba Impostos */}
+          {aba === "impostos" && (
             <div className="space-y-4">
-              <InfoRow label="Status SEFAZ" value={cfg.label} />
-              <InfoRow label="Protocolo" value={nota.protocolo} />
-              <InfoRow label="Chave de Acesso" value={nota.chave_acesso} />
-              <InfoRow label="Série" value={nota.serie} />
-              <InfoRow label="Número" value={nota.numero?.toString()} />
-              <InfoRow label="Certificado" value={nota.certificado_id} />
-
-              {/* Links de download */}
-              {(nota.danfe_pdf_url || nota.retorno_xml_url) && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Links de Download</p>
-                  {nota.danfe_pdf_url && (
-                    <div className="mb-1">
-                      <p className="text-xs text-gray-500">DANFE PDF URL:</p>
-                      <a href={nota.danfe_pdf_url} target="_blank" rel="noreferrer"
-                        className="text-xs text-blue-600 underline break-all">{nota.danfe_pdf_url}</a>
-                    </div>
-                  )}
-                  {nota.retorno_xml_url && (
-                    <div>
-                      <p className="text-xs text-gray-500">XML URL:</p>
-                      <a href={nota.retorno_xml_url} target="_blank" rel="noreferrer"
-                        className="text-xs text-blue-600 underline break-all">{nota.retorno_xml_url}</a>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Log de transmissão */}
-              <div className="pt-2 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Log de Transmissão</p>
-                {(!nota.log_transmissao || nota.log_transmissao.length === 0) ? (
-                  <p className="text-xs text-gray-400 italic">Nenhuma tentativa de transmissão registrada.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {nota.log_transmissao.map((entry, i) => (
-                      <div key={i} className={`rounded-xl p-3 text-xs border ${
-                        entry.status === 'transmitida' ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'
-                      }`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className={`font-semibold ${
-                            entry.status === 'transmitida' ? 'text-emerald-700' : 'text-red-700'
-                          }`}>{entry.status === 'transmitida' ? '✅ Autorizada' : '❌ Rejeitada'}</span>
-                          <span className="text-gray-400">{new Date(entry.timestamp).toLocaleString('pt-BR')}</span>
+              <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Revisão de Impostos</h3>
+              {editando ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[["valor_frete","Frete"],["valor_seguro","Seguro"],["outras_despesas","Outras Desp."],["valor_desconto","Desconto"]].map(([k, l]) => (
+                      <div key={k}>
+                        <label className="text-xs font-semibold text-gray-500 block mb-1">{l}</label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-xs text-gray-400">R$</span>
+                          <input type="number" min="0" step="0.01"
+                            className="w-full border border-gray-200 rounded-xl pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                            value={nota[k] || 0} onChange={e => setNota(n => ({ ...n, [k]: parseFloat(e.target.value) || 0 }))} />
                         </div>
-                        {entry.danfe_pdf_url && (
-                          <p className="text-gray-600">DANFE: <a href={entry.danfe_pdf_url} target="_blank" rel="noreferrer" className="text-blue-600 underline">{entry.danfe_pdf_url}</a></p>
-                        )}
-                        {entry.raw && (
-                          <details className="mt-2">
-                            <summary className="cursor-pointer text-gray-400 hover:text-gray-700">Ver resposta bruta</summary>
-                            <pre className="bg-gray-900 text-gray-100 rounded-lg p-2 text-xs overflow-auto max-h-48 mt-1 whitespace-pre-wrap">
-                              {JSON.stringify(entry.raw, null, 2)}
-                            </pre>
-                          </details>
-                        )}
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+              ) : null}
+              <div className="rounded-2xl overflow-hidden border border-gray-100 mt-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tributo</th>
+                      <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50 bg-white">
+                    {[["Total de Produtos", fmt(nota.valor_produtos)],["ICMS", "0,00"],["PIS", "0,00"],["COFINS", "0,00"]].map(([lbl, val]) => (
+                      <tr key={lbl}>
+                        <td className="px-5 py-3 text-gray-700">{lbl}</td>
+                        <td className="px-5 py-3 text-right font-medium">R$ {val}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ backgroundColor: "#E6F0FF" }}>
+                      <td className="px-5 py-4 font-bold" style={{ color: "#0B63D4" }}>Total da Nota</td>
+                      <td className="px-5 py-4 text-right font-bold text-lg" style={{ color: "#0B63D4" }}>R$ {fmt(nota.valor_total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-
-              {/* Erros */}
-              {nota.erros && nota.erros.length > 0 && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-2">Erros Registrados</p>
-                  {nota.erros.map((e, i) => (
-                    <div key={i} className="bg-red-50 border border-red-100 rounded-xl p-3 mb-2">
-                      <pre className="text-xs text-red-700 font-mono whitespace-pre-wrap">{typeof e === "string" ? e : JSON.stringify(e, null, 2)}</pre>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Resposta bruta NFE.io */}
-              {nota.nfe_io_raw && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Resposta Bruta NFE.io</p>
-                  <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 text-xs overflow-auto max-h-64 whitespace-pre-wrap">
-                    {JSON.stringify(nota.nfe_io_raw, null, 2)}
-                  </pre>
-                </div>
-              )}
             </div>
           )}
-        </div>
-      </div>
 
-      {itemModalOpen && (
-        <EditarItemModal
-          item={itemEditando}
-          onClose={() => { setItemModalOpen(false); setItemEditando(null); }}
-          onSave={handleSalvarItem}
-        />
-      )}
-    </div>
-  );
-}
+          {/* Aba Avançado */}
+          {aba === "avancado" && (
+            <div className="space-y-4">
+              {editando ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 block mb-1">Natureza da Operação</label>
+                      <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                        value={nota.natureza_operacao || ""} onChange={e => setNota(n => ({ ...n, natureza_operacao: e.target.value }))}>
+                        {naturezas.map(n => <option key={n.id} value={n.nome}>{n.nome}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 block mb-1">Forma de Pagamento</label>
+                      <select className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4]"
+                        value={nota.forma_pagamento || "Dinheiro"} onChange={e => setNota(n => ({ ...n, forma_pagamento: e.target.value, forma_pagamento_codigo: PAGAMENTO_CODIGO[e.target.value] || "01" }))}>
+                        {FORMAS_PAGAMENTO.map(f => <option key={f}>{f}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 block mb-1">Informações Complementares</label>
+                    <textarea rows={3} value={nota.observacoes || ""}
+                      onChange={e => setNota(n => ({ ...n, observacoes: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] resize-none" />
+                  </div>
+                  </div>
+                  ) : null}
+                  <InfoRow label="Status SEFAZ" value={cfg.label} />
+                  <InfoRow label="Natureza" value={nota.natureza_operacao} />
+                  <InfoRow label="Forma de Pagamento" value={nota.forma_pagamento} />
+                  <InfoRow label="Série" value={nota.serie} />
+                  <InfoRow label="Número" value={nota.numero?.toString()} />
+                  <InfoRow label="Certificado" value={nota.certificado_id} />
+                  </div>
+                  )}
+                  </div>
+                  </div>
+
+                  {itemModalOpen && (
+                  <EditarItemModal
+                  item={itemEditando}
+                  onClose={() => { setItemModalOpen(false); setItemEditando(null); }}
+                  onSave={handleSalvarItem}
+                  />
+                  )}
+                  </div>
+                  );
+                  }
