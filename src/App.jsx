@@ -35,6 +35,7 @@ import FormasPagamento from '@/pages/emissor/FormasPagamento';
 import NaturezasTributarias from '@/pages/emissor/NaturezasTributarias';
 import ConfiguracaoNFe from '@/pages/emissor/ConfiguracaoNFe';
 import EditarEmpresa from '@/pages/emissor/EditarEmpresa';
+import LandingPage from '@/pages/LandingPage';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/Dashboard" replace />} />
+      <Route path="/landing" element={<LandingPage />} />
       <Route element={<Layout />}>
         <Route path="/Dashboard" element={<Dashboard />} />
         <Route path="/Empresas" element={<Empresas />} />
