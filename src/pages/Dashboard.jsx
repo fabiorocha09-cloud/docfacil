@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
-import { FileCheck2, Building2, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { FileCheck2, Building2, AlertTriangle, CheckCircle2, Clock, XCircle, FileSearch } from "lucide-react";
+import { TIPOS_CERTIDAO } from "@/lib/constants";
 import { Link, useNavigate } from "react-router-dom";
 
 const statusConfig = {
@@ -42,11 +43,24 @@ export default function Dashboard() {
     return cert.status;
   };
 
+  // Calcula certidões ausentes: tipos que deveriam existir mas não existem para cada empresa ativa
+  const empresasAtivas = empresas.filter(e => e.status === "ativo" && !e.excluida);
+  const totalAusentes = empresasAtivas.reduce((total, empresa) => {
+    const naoAplicaveis = empresa.certidoes_nao_aplicaveis || [];
+    const tiposEsperados = TIPOS_CERTIDAO.map(t => t.tipo).filter(t => !naoAplicaveis.includes(t));
+    const tiposPresentes = certidoes
+      .filter(c => c.empresa_id === empresa.id && !c.excluida)
+      .map(c => c.tipo);
+    const ausentes = tiposEsperados.filter(t => !tiposPresentes.includes(t));
+    return total + ausentes.length;
+  }, 0);
+
   const stats = [
     { label: "Empresas Ativas", value: empresas.filter(e => e.status === "ativo" && !e.excluida).length, icon: Building2, color: "text-blue-600 bg-blue-50", onClick: () => navigate("/Empresas") },
     { label: "Certidões Regulares", value: certidoes.filter(c => getStatusEfetivo(c) === "regular").length, icon: CheckCircle2, color: "text-green-600 bg-green-50", onClick: () => navigate("/Certidoes?status=regular") },
     { label: "Certidões Irregulares", value: certidoes.filter(c => getStatusEfetivo(c) === "irregular").length, icon: XCircle, color: "text-red-600 bg-red-50", onClick: () => navigate("/Certidoes?status=irregular") },
     { label: "Vencendo em 7 dias", value: vencendoEm7.length, icon: AlertTriangle, color: "text-yellow-600 bg-yellow-50", onClick: () => navigate("/Certidoes?vencimento=7dias") },
+    { label: "Certidões Ausentes", value: totalAusentes, icon: FileSearch, color: "text-purple-600 bg-purple-50", onClick: () => navigate("/Certidoes?status=ausente") },
   ];
 
   const recentes = certidoes.slice(0, 8);
@@ -65,7 +79,7 @@ export default function Dashboard() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {stats.map(({ label, value, icon: Icon, color, onClick }) => (
             <div
               key={label}

@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export default function EmpresaModal({ empresa, onClose, onSave }) {
   const { toast } = useToast();
-  const [form, setForm] = useState(empresa || { nome: "", cnpj: "", cnpj_matriz: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "", certidoes_nao_aplicaveis: [] });
+  const [form, setForm] = useState(empresa || { nome: "", nome_fantasia: "", cnpj: "", cnpj_matriz: "", email: "", telefone: "", responsavel: "", regime_tributario: "", inscricao_estadual: "", status: "ativo", grupo_id: "", grupo_nome: "", certidoes_nao_aplicaveis: [] });
 
   const toggleNaoAplicavel = (tipo) => {
     const atual = form.certidoes_nao_aplicaveis || [];
@@ -102,6 +102,11 @@ export default function EmpresaModal({ empresa, onClose, onSave }) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Razão Social *</label>
             <input required className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nome Fantasia <span className="text-gray-400 font-normal">(opcional)</span></label>
+            <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value={form.nome_fantasia || ""} onChange={e => setForm({ ...form, nome_fantasia: e.target.value })} placeholder="Nome pelo qual a empresa é conhecida" />
           </div>
 
           {/* Toggle É Filial */}

@@ -66,7 +66,7 @@ export default function UploadCertidoes() {
             subtipo: { type: "string", description: "Ex: Receita Federal, PGFN, CRF, CNDT, SEFAZ, ISS, nome do órgão emissor" },
             data_emissao: { type: "string", description: "Data de emissão no formato YYYY-MM-DD" },
             data_vencimento: { type: "string", description: "Data de validade/vencimento no formato YYYY-MM-DD" },
-            situacao: { type: "string", description: "Situação: regular ou irregular" }
+            situacao: { type: "string", description: "Situação fiscal da certidão: 'regular' ou 'irregular'. IMPORTANTE: considere como REGULAR (válida) certidões que contenham expressões como 'positiva com efeito de negativa', 'efeito negativa', 'exigibilidade suspensa', 'débitos suspensos', 'débitos parcelados' ou 'crédito tributário com exigibilidade suspensa' — isso significa que os débitos foram negociados e a certidão é válida." }
           }
         }
       });
