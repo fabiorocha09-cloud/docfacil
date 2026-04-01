@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.Certidao.list("-created_date", 100),
+      base44.entities.Certidao.list("-created_date", 1000),
       base44.entities.Empresa.list(),
     ]).then(([c, e]) => {
       setCertidoes(c);
@@ -32,7 +32,8 @@ export default function Dashboard() {
   }, []);
 
   const hoje = new Date();
-  const vencendoEm7 = certidoes.filter(c => {
+  const ativas = certidoes.filter(c => !c.excluida);
+  const vencendoEm7 = ativas.filter(c => {
     if (!c.data_vencimento) return false;
     const diff = (new Date(c.data_vencimento) - hoje) / (1000 * 60 * 60 * 24);
     return diff >= 0 && diff <= 7;
@@ -48,17 +49,17 @@ export default function Dashboard() {
   const totalAusentes = empresasAtivas.reduce((total, empresa) => {
     const naoAplicaveis = empresa.certidoes_nao_aplicaveis || [];
     const tiposEsperados = TIPOS_CERTIDAO.map(t => t.tipo).filter(t => !naoAplicaveis.includes(t));
-    const tiposPresentes = certidoes
-      .filter(c => c.empresa_id === empresa.id && !c.excluida)
+    const tiposPresentes = ativas
+      .filter(c => c.empresa_id === empresa.id)
       .map(c => c.tipo);
     const ausentes = tiposEsperados.filter(t => !tiposPresentes.includes(t));
     return total + ausentes.length;
   }, 0);
 
   const stats = [
-    { label: "Empresas Ativas", value: empresas.filter(e => e.status === "ativo" && !e.excluida).length, icon: Building2, color: "text-blue-600 bg-blue-50", onClick: () => navigate("/Empresas") },
-    { label: "Certidões Regulares", value: certidoes.filter(c => getStatusEfetivo(c) === "regular").length, icon: CheckCircle2, color: "text-green-600 bg-green-50", onClick: () => navigate("/Certidoes?status=regular") },
-    { label: "Certidões Irregulares", value: certidoes.filter(c => getStatusEfetivo(c) === "irregular").length, icon: XCircle, color: "text-red-600 bg-red-50", onClick: () => navigate("/Certidoes?status=irregular") },
+    { label: "Empresas Ativas", value: empresasAtivas.length, icon: Building2, color: "text-blue-600 bg-blue-50", onClick: () => navigate("/Empresas") },
+    { label: "Certidões Regulares", value: ativas.filter(c => getStatusEfetivo(c) === "regular").length, icon: CheckCircle2, color: "text-green-600 bg-green-50", onClick: () => navigate("/Certidoes?status=regular") },
+    { label: "Certidões Irregulares", value: ativas.filter(c => getStatusEfetivo(c) === "irregular").length, icon: XCircle, color: "text-red-600 bg-red-50", onClick: () => navigate("/Certidoes?status=irregular") },
     { label: "Vencendo em 7 dias", value: vencendoEm7.length, icon: AlertTriangle, color: "text-yellow-600 bg-yellow-50", onClick: () => navigate("/Certidoes?vencimento=7dias") },
     { label: "Certidões Ausentes", value: totalAusentes, icon: FileSearch, color: "text-purple-600 bg-purple-50", onClick: () => navigate("/Certidoes?status=ausente") },
   ];
