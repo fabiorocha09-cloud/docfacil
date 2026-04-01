@@ -28,9 +28,10 @@ export default function CalendarioCertidoes() {
   const [mes, setMes] = useState(new Date().getMonth());
   const [ano, setAno] = useState(new Date().getFullYear());
   const [diaSelecionado, setDiaSelecionado] = useState(null);
+  const [periodoAlerta, setPeriodoAlerta] = useState(30);
 
   useEffect(() => {
-    base44.entities.Certidao.list("-data_vencimento", 300).then(data => {
+    base44.entities.Certidao.list("-data_vencimento", 500).then(data => {
       setCertidoes(data.filter(c => !c.excluida && c.data_vencimento));
       setLoading(false);
     });
@@ -40,13 +41,6 @@ export default function CalendarioCertidoes() {
   const primeiroDia = new Date(ano, mes, 1).getDay();
   const nomeMes = new Date(ano, mes, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
-  const certidoesDoDia = (dia) => {
-    const dataStr = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
-    return certidoes.filter(c => c.data_vencimento === dataStr);
-  };
-
-  const certidoesSelecionadas = diaSelecionado ? certidoesDoDia(diaSelecionado) : [];
-
   const navMes = (delta) => {
     let nm = mes + delta, na = ano;
     if (nm < 0) { nm = 11; na--; }
@@ -54,17 +48,29 @@ export default function CalendarioCertidoes() {
     setMes(nm); setAno(na); setDiaSelecionado(null);
   };
 
-  const certidoesDoMes = certidoes.filter(c => {
-    if (!c.data_vencimento) return false;
-    const d = new Date(c.data_vencimento);
-    return d.getMonth() === mes && d.getFullYear() === ano;
-  });
+  const certidoesDoDia = (dia) => {
+    const dataStr = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+    return certidoes.filter(c => c.data_vencimento === dataStr);
+  };
+
+  const certidoesSelecionadas = diaSelecionado ? certidoesDoDia(diaSelecionado) : [];
+
+  const getDiff = (c) => Math.round((new Date(c.data_vencimento) - hoje) / (1000 * 60 * 60 * 24));
+  const vencendo = (dias) => certidoes.filter(c => { const d = getDiff(c); return d >= 0 && d <= dias; });
+  const vencidas = certidoes.filter(c => getDiff(c) < 0);
+
+  const periodos = [
+    { label: "7 dias",   dias: 7,  color: "#f87171",  bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+    { label: "30 dias",  dias: 30, color: "#fb923c",  bg: "rgba(251,146,60,0.1)",  border: "rgba(251,146,60,0.25)" },
+    { label: "60 dias",  dias: 60, color: "#fcd34d",  bg: "rgba(234,179,8,0.1)",   border: "rgba(234,179,8,0.25)" },
+    { label: "90 dias",  dias: 90, color: "#4ade80",  bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.25)" },
+  ];
 
   const summaryCards = [
-    { label: "Vencem este mês",      value: certidoesDoMes.length,                                                             color: "#5E9BFF",  bg: "rgba(58,141,255,0.1)"  },
-    { label: "Regulares",            value: certidoesDoMes.filter(c => getStatusEfetivo(c) === "regular").length,               color: "#4ade80",  bg: "rgba(34,197,94,0.1)"   },
-    { label: "Irregulares/Vencidas", value: certidoesDoMes.filter(c => getStatusEfetivo(c) === "irregular").length,             color: "#f87171",  bg: "rgba(239,68,68,0.1)"   },
-    { label: "Pendentes",            value: certidoesDoMes.filter(c => getStatusEfetivo(c) === "pendente").length,              color: "#fcd34d",  bg: "rgba(234,179,8,0.1)"   },
+    { label: "Vencidas",        value: vencidas.length,         color: "#f87171", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)" },
+    { label: "Vencem em 7d",    value: vencendo(7).length,      color: "#fb923c", bg: "rgba(251,146,60,0.1)",  border: "rgba(251,146,60,0.25)" },
+    { label: "Vencem em 30d",   value: vencendo(30).length,     color: "#fcd34d", bg: "rgba(234,179,8,0.1)",   border: "rgba(234,179,8,0.25)" },
+    { label: "Vencem em 90d",   value: vencendo(90).length,     color: "#4ade80", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.25)" },
   ];
 
   return (
@@ -194,47 +200,65 @@ export default function CalendarioCertidoes() {
         </div>
       </div>
 
-      {/* Próximos vencimentos */}
+      {/* Visão Macro de Alertas */}
       <div className="rounded-2xl overflow-hidden" style={cardStyle}>
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <h3 className="font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Próximos 30 dias</h3>
+        <div className="px-5 py-4 flex items-center justify-between flex-wrap gap-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h3 className="font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Visão Macro de Alertas</h3>
+          <div className="flex items-center gap-2">
+            {periodos.map(p => (
+              <button key={p.dias} onClick={() => setPeriodoAlerta(p.dias)}
+                className="text-xs px-3 py-1.5 rounded-full transition-all font-medium"
+                style={{
+                  background: periodoAlerta === p.dias ? p.bg : "rgba(255,255,255,0.04)",
+                  border: periodoAlerta === p.dias ? `1px solid ${p.border}` : "1px solid rgba(255,255,255,0.08)",
+                  color: periodoAlerta === p.dias ? p.color : "#6B7FA3",
+                  fontFamily: "'Outfit', sans-serif",
+                }}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
         {loading ? (
           <div className="p-5 space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />)}</div>
-        ) : (
-          <div>
-            {certidoes
-              .filter(c => { const diff = (new Date(c.data_vencimento) - hoje) / (1000 * 60 * 60 * 24); return diff >= 0 && diff <= 30; })
-              .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento))
-              .map(cert => {
-                const diff = Math.round((new Date(cert.data_vencimento) - hoje) / (1000 * 60 * 60 * 24));
-                const urgBg = diff <= 7 ? "rgba(239,68,68,0.12)" : diff <= 15 ? "rgba(234,179,8,0.12)" : "rgba(58,141,255,0.12)";
-                const urgColor = diff <= 7 ? "#f87171" : diff <= 15 ? "#fcd34d" : "#5E9BFF";
-                const urgBorder = diff <= 7 ? "rgba(239,68,68,0.3)" : diff <= 15 ? "rgba(234,179,8,0.3)" : "rgba(58,141,255,0.3)";
+        ) : (() => {
+          const lista = certidoes
+            .filter(c => { const d = getDiff(c); return d >= 0 && d <= periodoAlerta; })
+            .sort((a, b) => new Date(a.data_vencimento) - new Date(b.data_vencimento));
+          if (lista.length === 0) return (
+            <div className="p-8 text-center text-sm" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>Nenhuma certidão vencendo nos próximos {periodoAlerta} dias.</div>
+          );
+          return (
+            <div>
+              {lista.map(cert => {
+                const diff = getDiff(cert);
+                const urgColor = diff <= 7 ? "#f87171" : diff <= 30 ? "#fb923c" : diff <= 60 ? "#fcd34d" : "#4ade80";
+                const urgBg    = diff <= 7 ? "rgba(239,68,68,0.12)" : diff <= 30 ? "rgba(251,146,60,0.12)" : diff <= 60 ? "rgba(234,179,8,0.12)" : "rgba(34,197,94,0.12)";
+                const urgBorder= diff <= 7 ? "rgba(239,68,68,0.3)" : diff <= 30 ? "rgba(251,146,60,0.3)" : diff <= 60 ? "rgba(234,179,8,0.3)" : "rgba(34,197,94,0.3)";
                 return (
                   <div key={cert.id} className="flex items-center justify-between px-5 py-3 transition-colors"
                     style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <div>
-                      <p className="text-sm font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{cert.empresa_nome}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-white truncate" style={{ fontFamily: "'Manrope', sans-serif" }}>{cert.empresa_nome}</p>
                       <p className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{TIPOS_LABEL[cert.tipo]}{cert.subtipo ? ` — ${cert.subtipo}` : ""}</p>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                      <span className="text-xs font-medium px-2.5 py-1 rounded-full"
                         style={{ background: urgBg, color: urgColor, border: `1px solid ${urgBorder}`, fontFamily: "'Outfit', sans-serif" }}>
                         {diff === 0 ? "Hoje" : `${diff}d`}
                       </span>
-                      <span className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Outfit', sans-serif" }}>{new Date(cert.data_vencimento).toLocaleDateString("pt-BR")}</span>
+                      <span className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Outfit', sans-serif" }}>
+                        {new Date(cert.data_vencimento).toLocaleDateString("pt-BR")}
+                      </span>
                     </div>
                   </div>
                 );
               })}
-            {certidoes.filter(c => { const d = (new Date(c.data_vencimento) - hoje) / (1000 * 60 * 60 * 24); return d >= 0 && d <= 30; }).length === 0 && (
-              <div className="p-8 text-center text-sm" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>Nenhuma certidão vencendo nos próximos 30 dias.</div>
-            )}
-          </div>
-        )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
