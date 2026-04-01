@@ -160,75 +160,55 @@ export default function Empresas() {
     e.cnpj?.includes(search)
   );
 
+  const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
+  const inputStyle = { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#A0B1D4", fontFamily: "'Rethink Sans', sans-serif" };
+  const btnGhost = { border: "1px solid rgba(255,255,255,0.1)", color: "#A0B1D4", background: "transparent", fontFamily: "'Rethink Sans', sans-serif" };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Empresas</h1>
-          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-            {ativas.length} ativa(s){naLixeira.length > 0 && ` · ${naLixeira.length} na lixeira`}
-          </p>
+          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>Empresas</h1>
+          <p className="text-sm mt-1" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{ativas.length} ativa(s){naLixeira.length > 0 && ` · ${naLixeira.length} na lixeira`}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Ações em lote */}
           {!lixeira && selecionados.length > 0 && (
             <>
-              <button
-                onClick={exportarSelecionadas}
-                className="flex items-center gap-2 border border-green-200 text-green-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-green-50"
-              >
+              <button onClick={exportarSelecionadas} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl" style={{ border: "1px solid rgba(34,197,94,0.3)", color: "#4ade80", background: "rgba(34,197,94,0.08)" }}>
                 <Download className="w-4 h-4" /> Exportar ({selecionados.length})
               </button>
-              <button
-                onClick={moverLixeiraEmLote}
-                className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
-              >
+              <button onClick={moverLixeiraEmLote} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", background: "rgba(239,68,68,0.08)" }}>
                 <Trash2 className="w-4 h-4" /> Lixeira ({selecionados.length})
               </button>
             </>
           )}
           {lixeira && selecionados.length > 0 && (
             <>
-              <button
-                onClick={restaurarEmLote}
-                className="flex items-center gap-2 border border-blue-200 text-blue-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
-              >
+              <button onClick={restaurarEmLote} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl" style={{ border: "1px solid rgba(58,141,255,0.3)", color: "#5E9BFF", background: "rgba(58,141,255,0.08)" }}>
                 <RotateCcw className="w-4 h-4" /> Restaurar ({selecionados.length})
               </button>
-              <button
-                onClick={excluirPermanenteEmLote}
-                className="flex items-center gap-2 border border-red-200 text-red-600 text-sm font-medium px-4 py-2 rounded-lg hover:bg-red-50"
-              >
+              <button onClick={excluirPermanenteEmLote} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl" style={{ border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", background: "rgba(239,68,68,0.08)" }}>
                 <Trash2 className="w-4 h-4" /> Excluir ({selecionados.length})
               </button>
             </>
           )}
-          {/* Toggle lixeira */}
-          <button
-            onClick={() => { setLixeira(v => !v); setSelecionados([]); }}
-            className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${lixeira ? "bg-red-50 border-red-200 text-red-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
-          >
+          <button onClick={() => { setLixeira(v => !v); setSelecionados([]); }}
+            className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+            style={{ border: lixeira ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)", color: lixeira ? "#f87171" : "#6B7FA3", background: lixeira ? "rgba(239,68,68,0.08)" : "transparent" }}>
             <Trash2 className="w-4 h-4" /> {lixeira ? "Sair da Lixeira" : "Lixeira"}
-            {!lixeira && naLixeira.length > 0 && <span className="bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">{naLixeira.length}</span>}
+            {!lixeira && naLixeira.length > 0 && <span className="text-xs rounded-full w-4 h-4 flex items-center justify-center" style={{ background: "#ef4444", color: "#fff" }}>{naLixeira.length}</span>}
           </button>
           {!lixeira && (
             <>
-              <button
-                onClick={() => setImportarOpen(true)}
-                className="flex items-center gap-2 border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
+              <button onClick={() => setImportarOpen(true)} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors" style={btnGhost}>
                 <FileSpreadsheet className="w-4 h-4" /> Importar Planilha
               </button>
-              <button
-                onClick={() => navigate("/GruposEmpresariais")}
-                className="flex items-center gap-2 border border-indigo-200 hover:bg-indigo-50 text-indigo-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
+              <button onClick={() => navigate("/GruposEmpresariais")} className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors" style={{ border: "1px solid rgba(168,85,247,0.3)", color: "#c084fc", background: "rgba(168,85,247,0.08)" }}>
                 <Layers className="w-4 h-4" /> Grupos Empresariais
               </button>
-              <button
-                onClick={() => { setEditando(null); setModalOpen(true); }}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
+              <button onClick={() => { setEditando(null); setModalOpen(true); }}
+                className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-xl"
+                style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)", boxShadow: "0 0 20px rgba(58,141,255,0.3)", fontFamily: "'Manrope', sans-serif" }}>
                 <Plus className="w-4 h-4" /> Nova Empresa
               </button>
             </>
@@ -237,9 +217,8 @@ export default function Empresas() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          className={`w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0B63D4] ${theme === 'dark' ? 'bg-white/10 border border-white/20 text-white' : 'border border-gray-200 bg-white'}`}
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#6B7FA3" }} />
+        <input className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none" style={inputStyle}
           placeholder="Buscar por nome ou CNPJ..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -247,32 +226,27 @@ export default function Empresas() {
       </div>
 
       {lixeira && (
-        <div className={`rounded-xl p-4 text-sm ${theme === 'dark' ? 'bg-red-500/10 border border-red-500/30 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+        <div className="rounded-xl p-4 text-sm" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171", fontFamily: "'Rethink Sans', sans-serif" }}>
           Você está na lixeira. Empresas aqui podem ser restauradas ou excluídas permanentemente.
         </div>
       )}
 
       {loading ? (
         <div className="space-y-3">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />)}
+          {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />)}
         </div>
       ) : filtradas.length === 0 ? (
-        <div className={`rounded-xl p-16 text-center ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200'}`}>
-          <Building2 className={`w-10 h-10 mx-auto mb-3 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`} />
-          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>{lixeira ? "Lixeira vazia." : "Nenhuma empresa encontrada."}</p>
+        <div className="rounded-2xl p-16 text-center" style={cardStyle}>
+          <Building2 className="w-10 h-10 mx-auto mb-3 opacity-20" style={{ color: "#A0B1D4" }} />
+          <p style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{lixeira ? "Lixeira vazia." : "Nenhuma empresa encontrada."}</p>
         </div>
       ) : (
-        <div className={`rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-white/5 border border-white/10 backdrop-blur-md' : 'bg-white border border-gray-200'}`}>
+        <div className="rounded-2xl overflow-hidden" style={cardStyle}>
           {/* Barra de seleção */}
-          <div className={`flex items-center justify-between px-5 py-2 border-b ${theme === 'dark' ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-gray-50'}`}>
-            <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{filtradas.length} resultado(s)</span>
-            <button
-              className="text-xs text-[#0B63D4] hover:underline"
-              onClick={() => {
-                if (selecionados.length === filtradas.length) setSelecionados([]);
-                else setSelecionados(filtradas.map(e => e.id));
-              }}
-            >
+          <div className="flex items-center justify-between px-5 py-2.5" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+            <span className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Outfit', sans-serif" }}>{filtradas.length} resultado(s)</span>
+            <button className="text-xs font-medium" style={{ color: "#5E9BFF", fontFamily: "'Rethink Sans', sans-serif" }}
+              onClick={() => { if (selecionados.length === filtradas.length) setSelecionados([]); else setSelecionados(filtradas.map(e => e.id)); }}>
               {selecionados.length === filtradas.length ? "Desmarcar todos" : "Selecionar todos"}
             </button>
           </div>
@@ -280,46 +254,50 @@ export default function Empresas() {
             {filtradas.map(empresa => {
               const isSel = selecionados.includes(empresa.id);
               return (
-                <div key={empresa.id} className="border-b border-gray-100 last:border-b-0">
-                  <div
-                    className={`flex items-center justify-between px-5 py-4 cursor-pointer transition-colors ${isSel ? (theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50') : (theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-gray-50')}`}
-                    onClick={() => setSelecionados(prev => isSel ? prev.filter(id => id !== empresa.id) : [...prev, empresa.id])}
-                  >
+                <div key={empresa.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div className="flex items-center justify-between px-5 py-4 cursor-pointer transition-colors"
+                    style={{ background: isSel ? "rgba(58,141,255,0.08)" : "transparent" }}
+                    onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                    onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}
+                    onClick={() => setSelecionados(prev => isSel ? prev.filter(id => id !== empresa.id) : [...prev, empresa.id])}>
                     <div className="flex items-center gap-4">
-                      {/* Checkbox */}
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${isSel ? "bg-blue-600 border-blue-600" : "border-gray-300"}`}>
+                      <div className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0" style={{ background: isSel ? "#3A8DFF" : "transparent", borderColor: isSel ? "#3A8DFF" : "rgba(255,255,255,0.2)" }}>
                         {isSel && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                      </div>
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-blue-500/20' : 'bg-blue-50'}`}>
-                        <Building2 className={`w-5 h-5 ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
+                        </div>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(58,141,255,0.1)" }}>
+                        <Building2 className="w-5 h-5" style={{ color: "#5E9BFF" }} />
                       </div>
                       <div>
-                        <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{empresa.nome}</p>
-                        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{empresa.cnpj} · {empresa.responsavel || "—"}</p>
+                        <p className="font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{empresa.nome}</p>
+                        <p className="text-sm" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{empresa.cnpj} · {empresa.responsavel || "—"}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                       {!lixeira && (
                         <>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${empresa.status === "ativo" ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: empresa.status === "ativo" ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.07)", color: empresa.status === "ativo" ? "#4ade80" : "#6B7FA3" }}>
                             {empresa.status === "ativo" ? "Ativo" : "Inativo"}
                           </span>
-
-                          <button onClick={() => setTjEmpresa(empresa)} className="p-1.5 text-gray-400 hover:text-purple-600 rounded" title="Solicitar Certidão TJ-PA via email">
+                          <button onClick={() => setTjEmpresa(empresa)} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#c084fc"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"} title="Solicitar Certidão TJ-PA via email">
                             <Mail className="w-4 h-4" />
                           </button>
-                          <button onClick={() => setLinkEmpresa(empresa)} className="p-1.5 text-gray-400 hover:text-indigo-600 rounded" title="Gerar link compartilhável">
+                          <button onClick={() => setLinkEmpresa(empresa)} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#818cf8"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"} title="Gerar link compartilhável">
                             <Link2 className="w-4 h-4" />
                           </button>
-                          <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 rounded" title="Ver certidões">
+                          <Link to={`/Certidoes?empresa=${empresa.id}`} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"} title="Ver certidões">
                             <FileCheck2 className="w-4 h-4" />
                           </Link>
                           {isAdmin && (
                             <>
-                              <button onClick={() => { setEditando(empresa); setModalOpen(true); }} className="p-1.5 text-gray-400 hover:text-blue-600 rounded">
+                              <button onClick={() => { setEditando(empresa); setModalOpen(true); }} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                                onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}>
                                 <Pencil className="w-4 h-4" />
                               </button>
-                              <button onClick={() => moverLixeira(empresa.id)} className="p-1.5 text-gray-400 hover:text-red-600 rounded" title="Mover para lixeira">
+                              <button onClick={() => moverLixeira(empresa.id)} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                                onMouseEnter={e => e.currentTarget.style.color = "#ef4444"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"} title="Mover para lixeira">
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </>
@@ -328,10 +306,10 @@ export default function Empresas() {
                       )}
                       {lixeira && isAdmin && (
                         <>
-                          <button onClick={() => restaurar(empresa.id)} className="flex items-center gap-1 text-xs text-blue-600 px-2 py-1 border border-blue-200 rounded-lg hover:bg-blue-50">
+                          <button onClick={() => restaurar(empresa.id)} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: "#5E9BFF", border: "1px solid rgba(58,141,255,0.3)", background: "rgba(58,141,255,0.08)" }}>
                             <RotateCcw className="w-3.5 h-3.5" /> Restaurar
                           </button>
-                          <button onClick={() => excluirPermanente(empresa.id)} className="flex items-center gap-1 text-xs text-red-600 px-2 py-1 border border-red-200 rounded-lg hover:bg-red-50">
+                          <button onClick={() => excluirPermanente(empresa.id)} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg" style={{ color: "#f87171", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.08)" }}>
                             <Trash2 className="w-3.5 h-3.5" /> Excluir
                           </button>
                         </>

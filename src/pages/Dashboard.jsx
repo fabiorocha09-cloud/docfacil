@@ -65,17 +65,22 @@ export default function Dashboard() {
 
   const recentes = certidoes.slice(0, 8);
 
+  const cardStyle = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+  };
+
   return (
-    <div className={`space-y-6 ${theme === 'dark' ? 'bg-gray-900 min-h-screen' : 'bg-gray-50'}`}>
+    <div className="space-y-6">
       <div>
-        <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Dashboard</h1>
-        <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Visão geral da saúde fiscal dos seus clientes</p>
+        <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>Dashboard</h1>
+        <p className="text-sm mt-1" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>Visão geral da saúde fiscal dos seus clientes</p>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className={`h-24 rounded-xl animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />
           ))}
         </div>
       ) : (
@@ -84,50 +89,48 @@ export default function Dashboard() {
             <div
               key={label}
               onClick={onClick || undefined}
-              className={`rounded-xl border p-5 backdrop-blur-md transition-all ${
-                theme === 'dark'
-                  ? `bg-white/10 border-white/20 hover:bg-white/15 ${onClick ? 'cursor-pointer' : ''}`
-                  : `bg-white border-gray-200 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : ''}`
-              }`}
+              className={`rounded-2xl p-5 transition-all ${onClick ? "cursor-pointer hover:-translate-y-0.5" : ""}`}
+              style={cardStyle}
+              onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = "rgba(58,141,255,0.3)")}
+              onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)")}
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 backdrop-blur-sm ${
-                theme === 'dark' ? 'bg-white/20' : color
-              }`}>
-                <Icon className={`w-5 h-5 ${theme === 'dark' ? 'text-white' : ''}`} />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: "rgba(58,141,255,0.1)" }}>
+                <Icon className="w-5 h-5" style={{ color: "#5E9BFF" }} />
               </div>
-              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{value}</p>
-              <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{label}</p>
+              <p className="text-2xl font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{value}</p>
+              <p className="text-sm mt-1" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{label}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div className={`rounded-xl border overflow-hidden backdrop-blur-md ${
-        theme === 'dark' ? 'bg-white/10 border-white/20' : 'bg-white border-gray-200'
-      }`}>
-        <div className={`flex items-center justify-between p-5 border-b ${theme === 'dark' ? 'border-white/10' : 'border-gray-100'}`}>
-          <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Certidões Recentes</h2>
-          <Link to="/Certidoes" className="text-sm hover:underline" style={{ color: theme === 'dark' ? '#93c5fd' : '#2563eb' }}>Ver todas</Link>
+      <div className="rounded-2xl overflow-hidden" style={cardStyle}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <h2 className="font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Certidões Recentes</h2>
+          <Link to="/Certidoes" className="text-sm font-medium" style={{ color: "#5E9BFF", fontFamily: "'Rethink Sans', sans-serif" }}>Ver todas</Link>
         </div>
         {loading ? (
           <div className="p-5 space-y-3">
-            {[...Array(5)].map((_, i) => <div key={i} className={`h-10 rounded animate-pulse ${theme === 'dark' ? 'bg-white/10' : 'bg-gray-100'}`} />)}
+            {[...Array(5)].map((_, i) => <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: "rgba(255,255,255,0.06)" }} />)}
           </div>
         ) : recentes.length === 0 ? (
-          <div className={`p-10 text-center ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-            <FileCheck2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p>Nenhuma certidão cadastrada ainda.</p>
+          <div className="p-10 text-center">
+            <FileCheck2 className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: "#A0B1D4" }} />
+            <p style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>Nenhuma certidão cadastrada ainda.</p>
           </div>
         ) : (
-          <div className={`divide-y ${theme === 'dark' ? 'divide-white/10' : 'divide-gray-100'}`}>
+          <div>
             {recentes.map(cert => {
               const cfg = statusConfig[cert.status] || statusConfig.pendente;
               const Icon = cfg.icon;
               return (
-                <div key={cert.id} className={`flex items-center justify-between px-5 py-3 ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-50'}`}>
+                <div key={cert.id} className="flex items-center justify-between px-5 py-3 transition-colors"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div>
-                    <p className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{cert.empresa_nome}</p>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{cert.subtipo || cert.tipo} · {cert.empresa_cnpj}</p>
+                    <p className="text-sm font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{cert.empresa_nome}</p>
+                    <p className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{cert.subtipo || cert.tipo} · {cert.empresa_cnpj}</p>
                   </div>
                   <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.color}`}>
                     <Icon className="w-3.5 h-3.5" />
@@ -141,23 +144,18 @@ export default function Dashboard() {
       </div>
 
       {vencendoEm7.length > 0 && (
-        <div
-          className={`rounded-xl p-5 cursor-pointer transition-all backdrop-blur-md border ${
-            theme === 'dark'
-              ? 'bg-amber-500/10 border-amber-400/30 hover:bg-amber-500/20'
-              : 'bg-yellow-50 border-yellow-200 hover:shadow-md hover:border-yellow-400'
-          }`}
-          onClick={() => navigate("/Certidoes?vencimento=7dias")}
-        >
+        <div className="rounded-2xl p-5 cursor-pointer transition-all hover:-translate-y-0.5"
+          style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)" }}
+          onClick={() => navigate("/Certidoes?vencimento=7dias")}>
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className={`w-5 h-5 ${theme === 'dark' ? 'text-amber-400' : 'text-yellow-600'}`} />
-            <h3 className={`font-semibold ${theme === 'dark' ? 'text-amber-200' : 'text-yellow-800'}`}>Certidões vencendo em 7 dias</h3>
+            <AlertTriangle className="w-5 h-5" style={{ color: "#f59e0b" }} />
+            <h3 className="font-semibold" style={{ color: "#fcd34d", fontFamily: "'Manrope', sans-serif" }}>Certidões vencendo em 7 dias</h3>
           </div>
           <div className="space-y-2">
             {vencendoEm7.map(c => (
               <div key={c.id} className="flex items-center justify-between text-sm">
-                <span className={theme === 'dark' ? 'text-amber-300' : 'text-yellow-800'}>{c.empresa_nome} — {c.subtipo || c.tipo}</span>
-                <span className={`font-medium ${theme === 'dark' ? 'text-amber-300' : 'text-yellow-700'}`}>{new Date(c.data_vencimento).toLocaleDateString("pt-BR")}</span>
+                <span style={{ color: "#fcd34d", fontFamily: "'Rethink Sans', sans-serif" }}>{c.empresa_nome} — {c.subtipo || c.tipo}</span>
+                <span className="font-medium" style={{ color: "#fcd34d" }}>{new Date(c.data_vencimento).toLocaleDateString("pt-BR")}</span>
               </div>
             ))}
           </div>
