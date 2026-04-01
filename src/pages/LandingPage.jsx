@@ -1,35 +1,102 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Briefcase, Lightbulb, RefreshCcw, CheckCircle2,
-  Shield, Lock, Globe, FileCheck2, Zap,
-  ArrowRight, Send, ChevronRight, Star
+  FileCheck2, Zap, Briefcase, Lightbulb, RefreshCcw,
+  CheckCircle2, Shield, Lock, Globe, ArrowRight,
+  Send, ChevronRight, Star, Building2, FileText, Bell
 } from "lucide-react";
 
-// ─── NAV ────────────────────────────────────────────────────────────────────
+// ─── FONTS via Google Fonts inline style ────────────────────────────────────
+const fontLink = document.createElement("link");
+fontLink.rel = "stylesheet";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Exo+2:wght@400;600;700;900&family=Outfit:wght@300;400;500&family=Rethink+Sans:wght@400;500;600;700&display=swap";
+if (!document.querySelector('link[href*="Manrope"]')) document.head.appendChild(fontLink);
+
+// ─── DESIGN TOKENS ──────────────────────────────────────────────────────────
+const D = {
+  bg: "#0A0D14",
+  bgCard: "rgba(255,255,255,0.04)",
+  bgCardHover: "rgba(255,255,255,0.07)",
+  border: "rgba(255,255,255,0.08)",
+  borderHover: "rgba(94,155,255,0.4)",
+  blue: "#3A8DFF",
+  blueLight: "#5E9BFF",
+  blueDark: "#1A58CC",
+  textPrimary: "#FFFFFF",
+  textSecondary: "#A0B1D4",
+  textMuted: "#6B7FA3",
+  success: "#22c55e",
+  sectionDark: "#060810",
+  sectionAlt: "#0D1117",
+  gradBlue: "linear-gradient(135deg, #3A8DFF 0%, #1A58CC 100%)",
+  gradBlueSoft: "linear-gradient(135deg, rgba(58,141,255,0.15) 0%, rgba(26,88,204,0.05) 100%)",
+};
+
+const fadeUp = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22,1,0.36,1] } } };
+const fadeIn = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.5 } } };
+
+// ─── BADGE ──────────────────────────────────────────────────────────────────
+function Badge({ children }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase"
+      style={{ background: "rgba(58,141,255,0.12)", border: "1px solid rgba(58,141,255,0.25)", color: D.blueLight, fontFamily: "'Outfit', sans-serif" }}>
+      {children}
+    </span>
+  );
+}
+
+// ─── BUTTON ─────────────────────────────────────────────────────────────────
+function PrimaryBtn({ children, large }) {
+  return (
+    <button
+      className={`inline-flex items-center gap-2 font-bold text-white rounded-2xl transition-all hover:scale-[1.03] active:scale-[0.98]`}
+      style={{
+        background: D.gradBlue,
+        boxShadow: "0 0 32px rgba(58,141,255,0.35), 0 4px 16px rgba(0,0,0,0.4)",
+        padding: large ? "18px 36px" : "13px 28px",
+        fontSize: large ? "17px" : "15px",
+        fontFamily: "'Manrope', sans-serif",
+      }}>
+      {children}
+    </button>
+  );
+}
+
+function GhostBtn({ children }) {
+  return (
+    <button className="inline-flex items-center gap-2 rounded-2xl font-semibold transition-all hover:bg-white/5"
+      style={{ border: "1px solid rgba(255,255,255,0.15)", color: "#fff", padding: "13px 28px", fontSize: "15px", fontFamily: "'Manrope', sans-serif" }}>
+      {children}
+    </button>
+  );
+}
+
+// ─── NAVBAR ─────────────────────────────────────────────────────────────────
 function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
-      style={{ background: "rgba(13,17,28,0.85)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
-          <FileCheck2 className="w-4 h-4 text-white" />
+    <nav className="fixed top-0 left-0 right-0 z-50"
+      style={{ background: "rgba(6,8,16,0.8)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${D.border}` }}>
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: D.gradBlue }}>
+            <FileCheck2 className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
+          </div>
+          <span className="font-bold text-white text-lg" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: "-0.02em" }}>DocFácil</span>
         </div>
-        <span className="font-bold text-white text-lg tracking-tight">DocFácil</span>
+
+        <div className="hidden md:flex items-center gap-8">
+          {["Hub", "Emissor", "Planos", "Segurança"].map(item => (
+            <a key={item} href="#" className="text-sm font-medium transition-colors"
+              style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}
+              onMouseEnter={e => e.target.style.color = "#fff"}
+              onMouseLeave={e => e.target.style.color = D.textSecondary}>
+              {item}
+            </a>
+          ))}
+        </div>
+
+        <PrimaryBtn>Começar grátis</PrimaryBtn>
       </div>
-      <div className="hidden md:flex items-center gap-8">
-        {["Soluções", "Planos", "Segurança", "Contato"].map(item => (
-          <a key={item} href="#" className="text-sm font-medium transition-colors" style={{ color: "#A0B1D4" }}
-            onMouseEnter={e => e.target.style.color = "#fff"}
-            onMouseLeave={e => e.target.style.color = "#A0B1D4"}>
-            {item}
-          </a>
-        ))}
-      </div>
-      <button className="text-sm font-semibold px-5 py-2 rounded-xl text-white transition-all hover:scale-105"
-        style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)", boxShadow: "0 0 20px rgba(58,141,255,0.4)" }}>
-        Começar grátis
-      </button>
     </nav>
   );
 }
@@ -38,86 +105,128 @@ function Navbar() {
 function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-20"
-      style={{ background: "linear-gradient(135deg, #080C15 0%, #0D111C 50%, #1A253A 100%)" }}>
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(circle, #3A8DFF, transparent)" }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-10 blur-3xl"
-          style={{ background: "radial-gradient(circle, #5E9BFF, transparent)" }} />
-        {/* Stars */}
-        {[...Array(40)].map((_, i) => (
-          <div key={i} className="absolute rounded-full bg-white"
-            style={{
-              width: Math.random() * 2 + 1 + "px",
-              height: Math.random() * 2 + 1 + "px",
-              top: Math.random() * 100 + "%",
-              left: Math.random() * 100 + "%",
-              opacity: Math.random() * 0.6 + 0.1,
-            }} />
-        ))}
-      </div>
+      style={{ background: `radial-gradient(ellipse 80% 60% at 50% -10%, rgba(58,141,255,0.18) 0%, transparent 60%), ${D.sectionDark}` }}>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-8 py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        {/* Left */}
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
-            style={{ background: "rgba(58,141,255,0.15)", border: "1px solid rgba(58,141,255,0.3)", color: "#5E9BFF" }}>
-            <Star className="w-3 h-3" /> Novo: DocFácil Emissor com IA integrada
-          </div>
-          <h1 className="text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
-            O primeiro assistente de{" "}
-            <span style={{ background: "linear-gradient(90deg,#3A8DFF,#7EC8FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              gestão documental
+      {/* Grid texture */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+
+      {/* Glow orbs */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(58,141,255,0.12) 0%, transparent 70%)", filter: "blur(40px)" }} />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-32">
+        {/* Center hero */}
+        <motion.div className="text-center max-w-4xl mx-auto" variants={fadeUp} initial="hidden" animate="show">
+          <Badge><Star className="w-3 h-3" /> Agora com IA Conversacional</Badge>
+
+          <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] tracking-tight"
+            style={{ fontFamily: "'Exo 2', sans-serif" }}>
+            Gestão documental{" "}
+            <span className="relative inline-block">
+              <span style={{ background: "linear-gradient(90deg, #3A8DFF, #7EC8FF, #3A8DFF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                inteligente
+              </span>
             </span>{" "}
-            com IA que entende seu negócio
+            para contadores
           </h1>
-          <p className="text-lg mb-10" style={{ color: "#A0B1D4", lineHeight: "1.7" }}>
-            O DocFácil combina gestão inteligente de certidões, alvarás e emissão de NF-e com IA conversacional — respostas instantâneas sobre seus documentos e processos fiscais, sem complexidade.
+
+          <p className="mt-6 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed"
+            style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+            DocFácil combina gestão de certidões, alvarás e emissão de NF-e com IA conversacional — respostas instantâneas sobre seus processos fiscais, sem complexidade.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-base transition-all hover:scale-105 hover:shadow-2xl"
-              style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)", boxShadow: "0 0 32px rgba(58,141,255,0.5)" }}>
+
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <PrimaryBtn large>
               Teste grátis por 14 dias <ArrowRight className="w-5 h-5" />
-            </button>
-            <button className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-base transition-all hover:bg-white/10"
-              style={{ border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}>
-              Ver demonstração
-            </button>
+            </PrimaryBtn>
+            <GhostBtn>Ver demonstração</GhostBtn>
+          </div>
+
+          {/* Social proof */}
+          <div className="mt-10 flex items-center justify-center gap-8 flex-wrap">
+            {["+500 empresas", "99.9% uptime", "LGPD compliant"].map(s => (
+              <div key={s} className="flex items-center gap-2 text-sm" style={{ color: D.textMuted, fontFamily: "'Outfit', sans-serif" }}>
+                <CheckCircle2 className="w-4 h-4" style={{ color: D.success }} />
+                {s}
+              </div>
+            ))}
           </div>
         </motion.div>
 
-        {/* Right - UI Mock */}
-        <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.9, delay: 0.2 }}>
-          <div className="rounded-2xl p-1" style={{ background: "linear-gradient(135deg, rgba(58,141,255,0.4), rgba(26,37,58,0.1))" }}>
-            <div className="rounded-xl p-6" style={{ background: "rgba(13,17,28,0.9)", backdropFilter: "blur(24px)" }}>
-              {/* Mock Dashboard */}
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-xs ml-2" style={{ color: "#A0B1D4" }}>DocFácil Hub · Dashboard</span>
+        {/* Dashboard preview */}
+        <motion.div className="mt-20 max-w-5xl mx-auto" variants={fadeIn} initial="hidden" animate="show"
+          transition={{ delay: 0.3 }}>
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: "rgba(13,17,35,0.9)", border: `1px solid ${D.border}`, boxShadow: "0 40px 80px rgba(0,0,0,0.6), 0 0 80px rgba(58,141,255,0.08)" }}>
+            {/* Browser bar */}
+            <div className="flex items-center gap-2 px-5 py-3" style={{ background: "rgba(255,255,255,0.03)", borderBottom: `1px solid ${D.border}` }}>
+              <div className="flex gap-1.5">
+                {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
               </div>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                {[
-                  { label: "Certidões Regulares", value: "47", color: "#22c55e" },
-                  { label: "Vencendo em 7 dias", value: "3", color: "#f59e0b" },
-                  { label: "NF-e Emitidas", value: "128", color: "#3A8DFF" },
-                  { label: "Empresas Ativas", value: "12", color: "#a855f7" },
-                ].map(stat => (
-                  <div key={stat.label} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                    <p className="text-xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#A0B1D4" }}>{stat.label}</p>
+              <div className="flex-1 flex justify-center">
+                <div className="px-4 py-1 rounded-lg text-xs" style={{ background: "rgba(255,255,255,0.05)", color: D.textMuted, fontFamily: "'Outfit', sans-serif" }}>
+                  app.docfacil.com.br/dashboard
+                </div>
+              </div>
+            </div>
+
+            {/* Dashboard content */}
+            <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "Certidões Regulares", val: "47", color: D.success, icon: CheckCircle2 },
+                { label: "Vencendo em 7 dias", val: "3", color: "#f59e0b", icon: Bell },
+                { label: "NF-e Emitidas/mês", val: "128", color: D.blue, icon: FileText },
+                { label: "Empresas Ativas", val: "12", color: "#a855f7", icon: Building2 },
+              ].map(stat => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="rounded-xl p-4" style={{ background: D.bgCard, border: `1px solid ${D.border}` }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <Icon className="w-4 h-4" style={{ color: stat.color }} />
+                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: `${stat.color}22`, color: stat.color, fontFamily: "'Outfit', sans-serif" }}>↑ 12%</span>
+                    </div>
+                    <p className="text-2xl font-extrabold" style={{ color: stat.color, fontFamily: "'Manrope', sans-serif" }}>{stat.val}</p>
+                    <p className="text-xs mt-0.5" style={{ color: D.textMuted, fontFamily: "'Rethink Sans', sans-serif" }}>{stat.label}</p>
                   </div>
-                ))}
-              </div>
-              <div className="rounded-xl p-3 text-xs" style={{ background: "rgba(58,141,255,0.1)", border: "1px solid rgba(58,141,255,0.2)" }}>
-                <span style={{ color: "#5E9BFF" }}>⚡ IA: </span>
-                <span style={{ color: "#A0B1D4" }}>3 certidões da Empresa X vencem em 5 dias. Deseja agendar a renovação?</span>
-              </div>
+                );
+              })}
+            </div>
+
+            {/* AI bar */}
+            <div className="mx-6 mb-6 rounded-xl px-4 py-3 flex items-center gap-3"
+              style={{ background: "rgba(58,141,255,0.08)", border: "1px solid rgba(58,141,255,0.2)" }}>
+              <Zap className="w-4 h-4 flex-shrink-0" style={{ color: D.blueLight }} />
+              <p className="text-sm" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+                <span style={{ color: D.blueLight, fontWeight: 600 }}>IA DocFácil:</span> 3 certidões da Empresa Alfa vencem em 5 dias. Deseja agendar a renovação automática?
+              </p>
             </div>
           </div>
         </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ─── STATS ──────────────────────────────────────────────────────────────────
+function StatsBar() {
+  const stats = [
+    { val: "+500", label: "Empresas gerenciadas" },
+    { val: "99.9%", label: "Uptime garantido" },
+    { val: "+12k", label: "NF-e emitidas/mês" },
+    { val: "<2min", label: "Para começar" },
+  ];
+
+  return (
+    <section style={{ background: D.sectionAlt, borderTop: `1px solid ${D.border}`, borderBottom: `1px solid ${D.border}` }}>
+      <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {stats.map((s, i) => (
+          <motion.div key={s.label} variants={fadeUp} initial="hidden" whileInView="show"
+            viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+            <p className="text-4xl font-extrabold" style={{ color: D.blueLight, fontFamily: "'Exo 2', sans-serif" }}>{s.val}</p>
+            <p className="text-sm mt-1" style={{ color: D.textMuted, fontFamily: "'Rethink Sans', sans-serif" }}>{s.label}</p>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
@@ -127,56 +236,65 @@ function HeroSection() {
 function ModulesSection() {
   const modules = [
     {
-      icon: FileCheck2,
-      tag: "DocFácil Hub",
-      title: "Gestão de Certidões e Documentos",
-      desc: "Centralize certidões, alvarás, inscrições estaduais e documentos fiscais de todas as suas empresas em um único painel inteligente. Monitore vencimentos, receba alertas e compartilhe com clientes via link seguro.",
-      features: ["Monitoramento automático de vencimentos", "Upload com identificação por IA", "Links seguros para clientes", "Grupos empresariais e filiais"],
-      color: "#3A8DFF",
+      icon: FileCheck2, tag: "DocFácil Hub", tagColor: D.blue,
+      title: "Gestão Inteligente de Certidões e Documentos",
+      desc: "Centralize certidões, alvarás, inscrições estaduais e documentos fiscais de todas as suas empresas em um único painel. Monitore vencimentos, receba alertas e compartilhe com clientes via link seguro.",
+      features: ["Monitoramento automático de vencimentos", "Upload com identificação por IA", "Links seguros para clientes", "Gestão de grupos empresariais e filiais"],
     },
     {
-      icon: Zap,
-      tag: "DocFácil Emissor",
-      title: "Emissão de NF-e com IA",
-      desc: "Emita notas fiscais eletrônicas (NF-e Modelo 55) com total integração SEFAZ, gestão de tributação inteligente e histórico completo. Conectado diretamente ao NFE.io para transmissão segura.",
-      features: ["Transmissão direta via SEFAZ", "Regras de tributação por IA", "Gestão de destinatários e produtos", "DANFE e XML automáticos"],
-      color: "#a855f7",
+      icon: Zap, tag: "DocFácil Emissor", tagColor: "#a855f7",
+      title: "Emissão de NF-e com IA Integrada",
+      desc: "Emita notas fiscais eletrônicas (NF-e Modelo 55) com total integração SEFAZ, gestão de tributação inteligente e histórico completo. Conectado diretamente ao NFE.io.",
+      features: ["Transmissão direta via SEFAZ/NFE.io", "Regras de tributação automáticas", "DANFE e XML gerados automaticamente", "Histórico completo e cancelamento"],
     },
   ];
 
   return (
-    <section className="py-32 px-8" style={{ background: "#0D111C" }}>
+    <section className="py-32 px-6" style={{ background: D.sectionDark }}>
       <div className="max-w-7xl mx-auto">
-        <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="text-4xl font-bold text-white mb-4">Dois módulos. Uma plataforma.</h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: "#A0B1D4" }}>
-            DocFácil Hub para gestão documental completa e DocFácil Emissor para NF-e — integrados, inteligentes e feitos para contadores.
+        <motion.div className="text-center mb-16" variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <Badge>Plataforma completa</Badge>
+          <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-white"
+            style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>
+            Dois módulos. Uma plataforma.
+          </h2>
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+            Hub para gestão documental e Emissor para NF-e — integrados, inteligentes, feitos para contadores.
           </p>
         </motion.div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {modules.map((mod, i) => {
             const Icon = mod.icon;
             return (
-              <motion.div key={mod.tag} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+              <motion.div key={mod.tag} variants={fadeUp} initial="hidden" whileInView="show"
                 viewport={{ once: true }} transition={{ delay: i * 0.15 }}
-                className="rounded-2xl p-8 group hover:scale-[1.02] transition-all duration-300"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(12px)" }}>
+                className="group rounded-3xl p-8 transition-all duration-300 hover:-translate-y-1"
+                style={{ background: D.bgCard, border: `1px solid ${D.border}`, backdropFilter: "blur(12px)" }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = `${mod.tagColor}44`}
+                onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
+
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ background: `${mod.color}22`, border: `1px solid ${mod.color}44` }}>
-                    <Icon className="w-6 h-6" style={{ color: mod.color }} />
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                    style={{ background: `${mod.tagColor}18`, border: `1px solid ${mod.tagColor}33` }}>
+                    <Icon className="w-6 h-6" style={{ color: mod.tagColor }} />
                   </div>
                   <span className="text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ background: `${mod.color}22`, color: mod.color, border: `1px solid ${mod.color}33` }}>
+                    style={{ background: `${mod.tagColor}15`, color: mod.tagColor, border: `1px solid ${mod.tagColor}30`, fontFamily: "'Outfit', sans-serif", letterSpacing: "0.04em", textTransform: "uppercase" }}>
                     {mod.tag}
                   </span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">{mod.title}</h3>
-                <p className="mb-6 leading-relaxed" style={{ color: "#A0B1D4" }}>{mod.desc}</p>
-                <ul className="space-y-2">
+
+                <h3 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: "'Manrope', sans-serif", letterSpacing: "-0.02em" }}>{mod.title}</h3>
+                <p className="leading-relaxed mb-6" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>{mod.desc}</p>
+
+                <ul className="space-y-2.5">
                   {mod.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm" style={{ color: "#A0B1D4" }}>
-                      <CheckCircle2 className="w-4 h-4 flex-shrink-0" style={{ color: mod.color }} />
+                    <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ background: `${mod.tagColor}20` }}>
+                        <CheckCircle2 className="w-3 h-3" style={{ color: mod.tagColor }} />
+                      </div>
                       {f}
                     </li>
                   ))}
@@ -193,34 +311,38 @@ function ModulesSection() {
 // ─── WHY ────────────────────────────────────────────────────────────────────
 function WhySection() {
   const cards = [
-    { icon: Briefcase, title: "Centraliza e Conecta", desc: "Conecta automaticamente todos os seus documentos — certidões, alvarás, NF-e — e sistemas fiscais em um só lugar." },
-    { icon: Lightbulb, title: "Inteligência Personalizada", desc: "A IA responde suas dúvidas em linguagem humana e sugere ações para sua conformidade fiscal e documental." },
-    { icon: RefreshCcw, title: "Atualização Automática", desc: "Monitore vencimentos de certidões, status de NF-e e novas regulamentações — você só toma decisões." },
+    { icon: Briefcase, title: "Centraliza e Conecta", desc: "Certidões, alvarás, NF-e e sistemas fiscais em um só lugar. Fim das planilhas e emails perdidos." },
+    { icon: Lightbulb, title: "Inteligência Personalizada", desc: "A IA responde suas dúvidas em linguagem humana e sugere ações para conformidade fiscal e documental." },
+    { icon: RefreshCcw, title: "Atualização Automática", desc: "Monitore vencimentos, status de NF-e e regulamentações automaticamente — você só toma decisões." },
   ];
 
   return (
-    <section className="py-32 px-8" style={{ background: "#080C15" }}>
+    <section className="py-32 px-6" style={{ background: D.sectionAlt }}>
       <div className="max-w-7xl mx-auto">
-        <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="text-4xl font-bold text-white mb-4">Por que DocFácil?</h2>
-          <p className="text-lg max-w-xl mx-auto" style={{ color: "#A0B1D4" }}>
-            Desenvolvido para contadores e gestores que precisam de controle total, sem a complexidade burocrática.
-          </p>
+        <motion.div className="text-center mb-16" variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <Badge>Diferenciais</Badge>
+          <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-white"
+            style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>
+            Por que DocFácil?
+          </h2>
         </motion.div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {cards.map((card, i) => {
             const Icon = card.icon;
             return (
-              <motion.div key={card.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.15 }}
-                className="rounded-2xl p-8 text-center hover:scale-[1.03] transition-all duration-300 group"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(12px)" }}>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 transition-all group-hover:scale-110"
-                  style={{ background: "rgba(58,141,255,0.15)", border: "1px solid rgba(58,141,255,0.3)" }}>
-                  <Icon className="w-7 h-7" style={{ color: "#5E9BFF" }} />
+              <motion.div key={card.title} variants={fadeUp} initial="hidden" whileInView="show"
+                viewport={{ once: true }} transition={{ delay: i * 0.12 }}
+                className="rounded-3xl p-8 group hover:-translate-y-1 transition-all duration-300"
+                style={{ background: D.bgCard, border: `1px solid ${D.border}` }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(58,141,255,0.3)"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+                  style={{ background: "rgba(58,141,255,0.1)", border: "1px solid rgba(58,141,255,0.2)" }}>
+                  <Icon className="w-7 h-7" style={{ color: D.blueLight }} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{card.title}</h3>
-                <p style={{ color: "#A0B1D4", lineHeight: "1.6" }}>{card.desc}</p>
+                <h3 className="text-xl font-bold text-white mb-3" style={{ fontFamily: "'Manrope', sans-serif" }}>{card.title}</h3>
+                <p style={{ color: D.textSecondary, lineHeight: 1.65, fontFamily: "'Rethink Sans', sans-serif" }}>{card.desc}</p>
               </motion.div>
             );
           })}
@@ -242,59 +364,67 @@ function AISection() {
   ];
 
   return (
-    <section className="py-32 px-8" style={{ background: "linear-gradient(180deg, #0D1B1A 0%, #0A1714 100%)" }}>
-      <div className="max-w-5xl mx-auto">
-        <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="text-4xl font-bold text-white mb-4">Você tem perguntas, o DocFácil tem respostas</h2>
-          <p style={{ color: "#A0B1D4" }}>IA treinada para gestão documental e fiscal brasileira</p>
+    <section className="py-32 px-6 relative overflow-hidden" style={{ background: D.sectionDark }}>
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(58,141,255,0.06) 0%, transparent 70%)" }} />
+
+      <div className="relative z-10 max-w-4xl mx-auto">
+        <motion.div className="text-center mb-14" variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <Badge>IA Conversacional</Badge>
+          <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-white"
+            style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>
+            Você pergunta, o DocFácil responde
+          </h2>
+          <p className="mt-4" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+            IA treinada em gestão documental e fiscal brasileira
+          </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(20px)" }}>
-          {/* Chat header */}
-          <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
+        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}
+          className="rounded-3xl overflow-hidden"
+          style={{ background: "rgba(10,13,20,0.95)", border: `1px solid ${D.border}`, boxShadow: "0 24px 64px rgba(0,0,0,0.5)" }}>
+
+          {/* Header */}
+          <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: `1px solid ${D.border}`, background: D.bgCard }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: D.gradBlue }}>
               <FileCheck2 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">DocFácil IA</p>
-              <p className="text-xs" style={{ color: "#22c55e" }}>● Online</p>
+              <p className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>DocFácil IA</p>
+              <p className="text-xs" style={{ color: D.success, fontFamily: "'Outfit', sans-serif" }}>● Disponível</p>
             </div>
           </div>
 
-          {/* Chat body */}
-          <div className="px-6 py-8 space-y-4">
-            {/* AI message */}
+          {/* Messages */}
+          <div className="px-6 py-7 space-y-5">
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: D.gradBlue }}>
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <div className="rounded-2xl rounded-tl-none px-4 py-3 text-sm max-w-md" style={{ background: "rgba(58,141,255,0.15)", border: "1px solid rgba(58,141,255,0.2)", color: "#A0B1D4" }}>
+              <div className="rounded-2xl rounded-tl-none px-4 py-3 text-sm max-w-sm"
+                style={{ background: "rgba(58,141,255,0.12)", border: "1px solid rgba(58,141,255,0.18)", color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
                 Olá! Como posso ajudar com sua gestão documental e fiscal hoje?
               </div>
             </div>
 
-            {/* Prompt suggestions */}
-            <div>
-              <p className="text-xs mb-3 ml-11" style={{ color: "#A0B1D4" }}>Sugestões de perguntas:</p>
-              <div className="space-y-2 ml-11">
+            <div className="ml-11">
+              <p className="text-xs mb-3" style={{ color: D.textMuted, fontFamily: "'Outfit', sans-serif" }}>Sugestões:</p>
+              <div className="space-y-2">
                 {prompts.map((prompt, i) => (
                   <motion.button key={i}
-                    onMouseEnter={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.15 }}
-                    className="w-full text-left px-4 py-3 rounded-xl text-sm flex items-center justify-between group"
+                    onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
+                    whileHover={{ scale: 1.015, x: 4 }} transition={{ duration: 0.15 }}
+                    className="w-full text-left px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3 group"
                     style={{
-                      background: hovered === i ? "rgba(58,141,255,0.15)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${hovered === i ? "rgba(58,141,255,0.4)" : "rgba(255,255,255,0.08)"}`,
-                      color: hovered === i ? "#7EC8FF" : "#A0B1D4",
-                      transition: "all 0.2s ease",
-                      boxShadow: hovered === i ? "0 0 16px rgba(58,141,255,0.15)" : "none",
+                      background: hovered === i ? "rgba(58,141,255,0.12)" : D.bgCard,
+                      border: `1px solid ${hovered === i ? "rgba(58,141,255,0.35)" : D.border}`,
+                      color: hovered === i ? D.blueLight : D.textSecondary,
+                      transition: "all 0.18s ease",
+                      boxShadow: hovered === i ? "0 0 20px rgba(58,141,255,0.1)" : "none",
+                      fontFamily: "'Rethink Sans', sans-serif",
                     }}>
                     <span>{prompt}</span>
-                    <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#5E9BFF" }} />
+                    <ChevronRight className="w-4 h-4 flex-shrink-0 transition-all" style={{ color: D.blueLight, opacity: hovered === i ? 1 : 0, transform: hovered === i ? "translateX(2px)" : "none" }} />
                   </motion.button>
                 ))}
               </div>
@@ -302,11 +432,12 @@ function AISection() {
           </div>
 
           {/* Input */}
-          <div className="px-6 py-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <input readOnly placeholder="Pergunte-me qualquer coisa sobre seus documentos ou emissões..."
-                className="flex-1 bg-transparent text-sm outline-none" style={{ color: "#A0B1D4" }} />
-              <button className="p-2 rounded-lg transition-colors hover:scale-110" style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
+          <div className="px-6 pb-6">
+            <div className="flex items-center gap-3 rounded-2xl px-4 py-3" style={{ background: D.bgCard, border: `1px solid ${D.border}` }}>
+              <input readOnly placeholder="Pergunte sobre seus documentos ou emissões..."
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }} />
+              <button className="p-2.5 rounded-xl transition-transform hover:scale-110" style={{ background: D.gradBlue }}>
                 <Send className="w-4 h-4 text-white" />
               </button>
             </div>
@@ -317,65 +448,48 @@ function AISection() {
   );
 }
 
-// ─── STATS ──────────────────────────────────────────────────────────────────
-function StatsSection() {
-  const stats = [
-    { value: "+500", label: "Empresas gerenciadas" },
-    { value: "99.9%", label: "Uptime garantido" },
-    { value: "+12k", label: "NF-e emitidas/mês" },
-    { value: "<2min", label: "Para começar" },
-  ];
-
-  return (
-    <section className="py-20 px-8" style={{ background: "linear-gradient(90deg,#080C15,#0D111C,#080C15)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        {stats.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-            <p className="text-4xl font-extrabold mb-1" style={{ color: "#5E9BFF" }}>{s.value}</p>
-            <p className="text-sm" style={{ color: "#A0B1D4" }}>{s.label}</p>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // ─── SAFETY ─────────────────────────────────────────────────────────────────
 function SafetySection() {
   const items = [
-    { icon: Shield, text: "Conformidade com LGPD e regulamentações do setor" },
+    { icon: Shield, text: "Conformidade total com LGPD e regulamentações do setor" },
     { icon: Lock, text: "Mesma segurança que seu internet banking" },
     { icon: Globe, text: "Seus dados nunca saem do Brasil" },
-    { icon: CheckCircle2, text: "Criptografia de ponta a ponta" },
+    { icon: CheckCircle2, text: "Criptografia de ponta a ponta em todos os dados" },
   ];
 
   return (
-    <section className="py-32 px-8" style={{ background: "linear-gradient(135deg, #EBE8D8 0%, #DDD9C4 100%)", position: "relative", overflow: "hidden" }}>
-      {/* Texture overlay */}
-      <div className="absolute inset-0 opacity-30"
-        style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0)", backgroundSize: "24px 24px" }} />
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-          <h2 className="text-4xl font-bold mb-4" style={{ color: "#1A253A" }}>
-            Seus dados e documentos estão seguros conosco
+    <section className="py-32 px-6 relative overflow-hidden" style={{ background: D.sectionAlt }}>
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+          <Badge>Segurança</Badge>
+          <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-white leading-tight"
+            style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>
+            Seus dados estão{" "}
+            <span style={{ background: "linear-gradient(90deg,#22c55e,#4ade80)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              seguros
+            </span>{" "}
+            conosco
           </h2>
-          <p style={{ color: "#4A5568" }}>
+          <p className="mt-4 text-lg leading-relaxed" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
             Construído com os mais altos padrões de segurança para proteger as informações fiscais e documentais dos seus clientes.
           </p>
         </motion.div>
-        <motion.div className="grid grid-cols-1 gap-4" initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+
+        <motion.div className="space-y-3" variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ delay: 0.15 }}>
           {items.map((item, i) => {
             const Icon = item.icon;
             return (
-              <motion.div key={item.text} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}>
+              <motion.div key={item.text} variants={fadeUp} initial="hidden" whileInView="show"
+                viewport={{ once: true }} transition={{ delay: 0.1 + i * 0.08 }}
+                className="flex items-center gap-4 p-4 rounded-2xl transition-all"
+                style={{ background: D.bgCard, border: `1px solid ${D.border}` }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(34,197,94,0.3)"}
+                onMouseLeave={e => e.currentTarget.style.borderColor = D.border}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(34,197,94,0.15)" }}>
-                  <Icon className="w-5 h-5" style={{ color: "#16a34a" }} />
+                  style={{ background: "rgba(34,197,94,0.12)" }}>
+                  <Icon className="w-5 h-5" style={{ color: D.success }} />
                 </div>
-                <p className="font-medium" style={{ color: "#1A253A" }}>{item.text}</p>
+                <p className="font-medium" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>{item.text}</p>
               </motion.div>
             );
           })}
@@ -387,75 +501,75 @@ function SafetySection() {
 
 // ─── CTA ────────────────────────────────────────────────────────────────────
 function CTASection() {
-  const items = [
+  const perks = [
     "14 dias grátis — cancele quando quiser",
-    "Conecte sistemas fiscais e documentos em minutos",
+    "Conecte documentos e sistemas fiscais em minutos",
     "Emita NF-e e gerencie certidões sem burocracia",
   ];
 
   return (
-    <section className="py-32 px-8 text-center relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #0A1714 0%, #0D1B1A 100%)" }}>
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-10 blur-3xl"
-          style={{ background: "radial-gradient(circle, #3A8DFF, transparent)" }} />
-      </div>
-      <div className="relative z-10 max-w-3xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Retome o controle da sua gestão documental e fiscal
-          </h2>
-          <div className="flex flex-col items-center gap-3 mb-10">
-            {items.map(item => (
-              <div key={item} className="flex items-center gap-2 text-base" style={{ color: "#A0B1D4" }}>
-                <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: "#22c55e" }} />
-                {item}
-              </div>
-            ))}
-          </div>
-          <button className="inline-flex items-center gap-2 px-10 py-5 rounded-2xl text-white font-bold text-lg transition-all hover:scale-105 hover:shadow-2xl"
-            style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)", boxShadow: "0 0 40px rgba(58,141,255,0.5)" }}>
-            Teste grátis agora <ArrowRight className="w-5 h-5" />
-          </button>
-        </motion.div>
-      </div>
+    <section className="py-32 px-6 relative overflow-hidden" style={{ background: D.sectionDark }}>
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(58,141,255,0.09) 0%, transparent 70%)" }} />
+
+      <motion.div className="relative z-10 max-w-3xl mx-auto text-center"
+        variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }}>
+        <Badge>Comece agora</Badge>
+        <h2 className="mt-5 text-4xl sm:text-5xl font-extrabold text-white leading-tight"
+          style={{ fontFamily: "'Exo 2', sans-serif", letterSpacing: "-0.02em" }}>
+          Retome o controle da sua gestão documental e fiscal
+        </h2>
+
+        <div className="mt-8 flex flex-col items-center gap-3">
+          {perks.map(p => (
+            <div key={p} className="flex items-center gap-2.5 text-base" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}>
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: D.success }} />
+              {p}
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10">
+          <PrimaryBtn large>Teste grátis agora <ArrowRight className="w-5 h-5" /></PrimaryBtn>
+        </div>
+      </motion.div>
     </section>
   );
 }
 
 // ─── FOOTER ─────────────────────────────────────────────────────────────────
 function Footer() {
-  const links = {
-    Produto: ["DocFácil Hub", "DocFácil Emissor", "Planos", "Roadmap"],
+  const nav = {
+    Produto: ["DocFácil Hub", "DocFácil Emissor", "Planos", "Novidades"],
     Empresa: ["Sobre nós", "Blog", "Carreiras", "Contato"],
     Legal: ["Política de Privacidade", "Termos de Uso", "LGPD"],
   };
 
   return (
-    <footer className="py-16 px-8" style={{ background: "#080C15", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+    <footer style={{ background: D.sectionDark, borderTop: `1px solid ${D.border}` }}>
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: D.gradBlue }}>
                 <FileCheck2 className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold text-white">DocFácil</span>
+              <span className="font-bold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>DocFácil</span>
             </div>
-            <p className="text-sm" style={{ color: "#A0B1D4", lineHeight: "1.6" }}>
-              Gestão documental e emissão fiscal inteligente com IA para contadores e empresas.
+            <p className="text-sm leading-relaxed" style={{ color: D.textMuted, fontFamily: "'Rethink Sans', sans-serif" }}>
+              Gestão documental e emissão fiscal inteligente com IA para contadores.
             </p>
           </div>
-          {Object.entries(links).map(([section, items]) => (
+
+          {Object.entries(nav).map(([section, items]) => (
             <div key={section}>
-              <p className="text-sm font-bold text-white mb-4">{section}</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: D.textMuted, fontFamily: "'Outfit', sans-serif" }}>{section}</p>
               <ul className="space-y-3">
                 {items.map(item => (
                   <li key={item}>
-                    <a href="#" className="text-sm transition-colors"
-                      style={{ color: "#A0B1D4" }}
+                    <a href="#" className="text-sm transition-colors" style={{ color: D.textSecondary, fontFamily: "'Rethink Sans', sans-serif" }}
                       onMouseEnter={e => e.target.style.color = "#fff"}
-                      onMouseLeave={e => e.target.style.color = "#A0B1D4"}>
+                      onMouseLeave={e => e.target.style.color = D.textSecondary}>
                       {item}
                     </a>
                   </li>
@@ -464,15 +578,15 @@ function Footer() {
             </div>
           ))}
         </div>
+
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 gap-4"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <p className="text-sm" style={{ color: "#A0B1D4" }}>© 2026 DocFácil. Todos os direitos reservados.</p>
-          <div className="flex items-center gap-6">
-            {["Política de Privacidade", "Termos e Condições"].map(item => (
-              <a key={item} href="#" className="text-sm transition-colors"
-                style={{ color: "#A0B1D4" }}
+          style={{ borderTop: `1px solid ${D.border}` }}>
+          <p className="text-sm" style={{ color: D.textMuted, fontFamily: "'Outfit', sans-serif" }}>© 2026 DocFácil. Todos os direitos reservados.</p>
+          <div className="flex gap-6">
+            {["Política de Privacidade", "Termos de Uso"].map(item => (
+              <a key={item} href="#" className="text-sm transition-colors" style={{ color: D.textMuted, fontFamily: "'Rethink Sans', sans-serif" }}
                 onMouseEnter={e => e.target.style.color = "#fff"}
-                onMouseLeave={e => e.target.style.color = "#A0B1D4"}>
+                onMouseLeave={e => e.target.style.color = D.textMuted}>
                 {item}
               </a>
             ))}
@@ -486,10 +600,10 @@ function Footer() {
 // ─── PAGE ────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ fontFamily: "'Rethink Sans', sans-serif", background: D.sectionDark }}>
       <Navbar />
       <HeroSection />
-      <StatsSection />
+      <StatsBar />
       <ModulesSection />
       <WhySection />
       <AISection />
