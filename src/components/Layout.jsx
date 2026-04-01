@@ -42,7 +42,7 @@ export default function Layout() {
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 flex flex-col transition-transform duration-300",
-        "lg:translate-x-0 lg:static lg:inset-auto",
+        "lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )} style={{ background: sidebarBg, borderRight: `1px solid ${borderColor}` }}>
         <div className="flex items-center justify-between p-5" style={{ borderBottom: `1px solid ${borderColor}` }}>
@@ -74,7 +74,7 @@ export default function Layout() {
           })}
         </nav>
 
-        <div className="p-4" style={{ borderTop: `1px solid ${borderColor}` }}>
+        <div className="p-4 flex-shrink-0" style={{ borderTop: `1px solid ${borderColor}` }}>
           {user && (
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold" style={{ background: "rgba(58,141,255,0.15)", color: "#5E9BFF", fontFamily: "'Manrope', sans-serif" }}>
