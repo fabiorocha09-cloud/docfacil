@@ -18,7 +18,7 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
     ativo: contato?.ativo !== false,
     observacoes: contato?.observacoes || "",
     empresas: contato?.empresas || [],
-    codigo_ativacao: contato?.codigo_ativacao || "",
+    codigo_ativacao: contato?.codigo_ativacao || gerarCodigo(),
   }));
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
@@ -45,9 +45,6 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
     e.preventDefault();
     setSaving(true);
     const dadosSalvar = { ...form };
-    if (!contato?.id && !dadosSalvar.codigo_ativacao) {
-      dadosSalvar.codigo_ativacao = gerarCodigo();
-    }
     if (contato?.id) {
       await base44.entities.Contato.update(contato.id, dadosSalvar);
     } else {
@@ -210,6 +207,26 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
   );
 }
 
+function NumeroAgenteInput({ atual, onSalvar, onCancelar }) {
+  const [valor, setValor] = useState(atual || "");
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        autoFocus
+        className="rounded-xl px-3 py-2 text-sm focus:outline-none w-44"
+        style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(58,141,255,0.4)", color: "#fff" }}
+        placeholder="Ex: 5591984482625"
+        value={valor}
+        onChange={e => setValor(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") onSalvar(valor); if (e.key === "Escape") onCancelar(); }}
+      />
+      <button onClick={() => onSalvar(valor)} className="text-xs font-semibold px-3 py-2 rounded-xl"
+        style={{ background: "rgba(58,141,255,0.15)", border: "1px solid rgba(58,141,255,0.35)", color: "#5E9BFF" }}>OK</button>
+      <button onClick={onCancelar} className="text-xs px-2 py-2 rounded-xl" style={{ color: "#6B7FA3" }}>✕</button>
+    </div>
+  );
+}
+
 export default function ContatosWhatsApp() {
   const [contatos, setContatos] = useState([]);
   const [empresas, setEmpresas] = useState([]);
@@ -249,18 +266,24 @@ export default function ContatosWhatsApp() {
   );
 
   const whatsappURL = base44.agents.getWhatsAppConnectURL("whatsapp_docfacil");
+  const [numeroAgente, setNumeroAgente] = useState(() => localStorage.getItem("docfacil_wa_agent_number") || "");
+  const [editandoNumero, setEditandoNumero] = useState(false);
 
-  const whatsappAgentNumber = whatsappURL ? new URLSearchParams(whatsappURL.split('?')[1] || '').get('phone') : null;
+  const salvarNumeroAgente = (num) => {
+    const limpo = num.replace(/\D/g, "");
+    localStorage.setItem("docfacil_wa_agent_number", limpo);
+    setNumeroAgente(limpo);
+    setEditandoNumero(false);
+  };
 
   const waLink = (contato) => {
     const numero = contato.telefone?.replace(/\D/g, "");
     const codigo = contato.codigo_ativacao || "";
-    const agentNumber = whatsappAgentNumber || "";
     const mensagem = encodeURIComponent(`Olá DocFácil! Meu telefone é +${numero} e meu código de ativação é ${codigo}`);
-    if (agentNumber) {
-      return `https://wa.me/${agentNumber}?text=${mensagem}`;
+    if (numeroAgente) {
+      return `https://wa.me/${numeroAgente}?text=${mensagem}`;
     }
-    return `https://wa.me/?text=${mensagem}`;
+    return null;
   };
 
   return (
@@ -281,6 +304,15 @@ export default function ContatosWhatsApp() {
             <MessageCircle className="w-4 h-4" />
             Conectar WhatsApp
           </a>
+          {editandoNumero ? (
+            <NumeroAgenteInput atual={numeroAgente} onSalvar={salvarNumeroAgente} onCancelar={() => setEditandoNumero(false)} />
+          ) : (
+            <button onClick={() => setEditandoNumero(true)}
+              className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl"
+              style={{ border: "1px solid rgba(255,255,255,0.12)", color: numeroAgente ? "#4ade80" : "#f59e0b", background: "rgba(255,255,255,0.04)" }}>
+              📱 {numeroAgente ? `Agente: +${numeroAgente}` : "Configurar nº do Agente"}
+            </button>
+          )}
           <button onClick={() => { setEditando(null); setModalOpen(true); }}
             className="flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-xl"
             style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)" }}>
@@ -379,13 +411,22 @@ export default function ContatosWhatsApp() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <a href={waLink(contato)} target="_blank" rel="noreferrer"
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                        style={{ background: "rgba(37,211,102,0.1)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366" }}
-                        title="Iniciar conversa com o agente DocFácil">
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        Conversar
-                      </a>
+                      {waLink(contato) ? (
+                        <a href={waLink(contato)} target="_blank" rel="noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                          style={{ background: "rgba(37,211,102,0.1)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366" }}
+                          title="Iniciar conversa com o agente DocFácil">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Conversar
+                        </a>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#6B7FA3" }}
+                          title="Configure o número do agente primeiro">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Conversar
+                        </span>
+                      )}
                       <button onClick={() => { setEditando(contato); setModalOpen(true); }}
                         className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
                         onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"}
