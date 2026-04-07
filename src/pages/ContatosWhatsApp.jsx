@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Phone, Building2, Pencil, Trash2, X, Loader2, MessageCircle } from "lucide-react";
+import { Plus, Search, Phone, Building2, Pencil, Trash2, X, Loader2, MessageCircle, CheckSquare, Square } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -8,13 +8,33 @@ const inputStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rg
 
 function ContatoModal({ contato, empresas, onClose, onSave }) {
   const { toast } = useToast();
-  const [form, setForm] = useState(contato || { nome: "", telefone: "", empresa_id: "", empresa_nome: "", empresa_cnpj: "", ativo: true, observacoes: "" });
+  const [form, setForm] = useState(() => ({
+    nome: contato?.nome || "",
+    telefone: contato?.telefone || "",
+    ativo: contato?.ativo !== false,
+    observacoes: contato?.observacoes || "",
+    empresas: contato?.empresas || [],
+  }));
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const handleEmpresa = (id) => {
-    const emp = empresas.find(e => e.id === id);
-    setForm(f => ({ ...f, empresa_id: id, empresa_nome: emp?.nome || "", empresa_cnpj: emp?.cnpj || "" }));
+  const toggleEmpresa = (emp) => {
+    setForm(f => {
+      const exists = f.empresas.some(e => e.id === emp.id);
+      if (exists) {
+        return { ...f, empresas: f.empresas.filter(e => e.id !== emp.id) };
+      } else {
+        return { ...f, empresas: [...f.empresas, { id: emp.id, nome: emp.nome, cnpj: emp.cnpj }] };
+      }
+    });
   };
+
+  const isSelected = (empId) => form.empresas.some(e => e.id === empId);
+
+  const empresasFiltradas = empresas.filter(e =>
+    e.nome?.toLowerCase().includes(search.toLowerCase()) ||
+    e.cnpj?.includes(search)
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,55 +52,121 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="rounded-2xl shadow-2xl w-full max-w-md" style={{ background: "#0D1117", border: "1px solid rgba(255,255,255,0.1)" }}>
-        <div className="flex items-center justify-between p-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" style={{ background: "#0D1117", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="flex items-center justify-between p-5 flex-shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <h2 className="font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
             {contato ? "Editar Contato" : "Novo Contato"}
           </h2>
           <button onClick={onClose} style={{ color: "#6B7FA3" }}><X className="w-5 h-5" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Nome *</label>
-            <input required className={inputCls} style={inputStyle}
-              value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-              placeholder="Nome do contato" />
+
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-5 space-y-4 overflow-y-auto flex-1">
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Nome *</label>
+              <input required className={inputCls} style={inputStyle}
+                value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                placeholder="Nome do contato" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Telefone / WhatsApp *</label>
+              <input required className={inputCls} style={inputStyle}
+                value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))}
+                placeholder="+5591984482625" />
+              <p className="text-xs mt-1" style={{ color: "#6B7FA3" }}>Inclua DDI e DDD. Ex: +5591984482625</p>
+            </div>
+
+            {/* Empresas vinculadas - multi-select */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: "#A0B1D4" }}>
+                Empresas vinculadas
+                {form.empresas.length > 0 && (
+                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(58,141,255,0.15)", color: "#5E9BFF" }}>
+                    {form.empresas.length} selecionada(s)
+                  </span>
+                )}
+              </label>
+
+              {/* Chips das selecionadas */}
+              {form.empresas.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {form.empresas.map(emp => (
+                    <span key={emp.id} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full"
+                      style={{ background: "rgba(58,141,255,0.15)", border: "1px solid rgba(58,141,255,0.3)", color: "#5E9BFF" }}>
+                      {emp.nome}
+                      <button type="button" onClick={() => toggleEmpresa(emp)} className="hover:opacity-70">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Busca */}
+              <div className="relative mb-2">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#6B7FA3" }} />
+                <input className="w-full pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none"
+                  style={inputStyle}
+                  placeholder="Buscar empresa..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)} />
+              </div>
+
+              {/* Lista de empresas */}
+              <div className="rounded-xl overflow-hidden max-h-40 overflow-y-auto" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+                {empresasFiltradas.length === 0 ? (
+                  <div className="p-3 text-xs text-center" style={{ color: "#6B7FA3" }}>Nenhuma empresa encontrada</div>
+                ) : (
+                  empresasFiltradas.map(emp => {
+                    const sel = isSelected(emp.id);
+                    return (
+                      <button
+                        key={emp.id}
+                        type="button"
+                        onClick={() => toggleEmpresa(emp)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors"
+                        style={{
+                          background: sel ? "rgba(58,141,255,0.1)" : "transparent",
+                          borderBottom: "1px solid rgba(255,255,255,0.04)",
+                        }}
+                        onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={e => { if (!sel) e.currentTarget.style.background = "transparent"; }}
+                      >
+                        {sel
+                          ? <CheckSquare className="w-4 h-4 flex-shrink-0" style={{ color: "#5E9BFF" }} />
+                          : <Square className="w-4 h-4 flex-shrink-0" style={{ color: "#6B7FA3" }} />
+                        }
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium truncate" style={{ color: sel ? "#fff" : "#A0B1D4", fontFamily: "'Manrope', sans-serif" }}>{emp.nome}</p>
+                          <p className="text-xs" style={{ color: "#6B7FA3" }}>{emp.cnpj}</p>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Observações</label>
+              <textarea rows={2} className={inputCls} style={{ ...inputStyle, resize: "none" }}
+                value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))}
+                placeholder="Cargo, departamento, etc." />
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer">
+              <button type="button"
+                onClick={() => setForm(f => ({ ...f, ativo: !f.ativo }))}
+                className="relative w-10 h-5 rounded-full transition-colors flex-shrink-0"
+                style={{ background: form.ativo ? "#3A8DFF" : "rgba(255,255,255,0.15)" }}>
+                <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.ativo ? "translate-x-5" : "translate-x-0.5"}`} />
+              </button>
+              <span className="text-sm" style={{ color: "#A0B1D4" }}>Contato ativo</span>
+            </label>
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Telefone / WhatsApp *</label>
-            <input required className={inputCls} style={inputStyle}
-              value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))}
-              placeholder="+5591984482625" />
-            <p className="text-xs mt-1" style={{ color: "#6B7FA3" }}>Inclua DDI e DDD. Ex: +5591984482625</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Empresa vinculada *</label>
-            <select required className={inputCls} style={{ ...inputStyle, fontFamily: "'Rethink Sans', sans-serif" }}
-              value={form.empresa_id} onChange={e => handleEmpresa(e.target.value)}>
-              <option value="" style={{ background: "#0A0D14" }}>Selecionar empresa...</option>
-              {empresas.map(emp => (
-                <option key={emp.id} value={emp.id} style={{ background: "#0A0D14" }}>
-                  {emp.nome} — {emp.cnpj}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Observações</label>
-            <textarea rows={2} className={inputCls} style={{ ...inputStyle, resize: "none" }}
-              value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))}
-              placeholder="Cargo, departamento, etc." />
-          </div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <button type="button"
-              onClick={() => setForm(f => ({ ...f, ativo: !f.ativo }))}
-              className="relative w-10 h-5 rounded-full transition-colors flex-shrink-0"
-              style={{ background: form.ativo ? "#3A8DFF" : "rgba(255,255,255,0.15)" }}>
-              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.ativo ? "translate-x-5" : "translate-x-0.5"}`} />
-            </button>
-            <span className="text-sm" style={{ color: "#A0B1D4" }}>Contato ativo</span>
-          </label>
-          <div className="flex gap-3 pt-2">
+
+          <div className="flex gap-3 p-5 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <button type="button" onClick={onClose}
               className="flex-1 text-sm font-medium py-2 rounded-xl"
               style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#A0B1D4" }}>
@@ -131,8 +217,10 @@ export default function ContatosWhatsApp() {
   const filtrados = contatos.filter(c =>
     c.nome?.toLowerCase().includes(search.toLowerCase()) ||
     c.telefone?.includes(search) ||
-    c.empresa_nome?.toLowerCase().includes(search.toLowerCase()) ||
-    c.empresa_cnpj?.includes(search)
+    c.empresas?.some(e =>
+      e.nome?.toLowerCase().includes(search.toLowerCase()) ||
+      e.cnpj?.includes(search)
+    )
   );
 
   const whatsappURL = base44.agents.getWhatsAppConnectURL("whatsapp_docfacil");
@@ -145,7 +233,7 @@ export default function ContatosWhatsApp() {
             Contatos WhatsApp
           </h1>
           <p className="text-sm mt-1" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>
-            {contatos.length} contato(s) vinculado(s) a empresas
+            {contatos.length} contato(s) cadastrado(s)
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -168,7 +256,7 @@ export default function ContatosWhatsApp() {
         <MessageCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#25d366" }} />
         <div className="text-sm" style={{ color: "#A0B1D4", fontFamily: "'Rethink Sans', sans-serif" }}>
           <p className="font-semibold mb-1" style={{ color: "#4ade80", fontFamily: "'Manrope', sans-serif" }}>Como funciona</p>
-          <p>Cadastre os contatos e vincule-os às empresas pelo número de WhatsApp. Quando o cliente mandar uma mensagem, o agente identifica automaticamente a empresa pelo número e responde com certidões e documentos solicitados.</p>
+          <p>Cadastre contatos e vincule múltiplas empresas ao mesmo número de WhatsApp. O agente identifica o contato pelo número, lista as empresas vinculadas e pergunta sobre qual o cliente deseja falar.</p>
         </div>
       </div>
 
@@ -196,58 +284,74 @@ export default function ContatosWhatsApp() {
             <span className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Outfit', sans-serif" }}>{filtrados.length} resultado(s)</span>
           </div>
           <div>
-            {filtrados.map(contato => (
-              <div key={contato.id}
-                className="flex items-center justify-between px-5 py-4 transition-colors"
-                style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: contato.ativo ? "rgba(37,211,102,0.12)" : "rgba(255,255,255,0.05)" }}>
-                    <Phone className="w-5 h-5" style={{ color: contato.ativo ? "#25d366" : "#6B7FA3" }} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{contato.nome}</p>
-                      {!contato.ativo && (
-                        <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.07)", color: "#6B7FA3" }}>Inativo</span>
-                      )}
+            {filtrados.map(contato => {
+              const empresasVinculadas = contato.empresas || [];
+              return (
+                <div key={contato.id}
+                  className="px-5 py-4 transition-colors"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 min-w-0 flex-1">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{ background: contato.ativo ? "rgba(37,211,102,0.12)" : "rgba(255,255,255,0.05)" }}>
+                        <Phone className="w-5 h-5" style={{ color: contato.ativo ? "#25d366" : "#6B7FA3" }} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <p className="font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{contato.nome}</p>
+                          {!contato.ativo && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.07)", color: "#6B7FA3" }}>Inativo</span>
+                          )}
+                          {empresasVinculadas.length > 1 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(58,141,255,0.12)", color: "#5E9BFF", border: "1px solid rgba(58,141,255,0.25)" }}>
+                              {empresasVinculadas.length} empresas
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs mb-2" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>
+                          <MessageCircle className="w-3 h-3" style={{ color: "#25d366" }} />
+                          {contato.telefone}
+                        </div>
+                        {/* Empresas vinculadas */}
+                        {empresasVinculadas.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {empresasVinculadas.map(emp => (
+                              <span key={emp.id} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
+                                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#A0B1D4" }}>
+                                <Building2 className="w-3 h-3" style={{ color: "#6B7FA3" }} />
+                                <span className="font-medium" style={{ color: "#fff" }}>{emp.nome}</span>
+                                <span style={{ color: "#6B7FA3" }}>— {emp.cnpj}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs" style={{ color: "#6B7FA3" }}>Nenhuma empresa vinculada</p>
+                        )}
+                        {contato.observacoes && (
+                          <p className="text-xs mt-1.5 truncate" style={{ color: "#4B5A7A", fontFamily: "'Rethink Sans', sans-serif" }}>{contato.observacoes}</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs mt-0.5 flex-wrap" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>
-                      <span className="flex items-center gap-1">
-                        <MessageCircle className="w-3 h-3" style={{ color: "#25d366" }} />
-                        {contato.telefone}
-                      </span>
-                      {contato.empresa_nome && (
-                        <span className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3" />
-                          {contato.empresa_nome}
-                        </span>
-                      )}
-                      {contato.empresa_cnpj && <span>{contato.empresa_cnpj}</span>}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <button onClick={() => { setEditando(contato); setModalOpen(true); }}
+                        className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"}
+                        onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}>
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => deletar(contato.id)}
+                        className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
+                        onMouseEnter={e => e.currentTarget.style.color = "#f87171"}
+                        onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    {contato.observacoes && (
-                      <p className="text-xs mt-0.5 truncate" style={{ color: "#4B5A7A", fontFamily: "'Rethink Sans', sans-serif" }}>{contato.observacoes}</p>
-                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0 ml-4">
-                  <button onClick={() => { setEditando(contato); setModalOpen(true); }}
-                    className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}>
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => deletar(contato.id)}
-                    className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#f87171"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}>
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

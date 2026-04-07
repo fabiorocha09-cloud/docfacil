@@ -10,15 +10,23 @@
       "type": "string",
       "description": "N\u00famero de WhatsApp com DDI e DDD, ex: +5591984482625"
     },
-    "empresa_id": {
-      "type": "string",
-      "description": "ID da empresa vinculada"
-    },
-    "empresa_nome": {
-      "type": "string"
-    },
-    "empresa_cnpj": {
-      "type": "string"
+    "empresas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "cnpj": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Lista de empresas vinculadas a este contato"
     },
     "ativo": {
       "type": "boolean",
@@ -30,7 +38,6 @@
   },
   "required": [
     "nome",
-    "telefone",
-    "empresa_id"
+    "telefone"
   ]
 }
