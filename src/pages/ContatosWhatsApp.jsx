@@ -225,6 +225,11 @@ export default function ContatosWhatsApp() {
 
   const whatsappURL = base44.agents.getWhatsAppConnectURL("whatsapp_docfacil");
 
+  const waLink = (telefone) => {
+    const numero = telefone?.replace(/\D/g, "");
+    return `https://wa.me/${numero}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -335,6 +340,13 @@ export default function ContatosWhatsApp() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <a href={waLink(contato.telefone)} target="_blank" rel="noreferrer"
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                        style={{ background: "rgba(37,211,102,0.1)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366" }}
+                        title="Abrir conversa no WhatsApp">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        Conversar
+                      </a>
                       <button onClick={() => { setEditando(contato); setModalOpen(true); }}
                         className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
                         onMouseEnter={e => e.currentTarget.style.color = "#5E9BFF"}
