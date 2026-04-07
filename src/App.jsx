@@ -36,6 +36,7 @@ import NaturezasTributarias from '@/pages/emissor/NaturezasTributarias';
 import ConfiguracaoNFe from '@/pages/emissor/ConfiguracaoNFe';
 import EditarEmpresa from '@/pages/emissor/EditarEmpresa';
 import LandingPage from '@/pages/LandingPage';
+import ContatosWhatsApp from '@/pages/ContatosWhatsApp';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
         <Route path="/ControleIE" element={<ControleIE />} />
         <Route path="/CalendarioCertidoes" element={<CalendarioCertidoes />} />
         <Route path="/ModelosDocumento" element={<ModelosDocumento />} />
+        <Route path="/ContatosWhatsApp" element={<ContatosWhatsApp />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="/emissor/painel" element={<PainelContador />} />

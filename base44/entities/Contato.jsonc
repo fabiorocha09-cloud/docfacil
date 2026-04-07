@@ -1,0 +1,36 @@
+{
+  "name": "Contato",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome do contato"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "N\u00famero de WhatsApp com DDI e DDD, ex: +5591984482625"
+    },
+    "empresa_id": {
+      "type": "string",
+      "description": "ID da empresa vinculada"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "telefone",
+    "empresa_id"
+  ]
+}

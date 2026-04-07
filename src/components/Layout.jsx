@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap, ChevronDown
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap, ChevronDown, Phone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ const navItems = [
   { label: "Controle de IE", path: "/ControleIE", icon: BadgeCheck },
   { label: "Calendário de Vencimentos", path: "/CalendarioCertidoes", icon: CalendarDays },
   { label: "Modelos de Documento", path: "/ModelosDocumento", icon: BookOpen },
+  { label: "Contatos WhatsApp", path: "/ContatosWhatsApp", icon: Phone },
 ];
 
 export default function Layout() {
