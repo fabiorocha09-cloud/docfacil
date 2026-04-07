@@ -10,6 +10,10 @@
       "type": "string",
       "description": "N\u00famero de WhatsApp com DDI e DDD, ex: +5591984482625"
     },
+    "codigo_ativacao": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico de ativa\u00e7\u00e3o para identifica\u00e7\u00e3o do contato no WhatsApp"
+    },
     "empresas": {
       "type": "array",
       "items": {

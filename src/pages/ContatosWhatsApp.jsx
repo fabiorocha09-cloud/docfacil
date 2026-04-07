@@ -6,6 +6,10 @@ import { useToast } from "@/components/ui/use-toast";
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
 const inputStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" };
 
+function gerarCodigo() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
 function ContatoModal({ contato, empresas, onClose, onSave }) {
   const { toast } = useToast();
   const [form, setForm] = useState(() => ({
@@ -14,6 +18,7 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
     ativo: contato?.ativo !== false,
     observacoes: contato?.observacoes || "",
     empresas: contato?.empresas || [],
+    codigo_ativacao: contato?.codigo_ativacao || "",
   }));
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
@@ -39,10 +44,14 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const dadosSalvar = { ...form };
+    if (!contato?.id && !dadosSalvar.codigo_ativacao) {
+      dadosSalvar.codigo_ativacao = gerarCodigo();
+    }
     if (contato?.id) {
-      await base44.entities.Contato.update(contato.id, form);
+      await base44.entities.Contato.update(contato.id, dadosSalvar);
     } else {
-      await base44.entities.Contato.create(form);
+      await base44.entities.Contato.create(dadosSalvar);
     }
     toast({ title: "✅ Contato salvo com sucesso!" });
     onSave();
@@ -149,7 +158,23 @@ function ContatoModal({ contato, empresas, onClose, onSave }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Observações</label>
+              <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Código de Ativação</label>
+              <div className="flex items-center gap-2">
+                <input readOnly className={inputCls + " font-mono flex-1"} style={{ ...inputStyle, letterSpacing: "0.1em" }}
+                  value={form.codigo_ativacao}
+                  placeholder="Gerado automaticamente ao salvar" />
+                <button type="button"
+                  onClick={() => setForm(f => ({ ...f, codigo_ativacao: gerarCodigo() }))}
+                  className="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl"
+                  style={{ border: "1px solid rgba(58,141,255,0.3)", color: "#5E9BFF", background: "rgba(58,141,255,0.08)" }}>
+                  Gerar novo
+                </button>
+              </div>
+              <p className="text-xs mt-1" style={{ color: "#6B7FA3" }}>Enviado automaticamente no link de convite do WhatsApp.</p>
+            </div>
+
+            <label className="block text-sm font-medium mb-1" style={{ color: "#A0B1D4" }}>Observações</label>
               <textarea rows={2} className={inputCls} style={{ ...inputStyle, resize: "none" }}
                 value={form.observacoes} onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))}
                 placeholder="Cargo, departamento, etc." />
@@ -225,9 +250,17 @@ export default function ContatosWhatsApp() {
 
   const whatsappURL = base44.agents.getWhatsAppConnectURL("whatsapp_docfacil");
 
-  const waLink = (telefone) => {
-    const numero = telefone?.replace(/\D/g, "");
-    return `https://wa.me/${numero}`;
+  const whatsappAgentNumber = whatsappURL ? new URLSearchParams(whatsappURL.split('?')[1] || '').get('phone') : null;
+
+  const waLink = (contato) => {
+    const numero = contato.telefone?.replace(/\D/g, "");
+    const codigo = contato.codigo_ativacao || "";
+    const agentNumber = whatsappAgentNumber || "";
+    const mensagem = encodeURIComponent(`Olá DocFácil! Meu telefone é +${numero} e meu código de ativação é ${codigo}`);
+    if (agentNumber) {
+      return `https://wa.me/${agentNumber}?text=${mensagem}`;
+    }
+    return `https://wa.me/?text=${mensagem}`;
   };
 
   return (
@@ -319,6 +352,12 @@ export default function ContatosWhatsApp() {
                           <MessageCircle className="w-3 h-3" style={{ color: "#25d366" }} />
                           {contato.telefone}
                         </div>
+                        {contato.codigo_ativacao && (
+                          <div className="flex items-center gap-1 text-xs mb-2" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>
+                            <span style={{ color: "#4B5A7A" }}>Código:</span>
+                            <span className="font-mono font-semibold" style={{ color: "#A0B1D4" }}>{contato.codigo_ativacao}</span>
+                          </div>
+                        )}
                         {/* Empresas vinculadas */}
                         {empresasVinculadas.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5">
@@ -340,10 +379,10 @@ export default function ContatosWhatsApp() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <a href={waLink(contato.telefone)} target="_blank" rel="noreferrer"
+                      <a href={waLink(contato)} target="_blank" rel="noreferrer"
                         className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                         style={{ background: "rgba(37,211,102,0.1)", border: "1px solid rgba(37,211,102,0.25)", color: "#25d366" }}
-                        title="Abrir conversa no WhatsApp">
+                        title="Iniciar conversa com o agente DocFácil">
                         <MessageCircle className="w-3.5 h-3.5" />
                         Conversar
                       </a>
