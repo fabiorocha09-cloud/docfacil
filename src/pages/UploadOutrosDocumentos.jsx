@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Upload, FileText, Trash2, Loader2, CheckCircle2, Building2, Users, Layers } from "lucide-react";
+import { Upload, FileText, Trash2, Loader2, CheckCircle2, Building2, Users, Layers, Search, RefreshCw, Square, CheckSquare, CreditCard } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import ImportarDocsLoteModal from "@/components/ImportarDocsLoteModal";
 
@@ -20,6 +20,11 @@ export default function UploadOutrosDocumentos() {
   const [crcAtual, setCrcAtual] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loteOpen, setLoteOpen] = useState(false);
+  const [searchCnpj, setSearchCnpj] = useState("");
+  const [filtroCnpj, setFiltroCnpj] = useState("todos"); // todos | com | sem
+  const [selecionados, setSelecionados] = useState([]);
+  const [atualizandoLote, setAtualizandoLote] = useState(false);
+  const [progressoLote, setProgressoLote] = useState({ atual: 0, total: 0 });
   const { toast } = useToast();
 
   useEffect(() => { carregar(); }, []);
@@ -71,6 +76,46 @@ export default function UploadOutrosDocumentos() {
     await Promise.all(promises);
     toast({ title: "✅ CRC do Contador atualizado!", description: `Replicado para ${empresas.length} empresa(s).` });
     setUploadingCrc(false);
+    carregar();
+  };
+
+  // Visão geral filtrada
+  const empresasFiltradas = useMemo(() => {
+    return empresas.filter(emp => {
+      const temCartao = !!documentos.find(d => d.empresa_id === emp.id && d.tipo === "cartao_cnpj");
+      const matchSearch = emp.nome?.toLowerCase().includes(searchCnpj.toLowerCase()) || emp.cnpj?.includes(searchCnpj);
+      const matchFiltro = filtroCnpj === "todos" || (filtroCnpj === "com" && temCartao) || (filtroCnpj === "sem" && !temCartao);
+      return matchSearch && matchFiltro;
+    });
+  }, [empresas, documentos, searchCnpj, filtroCnpj]);
+
+  const toggleSelecionado = (id) => setSelecionados(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const toggleSelecionarTodos = () => {
+    const ids = empresasFiltradas.map(e => e.id);
+    if (ids.every(id => selecionados.includes(id))) setSelecionados(prev => prev.filter(id => !ids.includes(id)));
+    else setSelecionados(prev => [...new Set([...prev, ...ids])]);
+  };
+
+  const atualizarCartoesCnpjEmLote = async () => {
+    const empresasParaAtualizar = empresas.filter(e => selecionados.includes(e.id));
+    if (empresasParaAtualizar.length === 0) return;
+    setAtualizandoLote(true);
+    setProgressoLote({ atual: 0, total: empresasParaAtualizar.length });
+    let sucesso = 0, falha = 0;
+    for (let i = 0; i < empresasParaAtualizar.length; i++) {
+      const emp = empresasParaAtualizar[i];
+      setProgressoLote({ atual: i + 1, total: empresasParaAtualizar.length });
+      const res = await base44.functions.invoke('downloadCnpjCard', {
+        empresa_id: emp.id,
+        empresa_nome: emp.nome,
+        empresa_cnpj: emp.cnpj,
+      });
+      if (res.data?.success) sucesso++; else falha++;
+    }
+    toast({ title: `✅ Lote concluído: ${sucesso} atualizados${falha > 0 ? `, ${falha} com erro` : ""}` });
+    setSelecionados([]);
+    setAtualizandoLote(false);
     carregar();
   };
 
@@ -216,23 +261,102 @@ export default function UploadOutrosDocumentos() {
         </div>
       </div>
 
-      {/* Visão geral */}
+      {/* Visão geral com filtros e lote */}
       {!loading && empresas.length > 0 && (
         <div className="rounded-2xl overflow-hidden" style={cardStyle}>
-          <div className="px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-            <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Visão Geral por Empresa</h3>
+          {/* Header */}
+          <div className="px-5 py-4 space-y-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                Visão Geral por Empresa
+              </h3>
+              {selecionados.length > 0 && (
+                <button
+                  onClick={atualizarCartoesCnpjEmLote}
+                  disabled={atualizandoLote}
+                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg,#3A8DFF,#1A58CC)", color: "#fff" }}>
+                  {atualizandoLote
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Atualizando {progressoLote.atual}/{progressoLote.total}...</>
+                    : <><RefreshCw className="w-4 h-4" /> Atualizar Cartão CNPJ ({selecionados.length})</>}
+                </button>
+              )}
+            </div>
+
+            {/* Filtros */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-48">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "#6B7FA3" }} />
+                <input
+                  className="w-full pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                  placeholder="Buscar empresa ou CNPJ..."
+                  value={searchCnpj}
+                  onChange={e => setSearchCnpj(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center gap-1 rounded-xl p-0.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                {[
+                  { key: "todos", label: "Todas" },
+                  { key: "sem", label: "Sem Cartão CNPJ" },
+                  { key: "com", label: "Com Cartão CNPJ" },
+                ].map(({ key, label }) => (
+                  <button key={key} onClick={() => { setFiltroCnpj(key); setSelecionados([]); }}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                    style={{
+                      background: filtroCnpj === key ? "rgba(58,141,255,0.2)" : "transparent",
+                      color: filtroCnpj === key ? "#5E9BFF" : "#6B7FA3",
+                      border: filtroCnpj === key ? "1px solid rgba(58,141,255,0.35)" : "1px solid transparent",
+                    }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Selecionar todos */}
+            {empresasFiltradas.length > 0 && (
+              <div className="flex items-center justify-between">
+                <button onClick={toggleSelecionarTodos} className="flex items-center gap-2 text-xs font-medium" style={{ color: "#5E9BFF" }}>
+                  {empresasFiltradas.every(e => selecionados.includes(e.id))
+                    ? <><CheckSquare className="w-3.5 h-3.5" /> Desmarcar todos ({empresasFiltradas.length})</>
+                    : <><Square className="w-3.5 h-3.5" /> Selecionar todos ({empresasFiltradas.length})</>}
+                </button>
+                <span className="text-xs" style={{ color: "#6B7FA3" }}>
+                  {empresasFiltradas.length} empresa(s) · {selecionados.length} selecionada(s)
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Lista */}
           <div>
-            {empresas.map(emp => {
+            {empresasFiltradas.length === 0 ? (
+              <div className="py-10 text-center" style={{ color: "#6B7FA3" }}>
+                <Building2 className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Nenhuma empresa encontrada</p>
+              </div>
+            ) : empresasFiltradas.map(emp => {
               const cartao = documentos.find(d => d.empresa_id === emp.id && d.tipo === "cartao_cnpj");
               const procuracao = documentos.find(d => d.empresa_id === emp.id && d.tipo === "procuracao_tj");
               const crc = documentos.find(d => d.empresa_id === emp.id && d.tipo === "crc_contador");
+              const isSel = selecionados.includes(emp.id);
               return (
-                <div key={emp.id} className="flex items-center justify-between px-5 py-3"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                  <div>
-                    <p className="text-sm font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{emp.nome}</p>
-                    <p className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{emp.cnpj}</p>
+                <div key={emp.id}
+                  className="flex items-center justify-between px-5 py-3 cursor-pointer transition-colors"
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.04)", background: isSel ? "rgba(58,141,255,0.06)" : "transparent" }}
+                  onClick={() => toggleSelecionado(emp.id)}
+                  onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
+                  onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = "transparent"; }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0"
+                      style={{ background: isSel ? "#3A8DFF" : "transparent", borderColor: isSel ? "#3A8DFF" : "rgba(255,255,255,0.2)" }}>
+                      {isSel && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>{emp.nome}</p>
+                      <p className="text-xs" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>{emp.cnpj}</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <DocStatus label="CNPJ" ok={!!cartao} />
