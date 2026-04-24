@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { base44 } from "@/api/base44Client";
-import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download, ArrowLeft, Loader2 } from "lucide-react";
+import { Plus, Search, Building2, Pencil, Trash2, FileCheck2, SearchCheck, FileSpreadsheet, Mail, Link2, Layers, RotateCcw, Download, ArrowLeft, Loader2, CreditCard } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import EmpresaCardDetalhes from "@/components/EmpresaCardDetalhes";
 import * as XLSX from "xlsx";
@@ -23,6 +23,7 @@ export default function Empresas() {
   const [buscaEmpresa, setBuscaEmpresa] = useState(null);
   const [tjEmpresa, setTjEmpresa] = useState(null);
   const [linkEmpresa, setLinkEmpresa] = useState(null);
+  const [downloadingCnpj, setDownloadingCnpj] = useState({});
   const [importarOpen, setImportarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [lixeira, setLixeira] = useState(false);
@@ -151,6 +152,22 @@ export default function Empresas() {
 
   const isAdmin = user?.role === "admin";
 
+  const baixarCartaoCnpj = async (empresa) => {
+    setDownloadingCnpj(prev => ({ ...prev, [empresa.id]: true }));
+    const response = await base44.functions.invoke('downloadCnpjCard', {
+      empresa_id: empresa.id,
+      empresa_nome: empresa.nome,
+      empresa_cnpj: empresa.cnpj,
+    });
+    if (response.data?.success) {
+      toast({ title: "✅ Cartão CNPJ baixado e arquivado!" });
+    } else {
+      toast({ title: "❌ Erro ao baixar cartão CNPJ", description: response.data?.error || "Tente novamente." });
+    }
+    setDownloadingCnpj(prev => ({ ...prev, [empresa.id]: false }));
+    carregar();
+  };
+
   const ativas = empresas.filter(e => !e.excluida);
   const naLixeira = empresas.filter(e => e.excluida);
   const listaAtual = lixeira ? naLixeira : ativas;
@@ -278,6 +295,18 @@ export default function Empresas() {
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: empresa.status === "ativo" ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.07)", color: empresa.status === "ativo" ? "#4ade80" : "#6B7FA3" }}>
                             {empresa.status === "ativo" ? "Ativo" : "Inativo"}
                           </span>
+                          <button
+                            onClick={() => baixarCartaoCnpj(empresa)}
+                            disabled={downloadingCnpj[empresa.id]}
+                            className="p-1.5 rounded-lg transition-colors"
+                            style={{ color: "#6B7FA3" }}
+                            onMouseEnter={e => e.currentTarget.style.color = "#4ade80"}
+                            onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"}
+                            title="Baixar e arquivar Cartão CNPJ">
+                            {downloadingCnpj[empresa.id]
+                              ? <Loader2 className="w-4 h-4 animate-spin" />
+                              : <CreditCard className="w-4 h-4" />}
+                          </button>
                           <button onClick={() => setTjEmpresa(empresa)} className="p-1.5 rounded-lg transition-colors" style={{ color: "#6B7FA3" }}
                             onMouseEnter={e => e.currentTarget.style.color = "#c084fc"} onMouseLeave={e => e.currentTarget.style.color = "#6B7FA3"} title="Solicitar Certidão TJ-PA via email">
                             <Mail className="w-4 h-4" />
