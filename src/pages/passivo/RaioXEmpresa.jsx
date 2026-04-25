@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Building2, FileText, AlertTriangle, CheckCircle2,
   TrendingUp, DollarSign, Loader2, Plus, RefreshCw, Calculator,
@@ -31,8 +31,8 @@ const ABA_LABELS = {
 };
 
 export default function RaioXEmpresa() {
-  const params = new URLSearchParams(window.location.search);
-  const empresaId = params.get("id");
+  const [searchParams] = useSearchParams();
+  const empresaId = searchParams.get("id");
 
   const [empresa, setEmpresa] = useState(null);
   const [passivos, setPassivos] = useState([]);
