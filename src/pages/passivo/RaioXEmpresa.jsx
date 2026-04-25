@@ -15,6 +15,7 @@ import RiscoScoreBadge from "@/components/passivo/RiscoScoreBadge";
 import PendenciaItem from "@/components/passivo/PendenciaItem";
 import SimuladorParcelamento from "@/components/passivo/SimuladorParcelamento";
 import CalcularPassivoModal from "@/components/passivo/CalcularPassivoModal";
+import FaturamentoVsDeclarado from "@/components/passivo/FaturamentoVsDeclarado";
 
 const fmt = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v || 0);
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -285,28 +286,7 @@ export default function RaioXEmpresa() {
       )}
 
       {aba === "faturamento" && (
-        <div className="space-y-4">
-          <div className="rounded-2xl p-5" style={cardStyle}>
-            <h3 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: "'Manrope', sans-serif" }}>
-              Faturamento NF-e vs Declarado (últimos 12 meses)
-            </h3>
-            {evolucao.length === 0 ? (
-              <div className="text-center py-10 text-sm" style={{ color: "#6B7FA3" }}>Sem dados disponíveis</div>
-            ) : (
-              <ResponsiveContainer width="100%" height={280}>
-                <ComposedChart data={evolucao}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="name" tick={{ fill: "#6B7FA3", fontSize: 11 }} />
-                  <YAxis tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} tick={{ fill: "#6B7FA3", fontSize: 11 }} />
-                  <Tooltip formatter={v => fmt(v)} contentStyle={{ background: "#0A0D14", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
-                  <Legend wrapperStyle={{ color: "#6B7FA3", fontSize: 12 }} />
-                  <Bar dataKey="faturamento" fill="#0B5FFF" opacity={0.7} radius={[4, 4, 0, 0]} name="NF-e Emitidas" />
-                  <Line type="monotone" dataKey="declarado" stroke="#FF9F1C" strokeWidth={2} dot={{ r: 3 }} name="Declarado" />
-                </ComposedChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </div>
+        <FaturamentoVsDeclarado empresa={empresa} passivos={passivos} onAtualizar={carregar} />
       )}
 
       {aba === "simulador" && (
