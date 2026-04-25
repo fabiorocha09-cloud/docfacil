@@ -45,11 +45,11 @@ export default function RaioXEmpresa() {
     if (!empresaId) { setLoading(false); return; }
     setLoading(true);
     const [emps, pvs, pends] = await Promise.all([
-      base44.entities.Empresa.filter({ id: empresaId }),
+      base44.entities.Empresa.list(),
       base44.entities.PassivoTributario.filter({ empresa_id: empresaId }),
       base44.entities.PendenciaFiscal.filter({ empresa_id: empresaId }),
     ]);
-    setEmpresa(emps[0] || null);
+    setEmpresa(emps.find(e => e.id === empresaId) || null);
     setPassivos(pvs.sort((a, b) => a.periodo?.localeCompare(b.periodo)));
     setPendencias(pends);
     setLoading(false);
