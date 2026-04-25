@@ -7,7 +7,7 @@ import {
   Building2, ChevronRight, RefreshCw, Loader2, BarChart2,
   ShieldAlert, Clock, CheckCircle2
 } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
 import PassivoKpiCard from "@/components/passivo/PassivoKpiCard";
 import RiscoScoreBadge from "@/components/passivo/RiscoScoreBadge";
 
@@ -51,6 +51,17 @@ export default function PassivoDashboard() {
       : 0;
     return { passivoTotal, pendCriticas, divergencia, scoreMedio };
   }, [passivos, pendencias]);
+
+  // Tributos pagos x devidos consolidado
+  const tributosComparativo = useMemo(() => {
+    const tributos = ["pis", "cofins", "icms", "iss", "irpj", "csll", "inss"];
+    return tributos.map(t => {
+      const devido = passivos.reduce((s, p) => s + (p[`${t}_devido`] || 0), 0);
+      const pago = passivos.reduce((s, p) => s + (p[`${t}_pago`] || 0), 0);
+      const gap = Math.max(0, devido - pago);
+      return { name: t.toUpperCase(), devido, pago, gap };
+    }).filter(t => t.devido > 0 || t.pago > 0);
+  }, [passivos]);
 
   // Evolução mensal do passivo (últimos 12 meses)
   const evolucaoMensal = useMemo(() => {
@@ -167,6 +178,71 @@ export default function PassivoDashboard() {
           </motion.div>
         ))}
       </div>
+
+      {/* Tributos Pagos x Devidos */}
+      {tributosComparativo.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+          className="rounded-2xl p-5" style={cardStyle}>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              Tributos Devidos × Pagos (consolidado)
+            </h3>
+            <span className="text-xs px-2.5 py-1 rounded-full font-semibold"
+              style={{ background: "rgba(230,57,70,0.12)", color: "#E63946", border: "1px solid rgba(230,57,70,0.25)" }}>
+              Gap: {fmt(tributosComparativo.reduce((s, t) => s + t.gap, 0))}
+            </span>
+          </div>
+          <p className="text-xs mb-4" style={{ color: "#6B7FA3" }}>
+            Diferença entre o que deveria ter sido pago e o que foi efetivamente pago, por tributo.
+          </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Gráfico */}
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={tributosComparativo} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="name" tick={{ fill: "#6B7FA3", fontSize: 11 }} />
+                <YAxis tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} tick={{ fill: "#6B7FA3", fontSize: 10 }} />
+                <Tooltip
+                  formatter={v => fmt(v)}
+                  contentStyle={{ background: "#0A0D14", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }}
+                  labelStyle={{ color: "#A0B1D4" }} itemStyle={{ color: "#fff" }}
+                />
+                <Legend wrapperStyle={{ color: "#6B7FA3", fontSize: 11 }} />
+                <Bar dataKey="devido" name="Devido" fill="#E63946" opacity={0.85} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="pago" name="Pago" fill="#1E9B5B" opacity={0.85} radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Tabela resumo */}
+            <div className="space-y-1.5">
+              {tributosComparativo.map(t => {
+                const pct = t.devido > 0 ? (t.pago / t.devido) * 100 : 100;
+                const emDia = pct >= 100;
+                return (
+                  <div key={t.name} className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                    style={{ background: emDia ? "rgba(30,155,91,0.06)" : "rgba(230,57,70,0.06)", border: `1px solid ${emDia ? "rgba(30,155,91,0.15)" : "rgba(230,57,70,0.15)"}` }}>
+                    <span className="text-xs font-bold w-12 flex-shrink-0" style={{ color: "#A0B1D4" }}>{t.name}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span style={{ color: "#6B7FA3" }}>Pago: <strong style={{ color: "#1E9B5B" }}>{fmt(t.pago)}</strong></span>
+                        <span style={{ color: "#6B7FA3" }}>Devido: <strong style={{ color: "#E63946" }}>{fmt(t.devido)}</strong></span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                        <div className="h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(100, pct)}%`, background: emDia ? "#1E9B5B" : "#E63946" }} />
+                      </div>
+                    </div>
+                    <span className="text-xs font-semibold flex-shrink-0 w-10 text-right"
+                      style={{ color: emDia ? "#1E9B5B" : "#E63946" }}>
+                      {pct.toFixed(0)}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Gráfico + Painel lateral */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
