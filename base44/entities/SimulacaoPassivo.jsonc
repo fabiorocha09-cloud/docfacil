@@ -1,0 +1,80 @@
+{
+  "name": "SimulacaoPassivo",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "nome_cenario": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "parcelamento",
+        "pagamento_avista",
+        "refis",
+        "darf"
+      ],
+      "default": "parcelamento"
+    },
+    "valor_total_debito": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_entrada": {
+      "type": "number",
+      "default": 0
+    },
+    "numero_parcelas": {
+      "type": "number",
+      "default": 12
+    },
+    "taxa_juros_parcela": {
+      "type": "number",
+      "default": 1,
+      "description": "% ao m\u00eas"
+    },
+    "valor_parcela": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_total_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "economia_estimada": {
+      "type": "number",
+      "default": 0
+    },
+    "pendencias_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "proposta",
+        "aceita",
+        "executada"
+      ],
+      "default": "rascunho"
+    },
+    "criado_por": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tipo"
+  ]
+}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useTheme } from "@/context/ThemeContext";
 import {
-  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap, ChevronDown, Phone
+  LayoutDashboard, Building2, FileCheck2, Settings, Menu, X, LogOut, ChevronRight, ClipboardList, Upload, Users, Sun, Moon, Layers, MessageSquare, FolderOpen, BadgeCheck, CalendarDays, BookOpen, Zap, ChevronDown, Phone, ShieldAlert, TrendingUp, AlertTriangle, SlidersHorizontal
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,13 @@ const navItems = [
   { label: "Calendário de Vencimentos", path: "/CalendarioCertidoes", icon: CalendarDays },
   { label: "Modelos de Documento", path: "/ModelosDocumento", icon: BookOpen },
   { label: "Contatos WhatsApp", path: "/ContatosWhatsApp", icon: Phone },
+];
+
+const passivoNavItems = [
+  { label: "Painel Fiscal", path: "/passivo/dashboard", icon: TrendingUp },
+  { label: "Raio-X por Empresa", path: "/passivo/empresa", icon: ShieldAlert },
+  { label: "Pendências Fiscais", path: "/passivo/pendencias", icon: AlertTriangle },
+  { label: "Configurações Fiscais", path: "/passivo/configuracao", icon: SlidersHorizontal },
 ];
 
 export default function Layout() {
@@ -73,6 +80,33 @@ export default function Layout() {
               </Link>
             );
           })}
+
+          {/* Módulo Passivo & Raio-X */}
+          <div className="pt-3 pb-1">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider mb-1.5"
+              style={{ color: "#3B4B6B", fontFamily: "'Outfit', sans-serif" }}>
+              Passivo & Raio-X
+            </p>
+            {passivoNavItems.map(({ label, path, icon: Icon }) => {
+              const isActive = location.pathname === path || location.pathname.startsWith(path);
+              return (
+                <Link key={path} to={path} onClick={() => setSidebarOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: isActive ? "rgba(230,57,70,0.1)" : "transparent",
+                    color: isActive ? "#f87171" : "#6B7FA3",
+                    fontFamily: "'Rethink Sans', sans-serif",
+                    borderLeft: isActive ? "2px solid #E63946" : "2px solid transparent",
+                  }}
+                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#A0B1D4"; } }}
+                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7FA3"; } }}>
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {label}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: "#f87171" }} />}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         <div className="p-4 flex-shrink-0" style={{ borderTop: `1px solid ${borderColor}` }}>

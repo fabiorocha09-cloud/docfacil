@@ -1,0 +1,78 @@
+{
+  "name": "RegraTributariaPassivo",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string"
+    },
+    "tipo_tributo": {
+      "type": "string",
+      "enum": [
+        "PIS",
+        "COFINS",
+        "ICMS",
+        "ISS",
+        "IRPJ",
+        "CSLL",
+        "INSS",
+        "FGTS",
+        "TODOS"
+      ]
+    },
+    "regime_tributario": {
+      "type": "string",
+      "enum": [
+        "simples_nacional",
+        "lucro_presumido",
+        "lucro_real",
+        "mei",
+        "todos"
+      ]
+    },
+    "estado": {
+      "type": "string",
+      "description": "UF ou 'todos'"
+    },
+    "aliquota": {
+      "type": "number",
+      "default": 0,
+      "description": "Al\u00edquota em %"
+    },
+    "multa_percentual": {
+      "type": "number",
+      "default": 20,
+      "description": "% de multa sobre principal"
+    },
+    "juro_diario": {
+      "type": "number",
+      "default": 0.033,
+      "description": "% de juros di\u00e1rios (SELIC-based)"
+    },
+    "prazo_prescricao_anos": {
+      "type": "number",
+      "default": 5
+    },
+    "base_calculo": {
+      "type": "string",
+      "enum": [
+        "faturamento",
+        "lucro_bruto",
+        "lucro_liquido",
+        "folha",
+        "servicos"
+      ],
+      "default": "faturamento"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "nome",
+    "tipo_tributo"
+  ]
+}

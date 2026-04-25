@@ -1,0 +1,127 @@
+{
+  "name": "PassivoTributario",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "periodo": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "regime_tributario": {
+      "type": "string",
+      "enum": [
+        "simples_nacional",
+        "lucro_presumido",
+        "lucro_real",
+        "mei"
+      ]
+    },
+    "faturamento_nfe": {
+      "type": "number",
+      "default": 0
+    },
+    "faturamento_declarado": {
+      "type": "number",
+      "default": 0
+    },
+    "divergencia_percentual": {
+      "type": "number",
+      "default": 0
+    },
+    "pis_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "pis_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "cofins_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "cofins_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "icms_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "icms_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "iss_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "iss_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "irpj_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "irpj_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "csll_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "csll_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "inss_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "inss_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "total_devido": {
+      "type": "number",
+      "default": 0
+    },
+    "total_pago": {
+      "type": "number",
+      "default": 0
+    },
+    "total_passivo": {
+      "type": "number",
+      "default": 0
+    },
+    "score_risco": {
+      "type": "number",
+      "default": 0,
+      "description": "0-100"
+    },
+    "calculado_em": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "calculado_por": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "periodo"
+  ]
+}

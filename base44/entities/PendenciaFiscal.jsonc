@@ -1,0 +1,127 @@
+{
+  "name": "PendenciaFiscal",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "tipo_tributo": {
+      "type": "string",
+      "enum": [
+        "PIS",
+        "COFINS",
+        "ICMS",
+        "ISS",
+        "IRPJ",
+        "CSLL",
+        "INSS",
+        "FGTS",
+        "OUTROS"
+      ]
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "certidao",
+        "nfe",
+        "dctf",
+        "sped",
+        "intimacao",
+        "manual",
+        "sefaz",
+        "receita"
+      ]
+    },
+    "documento_referencia_id": {
+      "type": "string"
+    },
+    "documento_referencia_url": {
+      "type": "string"
+    },
+    "valor_principal": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_multa": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_juros": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_total": {
+      "type": "number",
+      "default": 0
+    },
+    "periodo_referencia": {
+      "type": "string",
+      "description": "YYYY-MM"
+    },
+    "data_vencimento": {
+      "type": "string",
+      "format": "date"
+    },
+    "criticidade": {
+      "type": "string",
+      "enum": [
+        "alto",
+        "medio",
+        "baixo"
+      ],
+      "default": "medio"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "aberta",
+        "em_negociacao",
+        "parcelada",
+        "paga",
+        "cancelada",
+        "contestada"
+      ],
+      "default": "aberta"
+    },
+    "responsavel": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "historico_status": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "type": "string"
+          },
+          "usuario": {
+            "type": "string"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tipo_tributo",
+    "status"
+  ]
+}

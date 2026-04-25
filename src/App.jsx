@@ -37,6 +37,10 @@ import ConfiguracaoNFe from '@/pages/emissor/ConfiguracaoNFe';
 import EditarEmpresa from '@/pages/emissor/EditarEmpresa';
 import LandingPage from '@/pages/LandingPage';
 import ContatosWhatsApp from '@/pages/ContatosWhatsApp';
+import PassivoDashboard from '@/pages/passivo/PassivoDashboard';
+import RaioXEmpresa from '@/pages/passivo/RaioXEmpresa';
+import PendenciasGlobal from '@/pages/passivo/PendenciasGlobal';
+import ConfiguracaoPassivo from '@/pages/passivo/ConfiguracaoPassivo';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -77,6 +81,10 @@ const AuthenticatedApp = () => {
         <Route path="/CalendarioCertidoes" element={<CalendarioCertidoes />} />
         <Route path="/ModelosDocumento" element={<ModelosDocumento />} />
         <Route path="/ContatosWhatsApp" element={<ContatosWhatsApp />} />
+        <Route path="/passivo/dashboard" element={<PassivoDashboard />} />
+        <Route path="/passivo/empresa" element={<RaioXEmpresa />} />
+        <Route path="/passivo/pendencias" element={<PendenciasGlobal />} />
+        <Route path="/passivo/configuracao" element={<ConfiguracaoPassivo />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="/emissor/painel" element={<PainelContador />} />
