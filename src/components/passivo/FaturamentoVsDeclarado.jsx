@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Trash2, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ShieldAlert, Upload, FileText, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ShieldAlert, Upload, FileText, ExternalLink, Sparkles } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import ConfirmacaoDimpModal from "@/components/passivo/ConfirmacaoDimpModal";
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, AreaChart, Area
@@ -16,10 +17,11 @@ const inputStyle = { background: "rgba(255,255,255,0.05)", border: "1px solid rg
 function calcularStatusPgdas(pgdas, nfe, dimp_total) {
   if (!pgdas && pgdas !== 0) return "sem_dados";
   if (pgdas === 0) return "omisso";
-  const maiorFonte = Math.max(nfe || 0, dimp_total || 0);
-  if (maiorFonte === 0) return "sem_dados";
-  // PGDAS deve ser >= maior fonte de receita identificada
-  if (pgdas >= maiorFonte) return "consistente";
+  const saida = nfe || 0;
+  const dimp = dimp_total || 0;
+  if (saida === 0 && dimp === 0) return "sem_dados";
+  // PGDAS é consistente somente se >= Saída NF-e E >= DIMP
+  if (pgdas >= saida && pgdas >= dimp) return "consistente";
   return "inconsistente";
 }
 
@@ -51,6 +53,8 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
   const [salvando, setSalvando] = useState(false);
   const [deletando, setDeletando] = useState(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [extraindo, setExtraindo] = useState(false);
+  const [confirmacaoData, setConfirmacaoData] = useState(null); // { comparacao, anoBase, pdfUrl }
   const [form, setForm] = useState({
     periodo: new Date().toISOString().slice(0, 7),
     faturamento_nfe: "",
@@ -118,6 +122,25 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
     setForm(f => ({ ...f, dimp_relatorio_url: file_url, dimp_relatorio_nome: file.name }));
     setUploadingPdf(false);
     toast({ title: "✅ Relatório DIMP anexado!" });
+  };
+
+  const handleImportarDimp = async (file) => {
+    setExtraindo(true);
+    toast({ title: "⏳ Enviando PDF e extraindo dados com IA..." });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const anoAtual = new Date().getFullYear();
+    const response = await base44.functions.invoke("extrairDadosDimp", {
+      file_url,
+      empresa_id: empresa?.id,
+      ano_base: anoAtual,
+    });
+    setExtraindo(false);
+    const { comparacao, anoBase } = response.data;
+    if (!comparacao || comparacao.length === 0) {
+      toast({ title: "⚠️ Não foi possível extrair dados do PDF. Verifique se o arquivo está correto." });
+      return;
+    }
+    setConfirmacaoData({ comparacao, anoBase, pdfUrl: file_url });
   };
 
   const handleDeletar = async (id) => {
@@ -295,11 +318,37 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
         </div>
       )}
 
+      {/* Importar DIMP via PDF */}
+      <div className="rounded-2xl p-5" style={{ background: "rgba(11,95,255,0.05)", border: "1px solid rgba(11,95,255,0.18)" }}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4" style={{ color: "#5E9BFF" }} />
+              <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                Importar Histórico DIMP via PDF
+              </h3>
+            </div>
+            <p className="text-xs" style={{ color: "#6B7FA3" }}>
+              Faça upload do relatório "Histórico Mensal Detalhado" da SEFAZ. A IA irá extrair os dados e você confirmará antes de salvar.
+            </p>
+          </div>
+          <label className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl cursor-pointer flex-shrink-0 ${extraindo ? "opacity-60 pointer-events-none" : ""}`}
+            style={{ background: "linear-gradient(135deg,#0B5FFF,#1A3FA0)", color: "#fff" }}>
+            {extraindo
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Extraindo...</>
+              : <><Upload className="w-4 h-4" /> Importar PDF DIMP</>
+            }
+            <input type="file" accept=".pdf" className="hidden"
+              onChange={e => e.target.files[0] && handleImportarDimp(e.target.files[0])} />
+          </label>
+        </div>
+      </div>
+
       {/* Formulário de lançamento */}
       <div className="rounded-2xl p-5 space-y-4" style={cardStyle}>
         <div>
           <h3 className="text-sm font-semibold text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>
-            Lançar Período
+            Lançar Período Manualmente
           </h3>
           <p className="text-xs mt-0.5" style={{ color: "#6B7FA3" }}>
             Preencha os valores de cada fonte de receita para o período. O sistema irá calcular o status de consistência do PGDAS automaticamente.
@@ -418,8 +467,19 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
       {dadosOrdenados.length === 0 && (
         <div className="rounded-2xl p-10 text-center" style={cardStyle}>
           <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-20" style={{ color: "#A0B1D4" }} />
-          <p className="text-sm" style={{ color: "#6B7FA3" }}>Nenhum dado lançado. Use o formulário acima para começar a auditoria.</p>
+          <p className="text-sm" style={{ color: "#6B7FA3" }}>Nenhum dado lançado. Importe um PDF DIMP ou use o formulário abaixo.</p>
         </div>
+      )}
+
+      {confirmacaoData && (
+        <ConfirmacaoDimpModal
+          comparacao={confirmacaoData.comparacao}
+          anoBase={confirmacaoData.anoBase}
+          empresa={empresa}
+          pdfUrl={confirmacaoData.pdfUrl}
+          onClose={() => setConfirmacaoData(null)}
+          onSalvo={() => { setConfirmacaoData(null); onAtualizar(); }}
+        />
       )}
     </div>
   );

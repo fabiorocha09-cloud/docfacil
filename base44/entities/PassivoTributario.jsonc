@@ -28,10 +28,15 @@
       "type": "number",
       "default": 0
     },
+    "faturamento_entrada": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor Cont\u00e1bil de Entrada de NF"
+    },
     "faturamento_declarado": {
       "type": "number",
       "default": 0,
-      "description": "Receita Bruta do PGDAS declarado"
+      "description": "Receita Bruta do Grupo (PGDAS declarado)"
     },
     "dimp_cartao": {
       "type": "number",
@@ -65,7 +70,7 @@
         "sem_dados"
       ],
       "default": "sem_dados",
-      "description": "Status de consist\u00eancia do PGDAS em rela\u00e7\u00e3o \u00e0s fontes de receita"
+      "description": "Consistente = PGDAS >= Sa\u00edda NF-e E PGDAS >= DIMP"
     },
     "pis_devido": {
       "type": "number",
