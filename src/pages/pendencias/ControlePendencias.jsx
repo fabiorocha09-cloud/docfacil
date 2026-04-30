@@ -7,6 +7,7 @@ import ResumoCards from "@/components/pendencias/ResumoCards";
 import FiltrosDebitos from "@/components/pendencias/FiltrosDebitos";
 import GerarRelatorioModal from "@/components/pendencias/GerarRelatorioModal";
 import HistoricoDebitos from "@/components/pendencias/HistoricoDebitos";
+import ImportarReportModal from "@/components/pendencias/ImportarReportModal";
 
 const EMPRESA_PADRAO = "QUERUBIM VET 24 HORAS LTDA";
 const CNPJ_PADRAO = "26.391.272/0001-53";
@@ -20,6 +21,7 @@ export default function ControlePendencias() {
   const [empresas, setEmpresas] = useState([]);
   const [novoDebitoOpen, setNovoDebitoOpen] = useState(false);
   const [relatorioOpen, setRelatorioOpen] = useState(false);
+  const [importarOpen, setImportarOpen] = useState(false);
   const [aba, setAba] = useState("dashboard");
   const [filtros, setFiltros] = useState({ status: "todos", tributo: "todos" });
 
@@ -99,6 +101,11 @@ export default function ControlePendencias() {
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Controle de Pendências Fiscais</h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setImportarOpen(true)}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "#16a085", color: "#fff", border: "none", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13 }}>
+              <FileText size={15} /> Importar Report
+            </button>
             <button
               onClick={() => setRelatorioOpen(true)}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "#C0392B", color: "#fff", border: "none", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13 }}>
@@ -194,6 +201,14 @@ export default function ControlePendencias() {
           mesReferencia={mesReferencia}
           onClose={() => setNovoDebitoOpen(false)}
           onSalvo={() => { setNovoDebitoOpen(false); carregar(); }}
+        />
+      )}
+
+      {importarOpen && (
+        <ImportarReportModal
+          mesReferencia={mesReferencia}
+          onClose={() => setImportarOpen(false)}
+          onImportado={() => { setImportarOpen(false); carregar(); }}
         />
       )}
 
