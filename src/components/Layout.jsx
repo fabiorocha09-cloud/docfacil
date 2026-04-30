@@ -23,6 +23,7 @@ const navItems = [
   { label: "Calendário de Vencimentos", path: "/CalendarioCertidoes", icon: CalendarDays },
   { label: "Modelos de Documento", path: "/ModelosDocumento", icon: BookOpen },
   { label: "Contatos WhatsApp", path: "/ContatosWhatsApp", icon: Phone },
+  { label: "Pendências Fiscais", path: "/pendencias", icon: AlertTriangle },
 ];
 
 const passivoNavItems = [

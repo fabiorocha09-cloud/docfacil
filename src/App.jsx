@@ -42,6 +42,7 @@ import RaioXEmpresa from '@/pages/passivo/RaioXEmpresa';
 import PendenciasGlobal from '@/pages/passivo/PendenciasGlobal';
 import ConfiguracaoPassivo from '@/pages/passivo/ConfiguracaoPassivo';
 import ModelosDocumentosPassivo from '@/pages/passivo/ModelosDocumentosPassivo';
+import ControlePendencias from '@/pages/pendencias/ControlePendencias';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -87,6 +88,7 @@ const AuthenticatedApp = () => {
         <Route path="/passivo/pendencias" element={<PendenciasGlobal />} />
         <Route path="/passivo/configuracao" element={<ConfiguracaoPassivo />} />
         <Route path="/passivo/modelos" element={<ModelosDocumentosPassivo />} />
+        <Route path="/pendencias" element={<ControlePendencias />} />
       </Route>
       <Route path="/acesso/:token" element={<AcessoCompartilhado />} />
       <Route path="/emissor/painel" element={<PainelContador />} />

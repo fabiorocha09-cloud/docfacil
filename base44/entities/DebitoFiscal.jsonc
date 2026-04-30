@@ -1,0 +1,61 @@
+{
+  "name": "DebitoFiscal",
+  "type": "object",
+  "properties": {
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "esfera": {
+      "type": "string",
+      "enum": [
+        "Federal",
+        "Estadual",
+        "Municipal"
+      ]
+    },
+    "tributo": {
+      "type": "string"
+    },
+    "competencia": {
+      "type": "string",
+      "description": "Ex: 02/2025, D\u00c9CIMO TERCEIRO/2025"
+    },
+    "valor": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Em aberto",
+        "Pago",
+        "Parcelado",
+        "Contestado"
+      ],
+      "default": "Em aberto"
+    },
+    "data_pagamento": {
+      "type": "string",
+      "format": "date"
+    },
+    "observacao": {
+      "type": "string"
+    },
+    "mes_referencia": {
+      "type": "string",
+      "description": "Ex: 04/2026"
+    }
+  },
+  "required": [
+    "empresa_nome",
+    "empresa_cnpj",
+    "esfera",
+    "tributo",
+    "competencia",
+    "valor",
+    "mes_referencia"
+  ]
+}
