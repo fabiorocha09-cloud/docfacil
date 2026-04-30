@@ -1,0 +1,44 @@
+{
+  "name": "ModeloDocumentoPassivo",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome do modelo"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "divergencia",
+        "report_cliente"
+      ],
+      "description": "divergencia = modelo de doc com diverg\u00eancias DIMP/NF-e; report_cliente = relat\u00f3rio enviado ao cliente"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "arquivo_url": {
+      "type": "string",
+      "description": "URL do arquivo PDF/DOC do modelo"
+    },
+    "nome_arquivo": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Ex: DIMP, PGDAS, ICMS, notifica\u00e7\u00e3o"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "nome",
+    "tipo",
+    "arquivo_url"
+  ]
+}

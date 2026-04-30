@@ -29,7 +29,7 @@ const passivoNavItems = [
   { label: "Painel Fiscal", path: "/passivo/dashboard", icon: TrendingUp },
   { label: "Raio-X por Empresa", path: "/passivo/empresa", icon: ShieldAlert },
   { label: "Pendências Fiscais", path: "/passivo/pendencias", icon: AlertTriangle },
-  { label: "Configurações Fiscais", path: "/passivo/configuracao", icon: SlidersHorizontal },
+  { label: "Modelos de Documentos", path: "/passivo/modelos", icon: BookOpen },
 ];
 
 export default function Layout() {

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Trash2, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
+import { Plus, Trash2, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ShieldAlert, Upload, FileText, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -50,6 +50,7 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
   const { toast } = useToast();
   const [salvando, setSalvando] = useState(false);
   const [deletando, setDeletando] = useState(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const [form, setForm] = useState({
     periodo: new Date().toISOString().slice(0, 7),
     faturamento_nfe: "",
@@ -57,6 +58,8 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
     dimp_cartao: "",
     dimp_pix: "",
     observacoes: "",
+    dimp_relatorio_url: "",
+    dimp_relatorio_nome: "",
   });
 
   const handleSalvar = async () => {
@@ -94,6 +97,7 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
       status_pgdas,
       score_risco,
       observacoes: form.observacoes,
+      ...(form.dimp_relatorio_url ? { dimp_relatorio_url: form.dimp_relatorio_url } : {}),
     };
 
     if (existente) {
@@ -104,8 +108,16 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
 
     toast({ title: "✅ Dados salvos com sucesso!" });
     setSalvando(false);
-    setForm({ periodo: new Date().toISOString().slice(0, 7), faturamento_nfe: "", faturamento_declarado: "", dimp_cartao: "", dimp_pix: "", observacoes: "" });
+    setForm({ periodo: new Date().toISOString().slice(0, 7), faturamento_nfe: "", faturamento_declarado: "", dimp_cartao: "", dimp_pix: "", observacoes: "", dimp_relatorio_url: "", dimp_relatorio_nome: "" });
     onAtualizar();
+  };
+
+  const handleUploadPdf = async (file) => {
+    setUploadingPdf(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setForm(f => ({ ...f, dimp_relatorio_url: file_url, dimp_relatorio_nome: file.name }));
+    setUploadingPdf(false);
+    toast({ title: "✅ Relatório DIMP anexado!" });
   };
 
   const handleDeletar = async (id) => {
@@ -212,7 +224,7 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
             <table className="w-full text-xs">
               <thead>
                 <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  {["Mês", "NF-e Emitidas", "DIMP Cartão", "DIMP PIX", "PGDAS (Declarado)", "Divergência", "Status"].map(h => (
+                  {["Mês", "NF-e Emitidas", "DIMP Cartão", "DIMP PIX", "PGDAS (Declarado)", "Divergência", "Status", "Extrato SEFAZ"].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-medium" style={{ color: "#6B7FA3" }}>{h}</th>
                   ))}
                   <th className="px-4 py-3" />
@@ -244,6 +256,17 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
                           style={{ background: st.bg, color: st.color, border: `1px solid ${st.border}` }}>
                           {st.label}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {p.dimp_relatorio_url ? (
+                          <a href={p.dimp_relatorio_url} target="_blank" rel="noreferrer"
+                            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg w-fit"
+                            style={{ background: "rgba(11,95,255,0.1)", color: "#5E9BFF", border: "1px solid rgba(11,95,255,0.25)" }}>
+                            <FileText className="w-3.5 h-3.5" /> PDF
+                          </a>
+                        ) : (
+                          <span className="text-xs" style={{ color: "#3B4B6B" }}>—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <button onClick={() => handleDeletar(p.id)} disabled={deletando === p.id}
@@ -315,6 +338,46 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
               placeholder="Ex: Dados do Extrato Fiscal SEFAZ" value={form.observacoes}
               onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))} />
           </div>
+        </div>
+
+        {/* Upload Extrato Fiscal SEFAZ (PDF DIMP) */}
+        <div>
+          <label className="block text-xs font-medium mb-2" style={{ color: "#A0B1D4" }}>
+            Extrato Fiscal SEFAZ — PDF DIMP <span style={{ color: "#6B7FA3" }}>(opcional)</span>
+          </label>
+          {form.dimp_relatorio_url ? (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+              style={{ background: "rgba(11,95,255,0.08)", border: "1px solid rgba(11,95,255,0.2)" }}>
+              <FileText className="w-5 h-5 flex-shrink-0" style={{ color: "#5E9BFF" }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-white truncate">{form.dimp_relatorio_nome || "Relatório anexado"}</p>
+                <a href={form.dimp_relatorio_url} target="_blank" rel="noreferrer"
+                  className="text-xs flex items-center gap-1" style={{ color: "#5E9BFF" }}>
+                  <ExternalLink className="w-3 h-3" /> Visualizar PDF →
+                </a>
+              </div>
+              <button onClick={() => setForm(f => ({ ...f, dimp_relatorio_url: "", dimp_relatorio_nome: "" }))}
+                className="flex-shrink-0 text-xs px-2 py-1 rounded-lg"
+                style={{ color: "#E63946", border: "1px solid rgba(230,57,70,0.2)" }}>
+                Remover
+              </button>
+            </div>
+          ) : (
+            <label className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${uploadingPdf ? "opacity-60 pointer-events-none" : ""}`}
+              style={{ border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(11,95,255,0.35)"}
+              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}>
+              {uploadingPdf
+                ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" style={{ color: "#5E9BFF" }} />
+                : <Upload className="w-4 h-4 flex-shrink-0" style={{ color: "#6B7FA3" }} />
+              }
+              <span className="text-xs" style={{ color: "#6B7FA3" }}>
+                {uploadingPdf ? "Enviando PDF..." : "Clique para anexar o Extrato Fiscal SEFAZ (PDF)"}
+              </span>
+              <input type="file" accept=".pdf" className="hidden"
+                onChange={e => e.target.files[0] && handleUploadPdf(e.target.files[0])} />
+            </label>
+          )}
         </div>
 
         {/* Preview de consistência em tempo real */}
