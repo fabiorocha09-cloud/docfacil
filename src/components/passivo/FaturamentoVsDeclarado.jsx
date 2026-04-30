@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Trash2, Loader2, TrendingUp, AlertTriangle, CheckCircle2, ShieldAlert, Upload, FileText, ExternalLink, Sparkles } from "lucide-react";
+import DropZone from "@/components/ui/DropZone";
 import { useToast } from "@/components/ui/use-toast";
 import ConfirmacaoDimpModal from "@/components/passivo/ConfirmacaoDimpModal";
 import {
@@ -333,7 +334,9 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
             </p>
           </div>
           <label className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl cursor-pointer flex-shrink-0 ${extraindo ? "opacity-60 pointer-events-none" : ""}`}
-            style={{ background: "linear-gradient(135deg,#0B5FFF,#1A3FA0)", color: "#fff" }}>
+            style={{ background: "linear-gradient(135deg,#0B5FFF,#1A3FA0)", color: "#fff" }}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && !extraindo) handleImportarDimp(f); }}>
             {extraindo
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Extraindo...</>
               : <><Upload className="w-4 h-4" /> Importar PDF DIMP</>
@@ -412,20 +415,12 @@ export default function FaturamentoVsDeclarado({ empresa, passivos, onAtualizar 
               </button>
             </div>
           ) : (
-            <label className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-colors ${uploadingPdf ? "opacity-60 pointer-events-none" : ""}`}
-              style={{ border: "2px dashed rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(11,95,255,0.35)"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"}>
-              {uploadingPdf
-                ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" style={{ color: "#5E9BFF" }} />
-                : <Upload className="w-4 h-4 flex-shrink-0" style={{ color: "#6B7FA3" }} />
-              }
-              <span className="text-xs" style={{ color: "#6B7FA3" }}>
-                {uploadingPdf ? "Enviando PDF..." : "Clique para anexar o Extrato Fiscal SEFAZ (PDF)"}
-              </span>
-              <input type="file" accept=".pdf" className="hidden"
-                onChange={e => e.target.files[0] && handleUploadPdf(e.target.files[0])} />
-            </label>
+            <DropZone
+              onFile={handleUploadPdf}
+              accept=".pdf"
+              loading={uploadingPdf}
+              label="Clique ou arraste o Extrato Fiscal SEFAZ (PDF)"
+            />
           )}
         </div>
 

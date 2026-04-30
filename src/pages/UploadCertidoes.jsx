@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Upload, FileText, CheckCircle2, XCircle, Loader2, AlertTriangle } from "lucide-react";
+import DropZone from "@/components/ui/DropZone";
 
 const statusLabel = {
   aguardando: { label: "Aguardando", color: "text-gray-500", icon: FileText },
@@ -27,9 +28,9 @@ export default function UploadCertidoes() {
   const [arquivos, setArquivos] = useState([]);
   const [processando, setProcessando] = useState(false);
 
-  const handleFiles = (e) => {
-    const files = Array.from(e.target.files);
-    const novos = files.map(f => ({ file: f, nome: f.name, status: "aguardando", dados: null }));
+  const handleFiles = (files) => {
+    const arr = Array.isArray(files) ? files : Array.from(files);
+    const novos = arr.map(f => ({ file: f, nome: f.name, status: "aguardando", dados: null }));
     setArquivos(prev => [...prev, ...novos]);
   };
 
@@ -129,16 +130,21 @@ export default function UploadCertidoes() {
       </div>
 
       {/* Drop zone */}
-      <label className="flex flex-col items-center justify-center gap-3 rounded-2xl p-12 cursor-pointer transition-all" style={{ border: "2px dashed rgba(58,141,255,0.3)", background: "rgba(58,141,255,0.04)" }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(58,141,255,0.6)"; e.currentTarget.style.background = "rgba(58,141,255,0.08)"; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(58,141,255,0.3)"; e.currentTarget.style.background = "rgba(58,141,255,0.04)"; }}>
+      <div
+        className="flex flex-col items-center justify-center gap-3 rounded-2xl p-12 cursor-pointer transition-all"
+        style={{ border: "2px dashed rgba(58,141,255,0.3)", background: "rgba(58,141,255,0.04)" }}
+        onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = "rgba(58,141,255,0.6)"; e.currentTarget.style.background = "rgba(58,141,255,0.08)"; }}
+        onDragLeave={e => { e.currentTarget.style.borderColor = "rgba(58,141,255,0.3)"; e.currentTarget.style.background = "rgba(58,141,255,0.04)"; }}
+        onDrop={e => { e.preventDefault(); e.currentTarget.style.borderColor = "rgba(58,141,255,0.3)"; e.currentTarget.style.background = "rgba(58,141,255,0.04)"; handleFiles(Array.from(e.dataTransfer.files)); }}
+        onClick={() => document.getElementById("upload-certidoes-input").click()}
+      >
         <Upload className="w-10 h-10" style={{ color: "#5E9BFF" }} />
         <div className="text-center">
           <p className="font-medium text-white" style={{ fontFamily: "'Manrope', sans-serif" }}>Clique para selecionar PDFs</p>
           <p className="text-sm" style={{ color: "#6B7FA3", fontFamily: "'Rethink Sans', sans-serif" }}>ou arraste e solte aqui — múltiplos arquivos permitidos</p>
         </div>
-        <input type="file" accept=".pdf" multiple className="hidden" onChange={handleFiles} />
-      </label>
+        <input id="upload-certidoes-input" type="file" accept=".pdf" multiple className="hidden" onChange={e => handleFiles(Array.from(e.target.files))} />
+      </div>
 
       {arquivos.length > 0 && (
         <>

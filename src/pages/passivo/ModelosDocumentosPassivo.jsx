@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Upload, Trash2, FileText, Tag, Loader2, X, Eye, AlertTriangle, BarChart2 } from "lucide-react";
+import { Plus, Trash2, FileText, Tag, Loader2, X, Eye, AlertTriangle, BarChart2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import DropZone from "@/components/ui/DropZone";
 
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
 const inputStyle = { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" };
@@ -148,17 +149,12 @@ function ModeloModal({ modelo, onClose, onSalvo }) {
                 </button>
               </div>
             ) : (
-              <label className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl cursor-pointer transition-colors ${uploading ? "opacity-60 pointer-events-none" : ""}`}
-                style={{ border: "2px dashed rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.02)" }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(11,95,255,0.4)"}
-                onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"}>
-                {uploading
-                  ? <><Loader2 className="w-6 h-6 animate-spin" style={{ color: "#5E9BFF" }} /><span className="text-xs" style={{ color: "#6B7FA3" }}>Enviando...</span></>
-                  : <><Upload className="w-6 h-6" style={{ color: "#6B7FA3" }} /><span className="text-xs" style={{ color: "#6B7FA3" }}>Clique para enviar PDF ou DOC</span></>
-                }
-                <input type="file" accept=".pdf,.doc,.docx" className="hidden"
-                  onChange={e => e.target.files[0] && handleUpload(e.target.files[0])} />
-              </label>
+              <DropZone
+                onFile={handleUpload}
+                accept=".pdf,.doc,.docx"
+                loading={uploading}
+                label="Clique ou arraste PDF ou DOC aqui"
+              />
             )}
           </div>
         </div>
