@@ -12,10 +12,10 @@ import {
   PieChart, Pie, Cell, Legend, LineChart, Line, ComposedChart
 } from "recharts";
 import RiscoScoreBadge from "@/components/passivo/RiscoScoreBadge";
-import PendenciaItem from "@/components/passivo/PendenciaItem";
 import SimuladorParcelamento from "@/components/passivo/SimuladorParcelamento";
 import CalcularPassivoModal from "@/components/passivo/CalcularPassivoModal";
 import FaturamentoVsDeclarado from "@/components/passivo/FaturamentoVsDeclarado";
+import ControlePendenciasEmbutido from "@/components/pendencias/ControlePendenciasEmbutido";
 
 const fmt = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v || 0);
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -223,22 +223,7 @@ export default function RaioXEmpresa() {
       )}
 
       {aba === "pendencias" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium" style={{ color: "#A0B1D4" }}>{pendencias.length} pendência(s)</p>
-            <Link to="/passivo/pendencias" className="text-xs font-medium" style={{ color: "#5E9BFF" }}>
-              + Nova Pendência
-            </Link>
-          </div>
-          {pendencias.length === 0 ? (
-            <div className="rounded-2xl p-10 text-center" style={cardStyle}>
-              <CheckCircle2 className="w-8 h-8 mx-auto mb-2" style={{ color: "#1E9B5B" }} />
-              <p className="text-sm" style={{ color: "#6B7FA3" }}>Nenhuma pendência fiscal registrada.</p>
-            </div>
-          ) : (
-            pendencias.map(p => <PendenciaItem key={p.id} pendencia={p} onAtualizar={carregar} />)
-          )}
-        </div>
+        <ControlePendenciasEmbutido empresaNome={empresa?.nome} empresaCnpj={empresa?.cnpj} />
       )}
 
       {aba === "passivo" && (
