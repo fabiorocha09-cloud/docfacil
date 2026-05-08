@@ -8,6 +8,7 @@ import FiltrosDebitos from "@/components/pendencias/FiltrosDebitos";
 import GerarRelatorioModal from "@/components/pendencias/GerarRelatorioModal";
 import HistoricoDebitos from "@/components/pendencias/HistoricoDebitos";
 import ImportarReportModal from "@/components/pendencias/ImportarReportModal";
+import EditarDebitoModal from "@/components/pendencias/EditarDebitoModal";
 
 const MES_ATUAL = new Date().toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric" }).replace("/", "/");
 
@@ -18,6 +19,8 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
   const [novoDebitoOpen, setNovoDebitoOpen] = useState(false);
   const [relatorioOpen, setRelatorioOpen] = useState(false);
   const [importarOpen, setImportarOpen] = useState(false);
+  const [editarDebito, setEditarDebito] = useState(null);
+  const [rolandoMes, setRolandoMes] = useState(false);
   const [aba, setAba] = useState("dashboard");
   const [filtros, setFiltros] = useState({ status: "todos", tributo: "todos" });
 
@@ -72,6 +75,15 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
     carregar();
   };
 
+  const handleRolarMes = async () => {
+    if (!confirm(`Rolar débitos não pagos para o próximo mês?`)) return;
+    setRolandoMes(true);
+    const res = await base44.functions.invoke("rolarDebitosMes", {});
+    setRolandoMes(false);
+    alert(res.data?.sucesso ? `✅ ${res.data.rolados} débito(s) rolados para ${res.data.mesAtual}.` : `Erro: ${res.data?.error}`);
+    carregar();
+  };
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif", background: "#f5f6fa", borderRadius: 12, overflow: "hidden" }}>
       {/* Mini cabeçalho */}
@@ -89,6 +101,10 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={handleRolarMes} disabled={rolandoMes}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "#8e44ad", color: "#fff", border: "none", borderRadius: 6, padding: "7px 13px", cursor: "pointer", fontWeight: 600, fontSize: 12, opacity: rolandoMes ? 0.6 : 1 }}>
+              {rolandoMes ? "Rolando..." : "↻ Rolar Mês"}
+            </button>
             <button onClick={() => setImportarOpen(true)}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "#16a085", color: "#fff", border: "none", borderRadius: 6, padding: "7px 13px", cursor: "pointer", fontWeight: 600, fontSize: 12 }}>
               <FileText size={13} /> Importar Report
@@ -139,6 +155,7 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
                 onDesfazer={handleDesfazerPagamento}
                 onAlterarStatus={handleAlterarStatus}
                 onDeletar={handleDeletar}
+                onEditar={setEditarDebito}
               />
             )}
           </>
@@ -146,6 +163,13 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
         {aba === "historico" && <HistoricoDebitos debitos={debitosPagos} />}
       </div>
 
+      {editarDebito && (
+        <EditarDebitoModal
+          debito={editarDebito}
+          onClose={() => setEditarDebito(null)}
+          onSalvo={() => { setEditarDebito(null); carregar(); }}
+        />
+      )}
       {novoDebitoOpen && (
         <NovoDebitoModal
           empresaNome={empresaNome}

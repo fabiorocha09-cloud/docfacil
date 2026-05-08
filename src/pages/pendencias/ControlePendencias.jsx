@@ -8,6 +8,7 @@ import FiltrosDebitos from "@/components/pendencias/FiltrosDebitos";
 import GerarRelatorioModal from "@/components/pendencias/GerarRelatorioModal";
 import HistoricoDebitos from "@/components/pendencias/HistoricoDebitos";
 import ImportarReportModal from "@/components/pendencias/ImportarReportModal";
+import EditarDebitoModal from "@/components/pendencias/EditarDebitoModal";
 
 const EMPRESA_PADRAO = "QUERUBIM VET 24 HORAS LTDA";
 const CNPJ_PADRAO = "26.391.272/0001-53";
@@ -22,6 +23,8 @@ export default function ControlePendencias() {
   const [novoDebitoOpen, setNovoDebitoOpen] = useState(false);
   const [relatorioOpen, setRelatorioOpen] = useState(false);
   const [importarOpen, setImportarOpen] = useState(false);
+  const [editarDebito, setEditarDebito] = useState(null);
+  const [rolandoMes, setRolandoMes] = useState(false);
   const [aba, setAba] = useState("dashboard");
   const [filtros, setFiltros] = useState({ status: "todos", tributo: "todos" });
 
@@ -89,6 +92,15 @@ export default function ControlePendencias() {
     carregar();
   };
 
+  const handleRolarMes = async () => {
+    if (!confirm(`Rolar débitos não pagos de ${mesReferencia} para o próximo mês?`)) return;
+    setRolandoMes(true);
+    const res = await base44.functions.invoke("rolarDebitosMes", {});
+    setRolandoMes(false);
+    alert(res.data?.sucesso ? `✅ ${res.data.rolados} débito(s) rolados para ${res.data.mesAtual}.` : `Erro: ${res.data?.error}`);
+    carregar();
+  };
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif", background: "#f5f6fa", minHeight: "100vh" }}>
       {/* Cabeçalho */}
@@ -110,6 +122,12 @@ export default function ControlePendencias() {
               onClick={() => setRelatorioOpen(true)}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "#C0392B", color: "#fff", border: "none", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13 }}>
               <FileText size={15} /> Gerar Relatório
+            </button>
+            <button
+              onClick={handleRolarMes}
+              disabled={rolandoMes}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "#8e44ad", color: "#fff", border: "none", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13, opacity: rolandoMes ? 0.6 : 1 }}>
+              {rolandoMes ? "Rolando..." : "↻ Rolar Mês"}
             </button>
             <button
               onClick={() => setNovoDebitoOpen(true)}
@@ -184,6 +202,7 @@ export default function ControlePendencias() {
                 onDesfazer={handleDesfazerPagamento}
                 onAlterarStatus={handleAlterarStatus}
                 onDeletar={handleDeletar}
+                onEditar={setEditarDebito}
               />
             )}
           </>
@@ -209,6 +228,14 @@ export default function ControlePendencias() {
           mesReferencia={mesReferencia}
           onClose={() => setImportarOpen(false)}
           onImportado={() => { setImportarOpen(false); carregar(); }}
+        />
+      )}
+
+      {editarDebito && (
+        <EditarDebitoModal
+          debito={editarDebito}
+          onClose={() => setEditarDebito(null)}
+          onSalvo={() => { setEditarDebito(null); carregar(); }}
         />
       )}
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, ChevronDown } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 
 const fmt = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
 
@@ -26,7 +26,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function LinhaDebito({ debito, onPagar, onDesfazer, onAlterarStatus, onDeletar }) {
+function LinhaDebito({ debito, onPagar, onDesfazer, onAlterarStatus, onDeletar, onEditar }) {
   const isPago = debito.status === "Pago";
   return (
     <tr style={{ background: isPago ? "#f9fdf9" : "#fff", borderBottom: "1px solid #e5e7eb" }}>
@@ -61,6 +61,12 @@ function LinhaDebito({ debito, onPagar, onDesfazer, onAlterarStatus, onDeletar }
             <option value="Contestado">Contestado</option>
           </select>
           <button
+            onClick={() => onEditar(debito)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#2980b9", padding: 2 }}
+            title="Editar">
+            <Pencil size={13} />
+          </button>
+          <button
             onClick={() => onDeletar(debito.id)}
             style={{ background: "none", border: "none", cursor: "pointer", color: "#bbb", padding: 2 }}
             title="Remover">
@@ -72,7 +78,7 @@ function LinhaDebito({ debito, onPagar, onDesfazer, onAlterarStatus, onDeletar }
   );
 }
 
-export default function TabelaDebitos({ debitos, onPagar, onDesfazer, onAlterarStatus, onDeletar }) {
+export default function TabelaDebitos({ debitos, onPagar, onDesfazer, onAlterarStatus, onDeletar, onEditar }) {
   // Agrupar por tributo
   const grupos = {};
   debitos.forEach(d => {
@@ -118,6 +124,7 @@ export default function TabelaDebitos({ debitos, onPagar, onDesfazer, onAlterarS
                     onDesfazer={onDesfazer}
                     onAlterarStatus={onAlterarStatus}
                     onDeletar={onDeletar}
+                    onEditar={onEditar}
                   />
                 ))}
                 <tr key={`sub-${tributo}`} style={{ background: "#f0f4fa", borderBottom: "2px solid #d1daea" }}>
