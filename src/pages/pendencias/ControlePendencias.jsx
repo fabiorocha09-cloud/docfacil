@@ -9,6 +9,7 @@ import GerarRelatorioModal from "@/components/pendencias/GerarRelatorioModal";
 import HistoricoDebitos from "@/components/pendencias/HistoricoDebitos";
 import ImportarReportModal from "@/components/pendencias/ImportarReportModal";
 import EditarDebitoModal from "@/components/pendencias/EditarDebitoModal";
+import MesReferenciaSelector from "@/components/pendencias/MesReferenciaSelector";
 
 const EMPRESA_PADRAO = "QUERUBIM VET 24 HORAS LTDA";
 const CNPJ_PADRAO = "26.391.272/0001-53";
@@ -95,7 +96,7 @@ export default function ControlePendencias() {
   const handleRolarMes = async () => {
     if (!confirm(`Rolar débitos não pagos de ${mesReferencia} para o próximo mês?`)) return;
     setRolandoMes(true);
-    const res = await base44.functions.invoke("rolarDebitosMes", {});
+    const res = await base44.functions.invoke("rolarDebitosMes", { mes_origem: mesReferencia });
     setRolandoMes(false);
     alert(res.data?.sucesso ? `✅ ${res.data.rolados} débito(s) rolados para ${res.data.mesAtual}.` : `Erro: ${res.data?.error}`);
     carregar();
@@ -153,12 +154,7 @@ export default function ControlePendencias() {
           </div>
           <div>
             <label style={{ display: "block", fontSize: 11, color: "#8eafd4", marginBottom: 4 }}>MÊS DE REFERÊNCIA</label>
-            <input
-              type="text"
-              value={mesReferencia}
-              onChange={e => setMesReferencia(e.target.value)}
-              placeholder="MM/AAAA"
-              style={{ background: "#243558", color: "#fff", border: "1px solid #3a5075", borderRadius: 6, padding: "7px 12px", fontSize: 13, width: 110 }} />
+            <MesReferenciaSelector value={mesReferencia} onChange={setMesReferencia} dark={true} />
           </div>
         </div>
 

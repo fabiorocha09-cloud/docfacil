@@ -3,29 +3,39 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({}));
 
-    // Determina mês anterior e mês atual
+    // Determina o mês de origem: usa o passado pelo frontend ou calcula o mês anterior ao atual
+    let mesOrigem = body.mes_origem || null;
+
     const agora = new Date();
-    const mesAtual = `${String(agora.getMonth() + 1).padStart(2, '0')}/${agora.getFullYear()}`;
 
-    // Mês anterior
-    const dataAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
-    const mesAnterior = `${String(dataAnterior.getMonth() + 1).padStart(2, '0')}/${dataAnterior.getFullYear()}`;
+    if (!mesOrigem) {
+      const dataAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+      mesOrigem = `${String(dataAnterior.getMonth() + 1).padStart(2, '0')}/${dataAnterior.getFullYear()}`;
+    }
 
-    // Busca todos os débitos do mês anterior que NÃO estão pagos
+    // Calcula o próximo mês a partir do mês de origem
+    const [origemMes, origemAno] = mesOrigem.split('/').map(Number);
+    const dataDestino = new Date(origemAno, origemMes, 1); // origemMes já é 1-based, então +1 é automático
+    const mesDestino = `${String(dataDestino.getMonth() + 1).padStart(2, '0')}/${dataDestino.getFullYear()}`;
+
+    // Busca todos os débitos
     const todos = await base44.asServiceRole.entities.DebitoFiscal.list('-created_date', 5000);
+
+    // Débitos do mês de origem que NÃO estão pagos
     const paraRolar = todos.filter(d =>
-      d.mes_referencia === mesAnterior &&
+      d.mes_referencia === mesOrigem &&
       d.status !== 'Pago'
     );
 
     if (paraRolar.length === 0) {
-      return Response.json({ sucesso: true, rolados: 0, mesAnterior, mesAtual, msg: 'Nenhum débito para rolar.' });
+      return Response.json({ sucesso: true, rolados: 0, ignorados: 0, mesAnterior: mesOrigem, mesAtual: mesDestino, msg: 'Nenhum débito para rolar.' });
     }
 
-    // Verifica quais combinações (empresa+tributo+competencia) já existem no mês atual para evitar duplicatas
-    const existentesNoMesAtual = todos.filter(d => d.mes_referencia === mesAtual);
-    const chaveExistente = new Set(existentesNoMesAtual.map(d => `${d.empresa_cnpj}|${d.tributo}|${d.competencia}`));
+    // Verifica duplicatas no mês destino
+    const existentesNoDestino = todos.filter(d => d.mes_referencia === mesDestino);
+    const chaveExistente = new Set(existentesNoDestino.map(d => `${d.empresa_cnpj}|${d.tributo}|${d.competencia}`));
 
     let rolados = 0;
     let ignorados = 0;
@@ -45,15 +55,15 @@ Deno.serve(async (req) => {
         competencia: debito.competencia,
         valor: debito.valor,
         status: 'Em aberto',
-        observacao: `Rolado de ${mesAnterior}${debito.observacao ? ' | ' + debito.observacao : ''}`,
-        mes_referencia: mesAtual,
+        observacao: `Rolado de ${mesOrigem}${debito.observacao ? ' | ' + debito.observacao : ''}`,
+        mes_referencia: mesDestino,
       });
 
       chaveExistente.add(chave);
       rolados++;
     }
 
-    return Response.json({ sucesso: true, rolados, ignorados, mesAnterior, mesAtual });
+    return Response.json({ sucesso: true, rolados, ignorados, mesAnterior: mesOrigem, mesAtual: mesDestino });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -9,6 +9,7 @@ import GerarRelatorioModal from "@/components/pendencias/GerarRelatorioModal";
 import HistoricoDebitos from "@/components/pendencias/HistoricoDebitos";
 import ImportarReportModal from "@/components/pendencias/ImportarReportModal";
 import EditarDebitoModal from "@/components/pendencias/EditarDebitoModal";
+import MesReferenciaSelector from "@/components/pendencias/MesReferenciaSelector";
 
 const MES_ATUAL = new Date().toLocaleDateString("pt-BR", { month: "2-digit", year: "numeric" }).replace("/", "/");
 
@@ -78,7 +79,7 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
   const handleRolarMes = async () => {
     if (!confirm(`Rolar débitos não pagos para o próximo mês?`)) return;
     setRolandoMes(true);
-    const res = await base44.functions.invoke("rolarDebitosMes", {});
+    const res = await base44.functions.invoke("rolarDebitosMes", { mes_origem: mesReferencia });
     setRolandoMes(false);
     alert(res.data?.sucesso ? `✅ ${res.data.rolados} débito(s) rolados para ${res.data.mesAtual}.` : `Erro: ${res.data?.error}`);
     carregar();
@@ -90,15 +91,10 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
       <div style={{ background: "#1B2A4A", color: "#fff", padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div>
-              <label style={{ display: "block", fontSize: 10, color: "#8eafd4", marginBottom: 3 }}>MÊS DE REFERÊNCIA</label>
-              <input
-                type="text"
-                value={mesReferencia}
-                onChange={e => setMesReferencia(e.target.value)}
-                placeholder="MM/AAAA"
-                style={{ background: "#243558", color: "#fff", border: "1px solid #3a5075", borderRadius: 6, padding: "5px 10px", fontSize: 13, width: 100 }} />
-            </div>
+          <div>
+            <label style={{ display: "block", fontSize: 10, color: "#8eafd4", marginBottom: 3 }}>MÊS DE REFERÊNCIA</label>
+            <MesReferenciaSelector value={mesReferencia} onChange={setMesReferencia} dark={true} />
+          </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={handleRolarMes} disabled={rolandoMes}
