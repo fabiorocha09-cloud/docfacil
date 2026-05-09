@@ -1,8 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SERPRO_TOKEN_URL = 'https://gateway.apiserpro.serpro.gov.br/token';
-// Path correto confirmado via diagnóstico: /api/v1/devedor/{cnpj}
-const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/devedor';
+
+// Endpoints da API SERPRO Dívida Ativa — tenta DF (contratado) e fallback para versão sem DF
+const ENDPOINTS_DEVEDOR = [
+  'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/devedor',
+  'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa/api/v1/devedor',
+];
 
 async function getSerproToken() {
   const key = Deno.env.get('SERPRO_API_KEY');
@@ -25,6 +29,30 @@ async function getSerproToken() {
 
   const data = await res.json();
   return data.access_token;
+}
+
+// Tenta cada endpoint em sequência e retorna o primeiro que responder com 200 ou 404
+async function consultarDevedor(cnpj, accessToken) {
+  let lastError = null;
+
+  for (const baseUrl of ENDPOINTS_DEVEDOR) {
+    const res = await fetch(`${baseUrl}/${cnpj}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (res.status === 200 || res.status === 404) {
+      const body = await res.text();
+      return { status: res.status, body, endpoint: baseUrl };
+    }
+
+    const body = await res.text();
+    lastError = `${baseUrl} → ${res.status}: ${body}`;
+  }
+
+  throw new Error(`Todos os endpoints falharam. Último erro: ${lastError}`);
 }
 
 Deno.serve(async (req) => {
@@ -50,52 +78,52 @@ Deno.serve(async (req) => {
     // Obtém token SERPRO
     const accessToken = await getSerproToken();
 
-    // Consulta dívida ativa por CNPJ
-    const res = await fetch(`${SERPRO_DIVIDA_URL}/${cnpjLimpo}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Accept': 'application/json',
-      },
-    });
+    // Consulta dívida ativa — tenta endpoints em sequência
+    const { status, body: rawBody, endpoint } = await consultarDevedor(cnpjLimpo, accessToken);
+
+    if (body.debug) {
+      return Response.json({ serpro_status: status, serpro_body: rawBody.slice(0, 2000), endpoint });
+    }
 
     let nomeEmpresa = empresa_nome || '';
     let valorDivida = 0;
     let situacao = 'regular';
     let observacao = '';
-    let inscricoes = [];
 
-    const rawBody = await res.text();
-    if (body.debug) return Response.json({ serpro_status: res.status, serpro_body: rawBody.slice(0, 2000) });
-
-    if (res.status === 200) {
+    if (status === 200) {
       const data = JSON.parse(rawBody);
-      // A API retorna array de inscrições ou objeto com array
-      inscricoes = Array.isArray(data) ? data : (data.inscricoes || data.items || [data]);
 
-      // Calcula total somando todos os valorTotalConsolidadoMoeda de inscrições ATIVAS
+      // A API retorna objeto com nomeDevedor + array de inscrições
+      const inscricoes = Array.isArray(data) ? data : (data.inscricoes || data.items || [data]);
+
+      if (!nomeEmpresa && data.nomeDevedor) {
+        nomeEmpresa = data.nomeDevedor;
+      }
+
       for (const insc of inscricoes) {
         const situacaoInsc = (insc.situacaoDescricao || insc.situacao || '').toUpperCase();
-        // Ignora inscrições extintas
         if (situacaoInsc.includes('EXTINT')) continue;
-
-        const valorStr = String(insc.valorTotalConsolidadoMoeda || insc.valorTotalConsolidado || '0')
-          .replace(/\./g, '').replace(',', '.');
-        const valor = parseFloat(valorStr) || 0;
-        valorDivida += valor;
 
         if (!nomeEmpresa && insc.nomeDevedor) {
           nomeEmpresa = insc.nomeDevedor;
         }
+
+        // Tenta diferentes campos de valor que a API pode retornar
+        const valorStr = String(
+          insc.valorTotalConsolidadoMoeda ||
+          insc.valorTotalConsolidado ||
+          insc.valorConsolidado ||
+          '0'
+        ).replace(/\./g, '').replace(',', '.');
+        valorDivida += parseFloat(valorStr) || 0;
       }
 
       situacao = valorDivida > 0 ? 'devedor' : 'regular';
       observacao = `${inscricoes.length} inscrição(ões) encontrada(s) na Dívida Ativa da União via SERPRO.`;
 
-    } else if (res.status === 404) {
+    } else if (status === 404) {
       situacao = 'regular';
       observacao = 'CNPJ não encontrado na Lista de Devedores da PGFN. Situação: Regular.';
-    } else {
-      throw new Error(`SERPRO retornou ${res.status}: ${rawBody}`);
     }
 
     const resultado = {
@@ -107,7 +135,6 @@ Deno.serve(async (req) => {
       observacao,
     };
 
-    // Salva ou atualiza no banco se solicitado
     if (salvar) {
       const existentes = await base44.asServiceRole.entities.ConsultaPGFN.list();
       const existente = existentes.find(c => c.cnpj === cnpjLimpo);
