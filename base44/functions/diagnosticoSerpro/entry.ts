@@ -36,15 +36,16 @@ Deno.serve(async (req) => {
 
     const accessToken = await getSerproToken();
 
-    // Testa múltiplos paths possíveis
+    // Testa múltiplos paths possíveis — base confirmada: /consulta-divida-ativa-df/api
     const endpoints = [
-      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/v1/cnpj/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/v2/cnpj/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/consulta-dívida-ativa/v1/cnpj/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/pgfn/v1/divida-ativa/cnpj/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/divida-ativa/v1/cnpj/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/v1/situacao/${cnpj}`,
-      `https://gateway.apiserpro.serpro.gov.br/integra-contador/v1/Consultar/divida-ativa/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/cnpj/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/devedor/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/devedores/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/cnpj/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/devedor/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/devedores/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/inscricoes/${cnpj}`,
+      `https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/${cnpj}`,
     ];
 
     const results = await Promise.all(

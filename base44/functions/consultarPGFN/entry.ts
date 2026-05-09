@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SERPRO_TOKEN_URL = 'https://gateway.apiserpro.serpro.gov.br/token';
-const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/v1/cnpj';
+// Path correto confirmado via diagnóstico: /api/v1/devedor/{cnpj}
+const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/devedor';
 
 async function getSerproToken() {
   const key = Deno.env.get('SERPRO_API_KEY');
