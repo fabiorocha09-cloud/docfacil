@@ -1,0 +1,43 @@
+{
+  "name": "ConsultaPGFN",
+  "type": "object",
+  "properties": {
+    "cnpj": {
+      "type": "string",
+      "description": "CNPJ consultado"
+    },
+    "empresa_nome": {
+      "type": "string",
+      "description": "Nome da empresa consultada"
+    },
+    "empresa_id": {
+      "type": "string",
+      "description": "ID da empresa em nosso sistema (se for cliente Scala)"
+    },
+    "valor_divida_total": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor total da d\u00edvida na PGFN"
+    },
+    "situacao": {
+      "type": "string",
+      "description": "regular ou devedor"
+    },
+    "data_ultima_consulta": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora da \u00faltima consulta"
+    },
+    "is_cliente_scala": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se \u00e9 cliente monitorado da Scala"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "cnpj"
+  ]
+}
