@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SERPRO_TOKEN_URL = 'https://gateway.apiserpro.serpro.gov.br/token';
-const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/cnpj';
+const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/v1/cnpj';
 
 async function getSerproToken() {
   const key = Deno.env.get('SERPRO_API_KEY');
@@ -63,8 +63,11 @@ Deno.serve(async (req) => {
     let observacao = '';
     let inscricoes = [];
 
+    const rawBody = await res.text();
+    if (body.debug) return Response.json({ serpro_status: res.status, serpro_body: rawBody.slice(0, 2000) });
+
     if (res.status === 200) {
-      const data = await res.json();
+      const data = JSON.parse(rawBody);
       // A API retorna array de inscrições ou objeto com array
       inscricoes = Array.isArray(data) ? data : (data.inscricoes || data.items || [data]);
 
@@ -91,8 +94,7 @@ Deno.serve(async (req) => {
       situacao = 'regular';
       observacao = 'CNPJ não encontrado na Lista de Devedores da PGFN. Situação: Regular.';
     } else {
-      const errText = await res.text();
-      throw new Error(`SERPRO retornou ${res.status}: ${errText}`);
+      throw new Error(`SERPRO retornou ${res.status}: ${rawBody}`);
     }
 
     const resultado = {
