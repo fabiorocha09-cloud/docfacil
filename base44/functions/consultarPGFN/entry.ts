@@ -1,5 +1,31 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+const SERPRO_TOKEN_URL = 'https://gateway.apiserpro.serpro.gov.br/token';
+const SERPRO_DIVIDA_URL = 'https://gateway.apiserpro.serpro.gov.br/consulta-divida-ativa-df/api/v1/cnpj';
+
+async function getSerproToken() {
+  const key = Deno.env.get('SERPRO_API_KEY');
+  const secret = Deno.env.get('SERPRO_API_SECRET');
+  const credentials = btoa(`${key}:${secret}`);
+
+  const res = await fetch(SERPRO_TOKEN_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Erro ao obter token SERPRO: ${res.status} - ${err}`);
+  }
+
+  const data = await res.json();
+  return data.access_token;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -16,42 +42,57 @@ Deno.serve(async (req) => {
     }
 
     const cnpjLimpo = cnpj.replace(/\D/g, '');
-    const cnpjFormatado = cnpjLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    if (cnpjLimpo.length !== 14) {
+      return Response.json({ error: 'CNPJ inválido' }, { status: 400 });
+    }
 
-    let valorDivida = 0;
-    let nomeEmpresa = empresa_nome || '';
-    let situacao = 'regular';
+    // Obtém token SERPRO
+    const accessToken = await getSerproToken();
 
-    // Usa Gemini com busca na web para consultar dados PGFN
-    const llmResult = await base44.asServiceRole.integrations.Core.InvokeLLM({
-      model: 'gemini_3_flash',
-      prompt: `Pesquise na internet informações sobre a dívida ativa na PGFN para o CNPJ ${cnpjFormatado}.
-
-Fontes a consultar:
-1. https://www.listadevedores.pgfn.gov.br/ buscando pelo CNPJ ${cnpjFormatado}
-2. Qualquer outra fonte pública que tenha dados sobre dívidas PGFN para este CNPJ
-
-Retorne:
-- nome_empresa: razão social da empresa com este CNPJ
-- valor_divida_total: valor total da dívida na PGFN em reais como número (ex: se aparecer "22.362.519,16" retorne 22362519.16). Se não encontrar, retorne 0.
-- possui_divida: true se constar na lista de devedores da PGFN, false se não constar
-- observacao: qualquer informação relevante encontrada sobre a situação fiscal`,
-      add_context_from_internet: true,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          nome_empresa: { type: 'string' },
-          valor_divida_total: { type: 'number' },
-          possui_divida: { type: 'boolean' },
-          observacao: { type: 'string' },
-        },
+    // Consulta dívida ativa por CNPJ
+    const res = await fetch(`${SERPRO_DIVIDA_URL}/${cnpjLimpo}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
       },
     });
 
-    if (llmResult) {
-      valorDivida = llmResult.valor_divida_total || 0;
-      nomeEmpresa = llmResult.nome_empresa || empresa_nome || '';
-      situacao = (llmResult.possui_divida || valorDivida > 0) ? 'devedor' : 'regular';
+    let nomeEmpresa = empresa_nome || '';
+    let valorDivida = 0;
+    let situacao = 'regular';
+    let observacao = '';
+    let inscricoes = [];
+
+    if (res.status === 200) {
+      const data = await res.json();
+      // A API retorna array de inscrições ou objeto com array
+      inscricoes = Array.isArray(data) ? data : (data.inscricoes || data.items || [data]);
+
+      // Calcula total somando todos os valorTotalConsolidadoMoeda de inscrições ATIVAS
+      for (const insc of inscricoes) {
+        const situacaoInsc = (insc.situacaoDescricao || insc.situacao || '').toUpperCase();
+        // Ignora inscrições extintas
+        if (situacaoInsc.includes('EXTINT')) continue;
+
+        const valorStr = String(insc.valorTotalConsolidadoMoeda || insc.valorTotalConsolidado || '0')
+          .replace(/\./g, '').replace(',', '.');
+        const valor = parseFloat(valorStr) || 0;
+        valorDivida += valor;
+
+        if (!nomeEmpresa && insc.nomeDevedor) {
+          nomeEmpresa = insc.nomeDevedor;
+        }
+      }
+
+      situacao = valorDivida > 0 ? 'devedor' : 'regular';
+      observacao = `${inscricoes.length} inscrição(ões) encontrada(s) na Dívida Ativa da União via SERPRO.`;
+
+    } else if (res.status === 404) {
+      situacao = 'regular';
+      observacao = 'CNPJ não encontrado na Lista de Devedores da PGFN. Situação: Regular.';
+    } else {
+      const errText = await res.text();
+      throw new Error(`SERPRO retornou ${res.status}: ${errText}`);
     }
 
     const resultado = {
@@ -60,7 +101,7 @@ Retorne:
       valor_divida_total: valorDivida,
       situacao,
       data_ultima_consulta: new Date().toISOString(),
-      observacao: llmResult?.observacao || '',
+      observacao,
     };
 
     // Salva ou atualiza no banco se solicitado
