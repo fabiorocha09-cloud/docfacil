@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { RefreshCw, Search, Loader2, AlertTriangle, CheckCircle2, Clock, TrendingDown, Building2, ChevronDown, ChevronUp } from "lucide-react";
+import FiltrosPGFN from "./FiltrosPGFN";
 
 const fmt = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -23,7 +24,7 @@ export default function MonitoramentoClientes() {
   const [consultandoId, setConsultandoId] = useState(null);
   const [consultandoLote, setConsultandoLote] = useState(false);
   const [loteProgresso, setLoteProgresso] = useState({ atual: 0, total: 0 });
-  const [busca, setBusca] = useState("");
+  const [filtros, setFiltros] = useState({ busca: "", situacao: "", faixaValor: "" });
   const [expandido, setExpandido] = useState(null);
   const [descontoSelecionado, setDescontoSelecionado] = useState(70);
 
@@ -42,11 +43,28 @@ export default function MonitoramentoClientes() {
 
   const empresasComConsulta = useMemo(() => {
     return empresas
-      .filter(e => !busca || e.nome?.toLowerCase().includes(busca.toLowerCase()) || e.cnpj?.includes(busca))
       .map(e => {
         const cnpjLimpo = (e.cnpj || '').replace(/\D/g, '');
         const consulta = consultas.find(c => c.cnpj === cnpjLimpo);
         return { ...e, consulta };
+      })
+      .filter(e => {
+        // Filtro busca
+        if (filtros.busca && !e.nome?.toLowerCase().includes(filtros.busca.toLowerCase()) && !e.cnpj?.includes(filtros.busca)) return false;
+        
+        // Filtro situação
+        if (filtros.situacao === 'devedor' && e.consulta?.situacao !== 'devedor') return false;
+        if (filtros.situacao === 'regular' && e.consulta?.situacao !== 'regular') return false;
+        if (filtros.situacao === 'nao_consultado' && e.consulta) return false;
+        
+        // Filtro faixa de valor
+        const valor = e.consulta?.valor_divida_total || 0;
+        if (filtros.faixaValor === 'ate_10k' && valor > 10000) return false;
+        if (filtros.faixaValor === '10k_50k' && (valor <= 10000 || valor > 50000)) return false;
+        if (filtros.faixaValor === '50k_100k' && (valor <= 50000 || valor > 100000)) return false;
+        if (filtros.faixaValor === 'acima_100k' && valor <= 100000) return false;
+        
+        return true;
       })
       .sort((a, b) => {
         // Devedores primeiro, depois sem consulta, depois regulares
@@ -56,7 +74,7 @@ export default function MonitoramentoClientes() {
         if (a.consulta && !b.consulta) return 1;
         return (b.consulta?.valor_divida_total || 0) - (a.consulta?.valor_divida_total || 0);
       });
-  }, [empresas, consultas, busca]);
+  }, [empresas, consultas, filtros]);
 
   const kpis = useMemo(() => {
     const comConsulta = empresas.filter(e => {
@@ -134,17 +152,11 @@ export default function MonitoramentoClientes() {
         ))}
       </div>
 
+      {/* Filtros */}
+      <FiltrosPGFN filtros={filtros} onChange={setFiltros} />
+
       {/* Barra de ações */}
-      <div className="flex gap-3 flex-wrap items-center">
-        <div className="flex-1 min-w-48">
-          <input
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-            placeholder="Buscar cliente por nome ou CNPJ..."
-            className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
-          />
-        </div>
+      <div className="flex gap-3 flex-wrap items-center justify-between">
         <div className="flex items-center gap-2 text-xs" style={{ color: "#6B7FA3" }}>
           <span>Desconto padrão:</span>
           {[30, 50, 70].map(d => (
@@ -157,19 +169,21 @@ export default function MonitoramentoClientes() {
               }}>{d}%</button>
           ))}
         </div>
-        <button
-          onClick={handleConsultarLote}
-          disabled={consultandoLote}
-          className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl"
-          style={{ background: "rgba(11,95,255,0.15)", color: "#5E9BFF", border: "1px solid rgba(11,95,255,0.3)" }}>
-          {consultandoLote
-            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {loteProgresso.atual}/{loteProgresso.total}</>
-            : <><RefreshCw className="w-3.5 h-3.5" /> Consultar em Lote</>
-          }
-        </button>
-        <button onClick={carregar} className="p-2 rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#6B7FA3" }}>
-          <RefreshCw className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleConsultarLote}
+            disabled={consultandoLote}
+            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl"
+            style={{ background: "rgba(11,95,255,0.15)", color: "#5E9BFF", border: "1px solid rgba(11,95,255,0.3)" }}>
+            {consultandoLote
+              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> {loteProgresso.atual}/{loteProgresso.total}</>
+              : <><RefreshCw className="w-3.5 h-3.5" /> Consultar em Lote</>
+            }
+          </button>
+          <button onClick={carregar} className="p-2 rounded-xl" style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#6B7FA3" }}>
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {consultandoLote && (
