@@ -118,6 +118,7 @@ Deno.serve(async (req) => {
         valorDivida += parseFloat(valorStr) || 0;
       }
 
+      valorDivida = Math.round(valorDivida * 100) / 100;
       situacao = valorDivida > 0 ? 'devedor' : 'regular';
       observacao = `${inscricoes.length} inscrição(ões) encontrada(s) na Dívida Ativa da União via SERPRO.`;
 
