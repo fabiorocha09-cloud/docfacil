@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Search, Loader2, AlertTriangle, CheckCircle2, TrendingDown, ExternalLink, FileText, Building2 } from "lucide-react";
+import GerarPropostaPDF from "./GerarPropostaPDF";
 
 const fmt = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
 const cardStyle = { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" };
@@ -213,7 +214,7 @@ export default function ConsultaNaoCliente() {
                 </p>
               </div>
 
-              <div className="flex gap-3 mt-4 flex-wrap">
+              <div className="flex gap-3 mt-4 flex-wrap items-center">
                 <a href="https://www.regularize.pgfn.gov.br/" target="_blank" rel="noreferrer"
                   className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl"
                   style={{ background: "linear-gradient(135deg,#1E9B5B,#147a47)", color: "#fff" }}>
@@ -230,6 +231,7 @@ export default function ConsultaNaoCliente() {
                   <FileText className="w-3.5 h-3.5" />
                   Copiar Proposta
                 </button>
+                <GerarPropostaPDF resultado={resultado} desconto={descontoSelecionado} />
               </div>
             </div>
           )}
