@@ -1,0 +1,30 @@
+{
+  "name": "GrupoEmpresarial",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome do grupo empresarial"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "responsavel": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo"
+      ],
+      "default": "ativo"
+    }
+  },
+  "required": [
+    "nome"
+  ]
+}

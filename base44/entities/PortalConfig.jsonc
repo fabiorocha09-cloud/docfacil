@@ -1,0 +1,72 @@
+{
+  "name": "PortalConfig",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "federal",
+        "estadual",
+        "municipal",
+        "fgts",
+        "trabalhista"
+      ]
+    },
+    "subtipo": {
+      "type": "string",
+      "description": "Ex: Receita Federal, SEFAZ-PA"
+    },
+    "url_portal": {
+      "type": "string",
+      "description": "URL do portal governamental"
+    },
+    "tem_captcha": {
+      "type": "boolean",
+      "default": false
+    },
+    "servico_captcha": {
+      "type": "string",
+      "enum": [
+        "2captcha",
+        "anticaptcha",
+        "nenhum"
+      ],
+      "default": "nenhum"
+    },
+    "chave_captcha": {
+      "type": "string"
+    },
+    "periodicidade": {
+      "type": "string",
+      "enum": [
+        "diario",
+        "semanal",
+        "quinzenal",
+        "mensal"
+      ],
+      "default": "mensal"
+    },
+    "dia_execucao": {
+      "type": "number",
+      "description": "Dia do m\u00eas (1-31)"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "ultimo_resultado": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tipo",
+    "url_portal"
+  ]
+}

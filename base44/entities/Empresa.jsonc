@@ -1,0 +1,85 @@
+{
+  "name": "Empresa",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Raz\u00e3o social"
+    },
+    "cnpj": {
+      "type": "string",
+      "description": "CNPJ (00.000.000/0000-00)"
+    },
+    "cnpj_matriz": {
+      "type": "string",
+      "description": "CNPJ da matriz (preencher apenas se for filial)"
+    },
+    "email": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "responsavel": {
+      "type": "string"
+    },
+    "regime_tributario": {
+      "type": "string",
+      "enum": [
+        "simples_nacional",
+        "lucro_presumido",
+        "lucro_real",
+        "mei"
+      ],
+      "description": "Regime tribut\u00e1rio da empresa"
+    },
+    "inscricao_estadual": {
+      "type": "string",
+      "description": "Inscri\u00e7\u00e3o estadual"
+    },
+    "situacao_inscricao_estadual": {
+      "type": "string",
+      "enum": [
+        "regular",
+        "bloqueada",
+        "nao_possui"
+      ],
+      "description": "Situa\u00e7\u00e3o da inscri\u00e7\u00e3o estadual"
+    },
+    "data_atualizacao_ie": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo"
+      ],
+      "default": "ativo"
+    },
+    "grupo_id": {
+      "type": "string"
+    },
+    "grupo_nome": {
+      "type": "string"
+    },
+    "excluida": {
+      "type": "boolean",
+      "default": false
+    },
+    "certidoes_nao_aplicaveis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Lista de tipos de certid\u00f5es que n\u00e3o se aplicam a esta empresa (ex: ['alvara_bombeiros', 'estadual'])",
+      "default": []
+    }
+  },
+  "required": [
+    "nome",
+    "cnpj"
+  ],
+  "rls": {}
+}

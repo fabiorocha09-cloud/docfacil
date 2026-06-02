@@ -73,7 +73,7 @@ export default function UploadCertidoes() {
       });
 
       if (resultado.status !== "success" || !resultado.output?.cnpj) {
-        setArquivos(prev => prev.map((a, idx) => idx === i ? { ...a, status: "erro", arquivo_url: file_url } : a));
+        setArquivos(prev => prev.map((a, idx) => idx === i ? { ...a, status: "erro", arquivo_url: file_url, erroMsg: "IA não conseguiu extrair dados do documento." } : a));
         continue;
       }
 
@@ -92,22 +92,33 @@ export default function UploadCertidoes() {
         continue;
       }
 
-      // Salvar certidão
-      const existentes = await base44.entities.Certidao.filter({ empresa_id: empresa.id, tipo: dados.tipo_certidao });
+      // Salvar certidão — busca por tipo E subtipo para evitar sobrescrever certidões erradas
+      const tipo = dados.tipo_certidao || "federal";
+      const subtipo = dados.subtipo || "";
       const certidaoData = {
         empresa_id: empresa.id,
         empresa_nome: empresa.nome,
         empresa_cnpj: empresa.cnpj,
-        tipo: dados.tipo_certidao || "federal",
-        subtipo: dados.subtipo || "",
+        tipo,
+        subtipo,
         status: dados.situacao === "irregular" ? "irregular" : "regular",
         data_emissao: dados.data_emissao || "",
         data_vencimento: dados.data_vencimento || "",
         arquivo_url: file_url,
+        excluida: false,
       };
 
-      if (existentes.length > 0) {
-        await base44.entities.Certidao.update(existentes[0].id, certidaoData);
+      // Busca todas certidões da empresa+tipo e filtra por subtipo se disponível
+      const existentes = await base44.entities.Certidao.filter({ empresa_id: empresa.id, tipo });
+      const match = existentes.find(c =>
+        !c.excluida && (
+          !subtipo || !c.subtipo ||
+          c.subtipo?.toLowerCase() === subtipo.toLowerCase()
+        )
+      );
+
+      if (match) {
+        await base44.entities.Certidao.update(match.id, certidaoData);
       } else {
         await base44.entities.Certidao.create(certidaoData);
       }
@@ -180,6 +191,9 @@ export default function UploadCertidoes() {
                         )}
                         {arq.status === "revisar" && (
                           <p className="text-xs mt-1" style={{ color: "#fb923c" }}>CNPJ extraído com possível erro: <strong>{arq.cnpjExtraido}</strong>. Verifique e vincule manualmente.</p>
+                        )}
+                        {arq.status === "erro" && arq.erroMsg && (
+                          <p className="text-xs mt-1" style={{ color: "#f87171" }}>{arq.erroMsg}</p>
                         )}
                       </div>
                     </div>

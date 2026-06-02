@@ -1,0 +1,46 @@
+{
+  "name": "UploadCliente",
+  "type": "object",
+  "properties": {
+    "shared_link_token": {
+      "type": "string",
+      "description": "Token do link compartilhado"
+    },
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "email_cliente": {
+      "type": "string"
+    },
+    "arquivo_url": {
+      "type": "string"
+    },
+    "nome_arquivo": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o/motivo do upload enviado pelo cliente"
+    },
+    "tipo_documento": {
+      "type": "string",
+      "description": "Tipo inferido ou informado pelo cliente"
+    },
+    "lido": {
+      "type": "boolean",
+      "default": false
+    },
+    "processado": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "shared_link_token",
+    "empresa_id",
+    "arquivo_url"
+  ]
+}

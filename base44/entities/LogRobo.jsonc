@@ -1,0 +1,58 @@
+{
+  "name": "LogRobo",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento em que a a\u00e7\u00e3o ocorreu"
+    },
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "portal_config_id": {
+      "type": "string"
+    },
+    "tipo_certidao": {
+      "type": "string",
+      "enum": [
+        "federal",
+        "estadual",
+        "municipal",
+        "fgts",
+        "trabalhista"
+      ]
+    },
+    "acao": {
+      "type": "string"
+    },
+    "detalhes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sucesso",
+        "falha",
+        "aviso",
+        "info"
+      ]
+    },
+    "iniciada_por_email": {
+      "type": "string"
+    },
+    "iniciada_por_nome": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "empresa_nome",
+    "tipo_certidao",
+    "acao",
+    "status"
+  ]
+}

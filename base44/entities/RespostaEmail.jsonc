@@ -1,0 +1,59 @@
+{
+  "name": "RespostaEmail",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "assunto_original": {
+      "type": "string"
+    },
+    "de": {
+      "type": "string",
+      "description": "Remetente da resposta"
+    },
+    "para": {
+      "type": "string",
+      "description": "Destinat\u00e1rio original"
+    },
+    "corpo": {
+      "type": "string",
+      "description": "Corpo da resposta recebida"
+    },
+    "data_recebimento": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lida": {
+      "type": "boolean",
+      "default": false
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "tj_pa",
+        "outro"
+      ],
+      "default": "tj_pa"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "anexos_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs dos arquivos anexados ao e-mail recebido"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "empresa_nome",
+    "de",
+    "corpo"
+  ]
+}

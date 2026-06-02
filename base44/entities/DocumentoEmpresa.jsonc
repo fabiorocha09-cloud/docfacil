@@ -1,0 +1,36 @@
+{
+  "name": "DocumentoEmpresa",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "cartao_cnpj",
+        "procuracao_tj",
+        "crc_contador",
+        "alvara_municipal",
+        "alvara_visa",
+        "avcb_bombeiros"
+      ]
+    },
+    "arquivo_url": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tipo"
+  ]
+}

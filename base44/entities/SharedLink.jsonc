@@ -1,0 +1,70 @@
+{
+  "name": "SharedLink",
+  "type": "object",
+  "properties": {
+    "token": {
+      "type": "string",
+      "description": "Token \u00fanico e seguro para acesso"
+    },
+    "email_cliente": {
+      "type": "string",
+      "description": "Email do cliente autorizado a acessar"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "empresa",
+        "grupo"
+      ],
+      "description": "Escopo do link: empresa individual ou grupo empresarial"
+    },
+    "empresa_id": {
+      "type": "string",
+      "description": "ID da empresa (quando scope=empresa)"
+    },
+    "empresa_nome": {
+      "type": "string"
+    },
+    "empresa_cnpj": {
+      "type": "string"
+    },
+    "grupo_id": {
+      "type": "string",
+      "description": "ID do grupo (quando scope=grupo)"
+    },
+    "grupo_nome": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data/hora de expira\u00e7\u00e3o do link"
+    },
+    "allow_download": {
+      "type": "boolean",
+      "default": true,
+      "description": "Permite download dos arquivos"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true,
+      "description": "Link ativo (false = revogado)"
+    },
+    "acesso_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de acessos ao link"
+    },
+    "criado_por_email": {
+      "type": "string"
+    },
+    "criado_por_nome": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "token",
+    "email_cliente",
+    "scope"
+  ]
+}
