@@ -79,9 +79,17 @@ function LinhaDebito({ debito, onPagar, onDesfazer, onAlterarStatus, onDeletar, 
 }
 
 export default function TabelaDebitos({ debitos, onPagar, onDesfazer, onAlterarStatus, onDeletar, onEditar }) {
+  // Ordenar por competência cronológica (MM/YYYY → YYYYMM)
+  const parseComp = (c) => {
+    if (!c) return 0;
+    const [m, y] = c.split('/');
+    return parseInt(y || 0) * 100 + parseInt(m || 0);
+  };
+  const debitosOrdenados = [...debitos].sort((a, b) => parseComp(a.competencia) - parseComp(b.competencia));
+
   // Agrupar por tributo
   const grupos = {};
-  debitos.forEach(d => {
+  debitosOrdenados.forEach(d => {
     if (!grupos[d.tributo]) grupos[d.tributo] = [];
     grupos[d.tributo].push(d);
   });

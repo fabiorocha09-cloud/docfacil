@@ -37,33 +37,40 @@ Deno.serve(async (req) => {
     const existentesNoDestino = todos.filter(d => d.mes_referencia === mesDestino);
     const chaveExistente = new Set(existentesNoDestino.map(d => `${d.empresa_cnpj}|${d.tributo}|${d.competencia}`));
 
-    let rolados = 0;
+    // Separa débitos a criar dos ignorados
+    const paracriar = [];
     let ignorados = 0;
 
     for (const debito of paraRolar) {
       const chave = `${debito.empresa_cnpj}|${debito.tributo}|${debito.competencia}`;
       if (chaveExistente.has(chave)) {
         ignorados++;
-        continue;
+      } else {
+        paracriar.push(debito);
+        chaveExistente.add(chave);
       }
-
-      await base44.asServiceRole.entities.DebitoFiscal.create({
-        empresa_nome: debito.empresa_nome,
-        empresa_cnpj: debito.empresa_cnpj,
-        esfera: debito.esfera,
-        tributo: debito.tributo,
-        competencia: debito.competencia,
-        valor: debito.valor,
-        status: 'Em aberto',
-        observacao: `Rolado de ${mesOrigem}${debito.observacao ? ' | ' + debito.observacao : ''}`,
-        mes_referencia: mesDestino,
-      });
-
-      chaveExistente.add(chave);
-      rolados++;
     }
 
-    return Response.json({ sucesso: true, rolados, ignorados, mesAnterior: mesOrigem, mesAtual: mesDestino });
+    // Cria em lotes de 10 em paralelo para maior velocidade
+    const LOTE = 10;
+    for (let i = 0; i < paracriar.length; i += LOTE) {
+      const lote = paracriar.slice(i, i + LOTE);
+      await Promise.all(lote.map(debito =>
+        base44.asServiceRole.entities.DebitoFiscal.create({
+          empresa_nome: debito.empresa_nome,
+          empresa_cnpj: debito.empresa_cnpj,
+          esfera: debito.esfera,
+          tributo: debito.tributo,
+          competencia: debito.competencia,
+          valor: debito.valor,
+          status: 'Em aberto',
+          observacao: `Rolado de ${mesOrigem}${debito.observacao ? ' | ' + debito.observacao : ''}`,
+          mes_referencia: mesDestino,
+        })
+      ));
+    }
+
+    return Response.json({ sucesso: true, rolados: paracriar.length, ignorados, mesAnterior: mesOrigem, mesAtual: mesDestino });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -48,17 +48,22 @@ export default function UploadOutrosDocumentos() {
   const handleUpload = async (tipo, file) => {
     if (!empresaSelecionada) return;
     setUploading(tipo);
-    const empresa = empresas.find(e => e.id === empresaSelecionada);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    const existente = getDoc(tipo, empresaSelecionada);
-    if (existente) {
-      await base44.entities.DocumentoEmpresa.update(existente.id, { arquivo_url: file_url });
-    } else {
-      await base44.entities.DocumentoEmpresa.create({ empresa_id: empresa.id, empresa_nome: empresa.nome, empresa_cnpj: empresa.cnpj, tipo, arquivo_url: file_url });
+    try {
+      const empresa = empresas.find(e => e.id === empresaSelecionada);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const existente = getDoc(tipo, empresaSelecionada);
+      if (existente) {
+        await base44.entities.DocumentoEmpresa.update(existente.id, { arquivo_url: file_url });
+      } else {
+        await base44.entities.DocumentoEmpresa.create({ empresa_id: empresa.id, empresa_nome: empresa.nome, empresa_cnpj: empresa.cnpj, tipo, arquivo_url: file_url });
+      }
+      toast({ title: "✅ Documento enviado com sucesso!" });
+      carregar();
+    } catch (err) {
+      toast({ title: "❌ Erro ao enviar documento", description: err?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setUploading(null);
     }
-    toast({ title: "✅ Documento enviado com sucesso!" });
-    setUploading(null);
-    carregar();
   };
 
   const handleUploadCrc = async (file) => {
