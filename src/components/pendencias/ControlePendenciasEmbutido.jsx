@@ -52,8 +52,22 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
     return [...new Set(debitosFiltrados.map(d => d.tributo))];
   }, [debitosFiltrados]);
 
+  // Remove cópias roladas do débito em meses futuros quando marcado como pago
+  const removerCopiasRoladas = async (debito) => {
+    const copias = debitos.filter(d =>
+      d.id !== debito.id &&
+      d.empresa_cnpj === debito.empresa_cnpj &&
+      d.tributo === debito.tributo &&
+      d.competencia === debito.competencia &&
+      d.status !== "Pago"
+    );
+    await Promise.all(copias.map(c => base44.entities.DebitoFiscal.delete(c.id)));
+  };
+
   const handlePagarDebito = async (id) => {
+    const debito = debitos.find(d => d.id === id);
     await base44.entities.DebitoFiscal.update(id, { status: "Pago", data_pagamento: new Date().toISOString().slice(0, 10) });
+    if (debito) await removerCopiasRoladas(debito);
     carregar();
   };
 
@@ -63,10 +77,12 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
   };
 
   const handleAlterarStatus = async (id, status) => {
+    const debito = debitos.find(d => d.id === id);
     const update = { status };
     if (status === "Pago") update.data_pagamento = new Date().toISOString().slice(0, 10);
     if (status !== "Pago") update.data_pagamento = null;
     await base44.entities.DebitoFiscal.update(id, update);
+    if (status === "Pago" && debito) await removerCopiasRoladas(debito);
     carregar();
   };
 
