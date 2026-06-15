@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, FileText, History, LayoutDashboard } from "lucide-react";
+import { Plus, FileText, History, LayoutDashboard, RefreshCw } from "lucide-react";
 import TabelaDebitos from "@/components/pendencias/TabelaDebitos";
 import NovoDebitoModal from "@/components/pendencias/NovoDebitoModal";
 import ResumoCards from "@/components/pendencias/ResumoCards";
@@ -63,11 +63,26 @@ export default function ControlePendencias() {
     return d?.empresa_cnpj || "";
   }, [debitos, empresaSelecionada]);
 
+  // Remove cópias roladas do débito em outros meses quando marcado como pago
+  const removerCopiasRoladas = async (debito) => {
+    const copias = await base44.entities.DebitoFiscal.filter({
+      empresa_cnpj: debito.empresa_cnpj,
+      tributo: debito.tributo,
+      competencia: debito.competencia,
+    });
+    const paraApagar = copias.filter(d => d.id !== debito.id && d.status !== "Pago");
+    if (paraApagar.length > 0) {
+      await Promise.all(paraApagar.map(c => base44.entities.DebitoFiscal.delete(c.id)));
+    }
+  };
+
   const handlePagarDebito = async (id) => {
+    const debito = debitos.find(d => d.id === id);
     await base44.entities.DebitoFiscal.update(id, {
       status: "Pago",
       data_pagamento: new Date().toISOString().slice(0, 10),
     });
+    if (debito) await removerCopiasRoladas(debito);
     carregar();
   };
 
@@ -80,10 +95,12 @@ export default function ControlePendencias() {
   };
 
   const handleAlterarStatus = async (id, status) => {
+    const debito = debitos.find(d => d.id === id);
     const update = { status };
     if (status === "Pago") update.data_pagamento = new Date().toISOString().slice(0, 10);
     if (status !== "Pago") update.data_pagamento = null;
     await base44.entities.DebitoFiscal.update(id, update);
+    if (status === "Pago" && debito) await removerCopiasRoladas(debito);
     carregar();
   };
 
@@ -114,6 +131,12 @@ export default function ControlePendencias() {
             <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Controle de Pendências Fiscais</h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={carregar}
+              disabled={loading}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13, opacity: loading ? 0.6 : 1 }}>
+              <RefreshCw size={15} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} /> Atualizar
+            </button>
             <button
               onClick={() => setImportarOpen(true)}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "#16a085", color: "#fff", border: "none", borderRadius: 6, padding: "8px 16px", cursor: "pointer", fontWeight: 600, fontSize: 13 }}>
