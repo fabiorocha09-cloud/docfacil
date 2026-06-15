@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, FileText, History, LayoutDashboard } from "lucide-react";
+import { Plus, FileText, History, LayoutDashboard, RefreshCw } from "lucide-react";
 import TabelaDebitos from "@/components/pendencias/TabelaDebitos";
 import NovoDebitoModal from "@/components/pendencias/NovoDebitoModal";
 import ResumoCards from "@/components/pendencias/ResumoCards";
@@ -115,6 +115,10 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
           </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={carregar} disabled={loading}
+              style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, padding: "7px 13px", cursor: "pointer", fontWeight: 600, fontSize: 12, opacity: loading ? 0.6 : 1 }}>
+              <RefreshCw size={13} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} /> Atualizar
+            </button>
             <button onClick={handleRolarMes} disabled={rolandoMes}
               style={{ display: "flex", alignItems: "center", gap: 6, background: "#8e44ad", color: "#fff", border: "none", borderRadius: 6, padding: "7px 13px", cursor: "pointer", fontWeight: 600, fontSize: 12, opacity: rolandoMes ? 0.6 : 1 }}>
               {rolandoMes ? "Rolando..." : "↻ Rolar Mês"}
