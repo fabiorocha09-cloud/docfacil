@@ -52,16 +52,18 @@ export default function ControlePendenciasEmbutido({ empresaNome, empresaCnpj })
     return [...new Set(debitosFiltrados.map(d => d.tributo))];
   }, [debitosFiltrados]);
 
-  // Remove cópias roladas do débito em meses futuros quando marcado como pago
+  // Remove cópias roladas do débito em outros meses quando marcado como pago
   const removerCopiasRoladas = async (debito) => {
-    const copias = debitos.filter(d =>
-      d.id !== debito.id &&
-      d.empresa_cnpj === debito.empresa_cnpj &&
-      d.tributo === debito.tributo &&
-      d.competencia === debito.competencia &&
-      d.status !== "Pago"
-    );
-    await Promise.all(copias.map(c => base44.entities.DebitoFiscal.delete(c.id)));
+    // Busca por cnpj+tributo+competencia diretamente do banco
+    const copias = await base44.entities.DebitoFiscal.filter({
+      empresa_cnpj: debito.empresa_cnpj,
+      tributo: debito.tributo,
+      competencia: debito.competencia,
+    });
+    const paraApagar = copias.filter(d => d.id !== debito.id && d.status !== "Pago");
+    if (paraApagar.length > 0) {
+      await Promise.all(paraApagar.map(c => base44.entities.DebitoFiscal.delete(c.id)));
+    }
   };
 
   const handlePagarDebito = async (id) => {
