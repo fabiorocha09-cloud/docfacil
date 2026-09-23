@@ -1,0 +1,44 @@
+{
+  "name": "Rolar D\u00e9bitos N\u00e3o Pagos para o M\u00eas Seguinte",
+  "description": "No dia 1 de cada m\u00eas \u00e0s 9h (Bel\u00e9m), rola d\u00e9bitos n\u00e3o pagos do m\u00eas anterior para o m\u00eas atual, evitando duplicatas.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9 1 * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "rolar_d_bitos_n_o_pagos_para_o_m_s_seguinte",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "rolarDebitosMes",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "rolarDebitosMes"
+  }
+}
